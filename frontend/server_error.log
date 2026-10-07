@@ -1,0 +1,304 @@
+[2026-08-28T11:37:50.550Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-28T11:37:50.720Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-28T11:47:05.249Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-28T11:47:05.430Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-28T11:54:27.591Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T11:54:27.592Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T11:58:58.312Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T11:58:59.163Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T12:01:57.151Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T12:01:57.266Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T12:10:42.083Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-28T12:10:42.276Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-28T12:11:17.573Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T12:11:24.098Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T12:25:12.162Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T12:25:14.913Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T12:25:18.306Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T12:25:24.475Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T12:39:29.693Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-28T12:39:29.889Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-28T12:59:17.991Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-28T12:59:18.278Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+[2026-08-28T12:59:18.281Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T13:01:00.551Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T13:01:00.596Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T13:18:44.684Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-28T13:18:44.913Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-28T13:34:18.702Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-28T13:34:19.002Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-28T13:34:24.663Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T13:44:01.234Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-28T13:44:01.412Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-28T13:44:08.090Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T13:44:08.461Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T13:44:14.278Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-28T14:05:51.194Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-28T14:05:51.387Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-28T14:24:38.046Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-28T14:29:56.785Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-28T14:29:56.973Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-28T19:11:20.330Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-28T23:48:47.152Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-28T23:48:55.607Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+[2026-08-29T02:29:55.221Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T03:01:11.213Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T03:01:20.335Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-29T03:17:07.023Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T03:17:07.181Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-29T03:17:07.852Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-29T03:28:45.556Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T03:28:45.715Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-29T04:55:00.526Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T08:29:48.182Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T08:29:48.347Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-29T10:15:22.089Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T10:15:22.247Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-29T11:36:20.625Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T11:36:20.787Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-29T11:42:08.747Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T11:42:08.927Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-29T11:42:20.661Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-08-29T11:42:26.486Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T11:42:26.676Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend/server.js:61:7)
+[2026-08-29T12:01:36.491Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T12:01:36.710Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-29T12:03:08.481Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T12:03:08.704Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-29T13:34:51.495Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T13:34:51.722Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-29T13:43:37.943Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T13:43:38.183Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-29T13:58:26.855Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T13:58:27.094Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-29T14:06:44.577Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T14:08:42.084Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T14:08:42.344Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-29T14:18:36.675Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T14:18:36.888Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-29T14:24:22.602Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T14:24:22.822Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-29T14:36:06.146Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T14:36:06.394Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-29T14:40:04.921Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T14:40:05.144Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-29T14:48:09.880Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T14:48:10.099Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-29T14:51:52.700Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T14:51:52.934Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-29T14:59:43.125Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T14:59:43.345Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-29T15:17:28.183Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T15:17:28.395Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-29T15:53:05.496Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-29T15:53:05.706Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-30T18:36:17.942Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-30T18:36:26.100Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-30T18:43:16.844Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-30T18:43:16.995Z] Next.js listening on port 3000
+[2026-08-30T18:43:17.111Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-30T18:46:32.587Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-30T18:46:32.840Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-30T20:48:19.699Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-30T20:48:37.848Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-30T20:48:45.025Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-30T21:11:31.831Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-30T21:11:39.535Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-30T21:24:12.607Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-30T21:24:12.892Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-30T22:22:31.716Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-30T22:22:31.923Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-30T22:30:16.781Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-08-30T22:30:17.014Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-08-30T23:13:20.423Z] 
+=== Server starting with Node v20.20.2 at /home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend ===
+[2026-09-12T15:31:51.728Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T15:31:59.874Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-09-12T15:38:42.327Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T15:38:42.608Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-09-12T15:45:31.410Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T15:45:31.825Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home3/binsult1/nodevenv/domains/trendhubstore.pk/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home3/binsult1/nodevenv/domains/trendhubstore.pk/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home3/binsult1/nodevenv/domains/trendhubstore.pk/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home3/binsult1/domains/trendhubstore.pk/public_html/frontend/server.js:61:7)
+[2026-09-12T15:49:08.387Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T15:49:08.580Z] Next.js prepare failed: Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at setupFsCheck (/home3/binsult1/nodevenv/domains/trendhubstore.pk/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-utils/filesystem.js:169:41)
+    at async initialize (/home3/binsult1/nodevenv/domains/trendhubstore.pk/public_html/frontend/20/lib/node_modules/next/dist/server/lib/router-server.js:118:23)
+    at async NextCustomServer.prepare (/home3/binsult1/nodevenv/domains/trendhubstore.pk/public_html/frontend/20/lib/node_modules/next/dist/server/next.js:302:28)
+    at async Server.<anonymous> (/home3/binsult1/domains/trendhubstore.pk/public_html/frontend/server.js:61:7)
+[2026-09-12T15:49:08.582Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-09-12T15:49:09.085Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-09-12T15:49:12.395Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-09-12T15:52:49.199Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-09-12T15:52:51.187Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-09-12T15:52:52.212Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-09-12T15:52:53.461Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-09-12T15:52:54.413Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-09-12T15:55:19.015Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-09-12T15:55:19.298Z] Handling request while prepare failed: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+[2026-09-12T16:11:10.989Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T16:11:11.445Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-09-12T16:22:36.881Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T16:22:37.131Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-09-12T16:30:33.274Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T16:30:33.492Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-09-12T16:43:09.549Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T16:43:09.773Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-09-12T17:37:22.519Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T17:37:22.778Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-09-12T18:16:27.146Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T18:16:27.423Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-09-12T18:57:47.552Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T18:57:47.824Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-09-12T19:19:19.907Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T19:19:20.221Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-09-12T19:40:06.441Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T19:40:07.032Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-09-12T19:49:59.965Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T19:50:00.479Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-09-12T20:01:07.396Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T20:01:07.690Z] Next.js app prepared successfully! Ready to serve requests.
+[2026-09-12T20:47:37.604Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T21:06:20.689Z] 
+=== Server starting with Node v20.20.2 at /home3/binsult1/domains/trendhubstore.pk/public_html/frontend ===
+[2026-09-12T21:06:27.356Z] Next.js app prepared successfully! Ready to serve requests.

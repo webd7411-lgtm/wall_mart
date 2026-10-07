@@ -1,0 +1,30 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Laravel API/software routes
+    RewriteRule ^(api|software)(/.*)?$ index.php [L,QSA]
+
+    # Next.js static files
+    RewriteRule ^_next/(.*)$ frontend/.next/$1 [L]
+
+    # Next.js public files
+    RewriteRule ^(logo\.png|hero-video\.mp4|easypaisa_qr\.png|file\.svg|globe\.svg|next\.svg|vercel\.svg|window\.svg)$ frontend/public/$1 [L]
+
+    # Don't rewrite actual frontend files
+    RewriteCond %{REQUEST_URI} !^/_next/
+    RewriteCond %{REQUEST_URI} !^/frontend/
+    
+    # Everything else goes to Next.js Passenger
+    RewriteRule ^(.*)$ frontend/$1 [L]
+</IfModule>
+
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home2/binsult1/domains/trendhub.binsultansweet.com/public_html/frontend"
+PassengerBaseURI "/"
+PassengerNodejs "/home2/binsult1/nodevenv/domains/trendhub.binsultansweet.com/public_html/frontend/20/bin/node"
+PassengerAppType node
+PassengerStartupFile server.js
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+
+
+
