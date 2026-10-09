@@ -720,7 +720,7 @@ class ProductController extends Controller
             $product  = \App\Models\Product::findOrFail($id);
             // Variants are stored as JSON in the `color` column
             $variants = json_decode($product->color, true) ?? [];
-            $shopName = \App\Models\Setting::get('company_name', config('app.name', 'Shop'));
+            $shopName = \App\Models\Setting::get('company_name', config('app.name', 'Shop'), $product->branch_id ?? null);
             return view('admin_panel.product.barcode', compact('product', 'variants', 'shopName'));
         }
 

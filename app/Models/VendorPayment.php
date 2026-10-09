@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class VendorPayment extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $fillable = [
         'vendor_id',
         'admin_or_user_id',
@@ -15,6 +17,7 @@ class VendorPayment extends Model
         'amount',
         'payment_method',
         'note',
+        'branch_id',
     ];
 
     public function vendor()

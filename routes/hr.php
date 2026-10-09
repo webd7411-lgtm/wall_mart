@@ -9,7 +9,7 @@ use App\Http\Controllers\Hr\PayrollController;
 use App\Http\Controllers\Hr\ShiftController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth'])->prefix('hr')->name('hr.')->group(function () {
+Route::middleware(['auth', 'feature:hr_management'])->prefix('hr')->name('hr.')->group(function () {
 
     // Departments
     Route::middleware(['permission:hr.departments.view'])->group(function () {
@@ -133,8 +133,8 @@ Route::middleware(['auth'])->prefix('hr')->name('hr.')->group(function () {
 
 });
 
-// My Attendance - Available to all authenticated users (no HR permission required)
-Route::middleware(['auth'])->group(function () {
+// My Attendance - Available to all authenticated users (when HR module is enabled)
+Route::middleware(['auth', 'feature:hr_management'])->group(function () {
     Route::get('my-attendance', [AttendanceController::class, 'myAttendance'])->name('my-attendance');
     Route::post('my-attendance/mark', [AttendanceController::class, 'markMyAttendance'])->name('my-attendance.mark');
 });

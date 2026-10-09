@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DrawerTransaction extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToBranch;
 
     protected $fillable = [
+        'branch_id',
         'day_closing_id',
         'type',
         'category',

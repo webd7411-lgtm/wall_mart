@@ -204,17 +204,18 @@
     <div class="receipt-container">
         <!-- Header -->
         @php
-            $companyLogo = \App\Models\Setting::get('company_logo') ?: \App\Models\Setting::get('web_site_logo');
+            $branchId = $sale->branch_id ?? null;
+            $companyLogo = \App\Models\Setting::get('company_logo', null, $branchId);
         @endphp
         @if(!empty($companyLogo))
             <div style="text-align: center; margin-bottom: 6px;">
                 <img src="{{ asset(ltrim($companyLogo, '/')) }}" alt="Company Logo" style="max-width: 140px; max-height: 70px; width: auto; height: auto; object-fit: contain; display: block; margin: 0 auto;">
             </div>
         @endif
-        <div class="company-name">{{ \App\Models\Setting::get('company_name', 'prowave technogies') }}</div>
+        <div class="company-name">{{ \App\Models\Setting::get('company_name', 'prowave technogies', $branchId) }}</div>
         <div class="company-info">
-            <div>{{ \App\Models\Setting::get('company_address', 'Hyderabad') }}</div>
-            <div>Ph: {{ \App\Models\Setting::get('company_phone', '0327-9226901') }}</div>
+            <div>{{ \App\Models\Setting::get('company_address', 'Hyderabad', $branchId) }}</div>
+            <div>Ph: {{ \App\Models\Setting::get('company_phone', '0327-9226901', $branchId) }}</div>
         </div>
 
         <div class="dc-title">DELIVERY CHALLAN</div>

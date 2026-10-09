@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PaymentVoucher extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToBranch;
 
     protected $guarded = [];
 

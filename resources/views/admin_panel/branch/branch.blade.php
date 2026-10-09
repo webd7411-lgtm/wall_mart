@@ -33,7 +33,7 @@
                                                      <td class="name">{{ $branch->name }}</td>
                                                      <td class="address">{{ $branch->address }}</td>
                                                      <td class="number">{{ $branch->number }}</td>
-                                                     <td class="email">{{ $branch->user->email }}</td>
+                                                     <td class="email">{{ $branch->user->email ?? '-' }}</td>
                                                      <td>
                                                          @can('branches.edit')
                                                              <button class="btn btn-primary btn-sm edit-btn"
@@ -102,7 +102,7 @@
                          </div>
                  </div>
                  <div class="modal-footer">
-                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                     <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">Close</button>
                      <input type="submit" class="btn btn-primary save-btn">
                  </div>
                  </form>

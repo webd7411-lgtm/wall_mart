@@ -299,31 +299,32 @@
     <div class="receipt-container">
         <!-- Header -->
         @php
-            $companyLogo = \App\Models\Setting::get('company_logo') ?: \App\Models\Setting::get('web_site_logo');
+            $branchId = $sale->branch_id ?? null;
+            $companyLogo = \App\Models\Setting::get('company_logo', null, $branchId);
         @endphp
         @if(!empty($companyLogo))
             <div class="receipt-logo">
                 <img src="{{ asset(ltrim($companyLogo, '/')) }}" alt="Company Logo">
             </div>
         @endif
-        <div class="company-name">{{ \App\Models\Setting::get('company_name', 'Three Stars Medical') }}</div>
+        <div class="company-name">{{ \App\Models\Setting::get('company_name', 'Three Stars Medical', $branchId) }}</div>
         <div class="company-info">
-            <div>{{ \App\Models\Setting::get('company_address', 'Hyderabad') }}</div>
-            <div>Ph: {{ \App\Models\Setting::get('company_phone', '0327-9226901') }}</div>
+            <div>{{ \App\Models\Setting::get('company_address', 'Hyderabad', $branchId) }}</div>
+            <div>Ph: {{ \App\Models\Setting::get('company_phone', '0327-9226901', $branchId) }}</div>
         </div>
-        @if(\App\Models\Setting::get('facebook_link') || \App\Models\Setting::get('tiktok_link') || \App\Models\Setting::get('instagram_link') || \App\Models\Setting::get('website_link'))
+        @if(\App\Models\Setting::get('facebook_link', null, $branchId) || \App\Models\Setting::get('tiktok_link', null, $branchId) || \App\Models\Setting::get('instagram_link', null, $branchId) || \App\Models\Setting::get('website_link', null, $branchId))
         <div style="text-align: left; font-size: 10px; line-height: 1.4; word-wrap: break-word; overflow-wrap: break-word; margin-top: 4px;">
-            @if(\App\Models\Setting::get('facebook_link'))
-                <div style="margin-bottom: 2px;"><strong>Facebook:</strong> {{ \App\Models\Setting::get('facebook_link') }}</div>
+            @if(\App\Models\Setting::get('facebook_link', null, $branchId))
+                <div style="margin-bottom: 2px;"><strong>Facebook:</strong> {{ \App\Models\Setting::get('facebook_link', null, $branchId) }}</div>
             @endif
-            @if(\App\Models\Setting::get('tiktok_link'))
-                <div style="margin-bottom: 2px;"><strong>TikTok:</strong> {{ \App\Models\Setting::get('tiktok_link') }}</div>
+            @if(\App\Models\Setting::get('tiktok_link', null, $branchId))
+                <div style="margin-bottom: 2px;"><strong>TikTok:</strong> {{ \App\Models\Setting::get('tiktok_link', null, $branchId) }}</div>
             @endif
-            @if(\App\Models\Setting::get('instagram_link'))
-                <div style="margin-bottom: 2px;"><strong>Instagram:</strong> {{ \App\Models\Setting::get('instagram_link') }}</div>
+            @if(\App\Models\Setting::get('instagram_link', null, $branchId))
+                <div style="margin-bottom: 2px;"><strong>Instagram:</strong> {{ \App\Models\Setting::get('instagram_link', null, $branchId) }}</div>
             @endif
-            @if(\App\Models\Setting::get('website_link'))
-                <div style="margin-bottom: 2px;"><strong>Website:</strong> {{ \App\Models\Setting::get('website_link') }}</div>
+            @if(\App\Models\Setting::get('website_link', null, $branchId))
+                <div style="margin-bottom: 2px;"><strong>Website:</strong> {{ \App\Models\Setting::get('website_link', null, $branchId) }}</div>
             @endif
         </div>
         @endif

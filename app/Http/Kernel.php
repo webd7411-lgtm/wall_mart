@@ -37,6 +37,8 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\CheckEmployeeStatus::class,
+            \App\Http\Middleware\SetBranchContext::class,
+            \App\Http\Middleware\EnforceRestaurantBranchRestriction::class,
         ],
 
         'api' => [
@@ -68,5 +70,6 @@ class Kernel extends HttpKernel
         'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
         'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
         'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        'feature' => \App\Http\Middleware\EnsureFeatureEnabled::class,
     ];
 }

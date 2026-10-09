@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class SaleReturn extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToBranch;
 
     protected $table = 'sale_returns';
 
@@ -16,6 +16,7 @@ class SaleReturn extends Model
         'return_invoice',
         'customer_id',
         'warehouse_id',
+        'branch_id',
         'return_date',
         'bill_amount',
         'item_discount',

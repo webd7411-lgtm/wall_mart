@@ -36,26 +36,28 @@ class HomeController extends Controller
         if ($usertype == 'user') {
             return view('user_panel.dashboard', compact('userId'));
         } elseif ($usertype == 'admin') {
+            $branchId = \App\Helpers\BranchHelper::getActiveBranchId();
+
             // Counts
-            $categoryCount = Auth::user()->can('categories.view') ? DB::table('categories')->count() : 0;
+            $categoryCount = Auth::user()->can('categories.view') ? DB::table('categories')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count() : 0;
             $subcategoryCount = Auth::user()->can('subcategories.view') ? DB::table('subcategories')->count() : 0;
-            $productCount = Auth::user()->can('products.view') ? DB::table('products')->count() : 0;
-            $customerscount = Auth::user()->can('customers.view') ? DB::table('customers')->count() : 0;
+            $productCount = Auth::user()->can('products.view') ? DB::table('products')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count() : 0;
+            $customerscount = Auth::user()->can('customers.view') ? DB::table('customers')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count() : 0;
 
             // Stats
-            $totalPurchases = Auth::user()->can('purchases.view') ? DB::table('purchases')->sum('net_amount') : 0;
-            $totalPurchaseReturns = Auth::user()->can('purchase.returns.view') ? DB::table('purchase_returns')->sum('net_amount') : 0;
+            $totalPurchases = Auth::user()->can('purchases.view') ? DB::table('purchases')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('net_amount') : 0;
+            $totalPurchaseReturns = Auth::user()->can('purchase.returns.view') ? DB::table('purchase_returns')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('net_amount') : 0;
             
             $canAllSales = Auth::user()->can('sales.view');
             $canOwnSales = Auth::user()->can('sales.view_own');
             $totalSales = 0;
             if ($canAllSales) {
-                $totalSales = DB::table('sales')->sum('total_net');
+                $totalSales = DB::table('sales')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_net');
             } elseif ($canOwnSales) {
-                $totalSales = DB::table('sales')->where('user_id', $userId)->sum('total_net');
+                $totalSales = DB::table('sales')->where('user_id', $userId)->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_net');
             }
 
-            $totalSalesReturns = Auth::user()->can('sales.returns.view') ? DB::table('sale_returns')->sum('net_amount') : 0;
+            $totalSalesReturns = Auth::user()->can('sales.returns.view') ? DB::table('sale_returns')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('net_amount') : 0;
 
             // Financial Summary (Accounting Based)
             $financialSummary = [];
@@ -75,8 +77,8 @@ class HomeController extends Controller
             if ($canAllSales || $canOwnSales) {
                 // DAILY (last 7 days)
                 $dailyLabels = collect(range(6, 0))->map(fn($i) => \Carbon\Carbon::today()->subDays($i)->format('Y-m-d'));
-                $dailyData = $dailyLabels->map(function ($date) use ($canAllSales, $userId) {
-                    $q = DB::table('sales')->whereDate('created_at', $date);
+                $dailyData = $dailyLabels->map(function ($date) use ($canAllSales, $userId, $branchId) {
+                    $q = DB::table('sales')->whereDate('created_at', $date)->when($branchId, fn($sq) => $sq->where('branch_id', $branchId));
                     if (!$canAllSales) {
                         $q->where('user_id', $userId);
                     }
@@ -85,10 +87,10 @@ class HomeController extends Controller
 
                 // WEEKLY (This + Last 2 weeks)
                 $weeklyLabels = ['This Week', 'Last Week', '2 Weeks Ago'];
-                $weeklyData = collect([0, 1, 2])->map(function ($i) use ($canAllSales, $userId) {
+                $weeklyData = collect([0, 1, 2])->map(function ($i) use ($canAllSales, $userId, $branchId) {
                     $start = \Carbon\Carbon::now()->startOfWeek()->subWeeks($i);
                     $end = $start->copy()->endOfWeek();
-                    $q = DB::table('sales')->whereBetween('created_at', [$start, $end]);
+                    $q = DB::table('sales')->whereBetween('created_at', [$start, $end])->when($branchId, fn($sq) => $sq->where('branch_id', $branchId));
                     if (!$canAllSales) {
                         $q->where('user_id', $userId);
                     }
@@ -98,10 +100,11 @@ class HomeController extends Controller
                 // MONTHLY (Jan → Current month)
                 $months = range(1, \Carbon\Carbon::now()->month);
                 $monthLabels = collect($months)->map(fn($m) => \Carbon\Carbon::create()->month($m)->format('F'));
-                $monthlyData = collect($months)->map(function ($month) use ($canAllSales, $userId) {
+                $monthlyData = collect($months)->map(function ($month) use ($canAllSales, $userId, $branchId) {
                     $q = DB::table('sales')
                         ->whereMonth('created_at', $month)
-                        ->whereYear('created_at', \Carbon\Carbon::now()->year);
+                        ->whereYear('created_at', \Carbon\Carbon::now()->year)
+                        ->when($branchId, fn($sq) => $sq->where('branch_id', $branchId));
                     if (!$canAllSales) {
                         $q->where('user_id', $userId);
                     }
@@ -131,9 +134,10 @@ class HomeController extends Controller
                 $purchaseDailyLabels = collect(range(6, 0))->map(fn($i) => Carbon::today()->subDays($i)->format('Y-m-d'));
                 $purchaseDailySeries = [[
                     'name' => 'Purchases',
-                    'data' => $purchaseDailyLabels->map(function ($date) {
+                    'data' => $purchaseDailyLabels->map(function ($date) use ($branchId) {
                         return DB::table('purchases')
                             ->whereDate('created_at', $date)
+                            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
                             ->sum('net_amount');
                     })
                 ]];
@@ -142,11 +146,12 @@ class HomeController extends Controller
                 $purchaseWeeklyLabels = ['This Week', 'Last Week', '2 Weeks Ago'];
                 $purchaseWeeklySeries = [[
                     'name' => 'Purchases',
-                    'data' => collect([0, 1, 2])->map(function ($i) {
+                    'data' => collect([0, 1, 2])->map(function ($i) use ($branchId) {
                         $start = Carbon::now()->startOfWeek()->subWeeks($i);
                         $end = $start->copy()->endOfWeek();
                         return DB::table('purchases')
                             ->whereBetween('created_at', [$start, $end])
+                            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
                             ->sum('net_amount');
                     })->reverse()->values()
                 ]];
@@ -156,10 +161,11 @@ class HomeController extends Controller
                 $purchaseMonthLabels = collect($months)->map(fn($m) => Carbon::create()->month($m)->format('F'));
                 $purchaseMonthlySeries = [[
                     'name' => 'Purchases',
-                    'data' => collect($months)->map(function ($month) {
+                    'data' => collect($months)->map(function ($month) use ($branchId) {
                         return DB::table('purchases')
                             ->whereMonth('created_at', $month)
                             ->whereYear('created_at', Carbon::now()->year)
+                            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
                             ->sum('net_amount');
                     })
                 ]];
@@ -185,29 +191,29 @@ class HomeController extends Controller
             $todayEnd = Carbon::today()->endOfDay();
 
             // 1. Payment IN (Today)
-            $v2ReceiptsMonth = DB::table('voucher_masters')->where('voucher_type', 'receipt')->whereBetween('date', [$todayStart, $todayEnd])->sum('total_amount');
-            $v1ReceiptsMonth = DB::table('receipts_vouchers')->whereBetween('receipt_date', [$todayStart, $todayEnd])->sum('total_amount');
-            $custPaymentsMonth = DB::table('customer_payments')->whereBetween('payment_date', [$todayStart, $todayEnd])->sum('amount');
+            $v2ReceiptsMonth = DB::table('voucher_masters')->where('voucher_type', 'receipt')->whereBetween('date', [$todayStart, $todayEnd])->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
+            $v1ReceiptsMonth = DB::table('receipts_vouchers')->whereBetween('receipt_date', [$todayStart, $todayEnd])->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
+            $custPaymentsMonth = DB::table('customer_payments')->whereBetween('payment_date', [$todayStart, $todayEnd])->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('amount');
             $paymentInMonth = $v2ReceiptsMonth + $v1ReceiptsMonth + $custPaymentsMonth;
 
             // 2. Payment IN (Overall)
-            $v2ReceiptsAll = DB::table('voucher_masters')->where('voucher_type', 'receipt')->sum('total_amount');
-            $v1ReceiptsAll = DB::table('receipts_vouchers')->sum('total_amount');
-            $custPaymentsAll = DB::table('customer_payments')->sum('amount');
+            $v2ReceiptsAll = DB::table('voucher_masters')->where('voucher_type', 'receipt')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
+            $v1ReceiptsAll = DB::table('receipts_vouchers')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
+            $custPaymentsAll = DB::table('customer_payments')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('amount');
             $paymentInOverall = $v2ReceiptsAll + $v1ReceiptsAll + $custPaymentsAll;
 
             // 3. Payment OUT (Today)
-            $v2PaymentsMonth = DB::table('voucher_masters')->whereIn('voucher_type', ['payment', 'expense'])->whereBetween('date', [$todayStart, $todayEnd])->sum('total_amount');
-            $v1PaymentsMonth = DB::table('payment_vouchers')->whereBetween('receipt_date', [$todayStart, $todayEnd])->sum('total_amount');
-            $v1ExpensesMonth = DB::table('expense_vouchers')->whereBetween('entry_date', [$todayStart, $todayEnd])->sum('total_amount');
-            $vendorPaymentsMonth = DB::table('vendor_payments')->whereBetween('payment_date', [$todayStart, $todayEnd])->sum('amount');
+            $v2PaymentsMonth = DB::table('voucher_masters')->whereIn('voucher_type', ['payment', 'expense'])->whereBetween('date', [$todayStart, $todayEnd])->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
+            $v1PaymentsMonth = DB::table('payment_vouchers')->whereBetween('receipt_date', [$todayStart, $todayEnd])->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
+            $v1ExpensesMonth = DB::table('expense_vouchers')->whereBetween('entry_date', [$todayStart, $todayEnd])->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
+            $vendorPaymentsMonth = DB::table('vendor_payments')->whereBetween('payment_date', [$todayStart, $todayEnd])->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('amount');
             $paymentOutMonth = $v2PaymentsMonth + $v1PaymentsMonth + $v1ExpensesMonth + $vendorPaymentsMonth;
 
             // 4. Payment OUT (Overall)
-            $v2PaymentsAll = DB::table('voucher_masters')->whereIn('voucher_type', ['payment', 'expense'])->sum('total_amount');
-            $v1PaymentsAll = DB::table('payment_vouchers')->sum('total_amount');
-            $v1ExpensesAll = DB::table('expense_vouchers')->sum('total_amount');
-            $vendorPaymentsAll = DB::table('vendor_payments')->sum('amount');
+            $v2PaymentsAll = DB::table('voucher_masters')->whereIn('voucher_type', ['payment', 'expense'])->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
+            $v1PaymentsAll = DB::table('payment_vouchers')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
+            $v1ExpensesAll = DB::table('expense_vouchers')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
+            $vendorPaymentsAll = DB::table('vendor_payments')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('amount');
             $paymentOutOverall = $v2PaymentsAll + $v1PaymentsAll + $v1ExpensesAll + $vendorPaymentsAll;
 
             // ===== TOP 10 PRODUCTS & CUSTOMERS (Needs Sales Permission) =====
@@ -216,14 +222,17 @@ class HomeController extends Controller
 
             if (Auth::user()->can('sales.view')) {
                 $topProducts = DB::table('sale_items')
-                    ->select('product_name', DB::raw('SUM(qty) as total_qty'), DB::raw('SUM(total) as total_revenue'))
-                    ->groupBy('product_name')
+                    ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+                    ->when($branchId, fn($q) => $q->where('sales.branch_id', $branchId))
+                    ->select('sale_items.product_name', DB::raw('SUM(sale_items.qty) as total_qty'), DB::raw('SUM(sale_items.total) as total_revenue'))
+                    ->groupBy('sale_items.product_name')
                     ->orderByDesc('total_qty')
                     ->limit(10)
                     ->get();
 
                 $topCustomers = DB::table('sales')
                     ->join('customers', 'sales.customer_id', '=', 'customers.id')
+                    ->when($branchId, fn($q) => $q->where('sales.branch_id', $branchId))
                     ->select('customers.customer_name', DB::raw('COUNT(sales.id) as total_orders'), DB::raw('SUM(sales.total_net) as total_sales'))
                     ->groupBy('customers.id', 'customers.customer_name')
                     ->orderByDesc('total_sales')
@@ -264,19 +273,23 @@ class HomeController extends Controller
             $salesThisMonth = DB::table('sales')
                 ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
                 ->whereNotIn('sale_status', ['cancelled', 'returned'])
+                ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
                 ->sum('total_net');
 
             $purchasesThisMonth = DB::table('purchases')
                 ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
                 ->sum('net_amount');
 
             $salesToday = DB::table('sales')
                 ->whereDate('created_at', \Carbon\Carbon::today())
                 ->whereNotIn('sale_status', ['cancelled', 'returned'])
+                ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
                 ->sum('total_net');
 
             $purchasesToday = DB::table('purchases')
                 ->whereDate('created_at', \Carbon\Carbon::today())
+                ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
                 ->sum('net_amount');
 
             // Calculate real profit for current month (matching Profit & Loss Report)
@@ -285,6 +298,7 @@ class HomeController extends Controller
                 ->leftJoin('products', 'products.id', '=', 'sale_items.product_id')
                 ->whereBetween('sales.created_at', [$startOfMonth, $endOfMonth])
                 ->where('sales.sale_status', '!=', 'cancelled')
+                ->when($branchId, fn($q) => $q->where('sales.branch_id', $branchId))
                 ->select(
                     'sale_items.price',
                     'sale_items.color',
@@ -343,6 +357,7 @@ class HomeController extends Controller
                 ->join('sale_returns', 'sale_returns.id', '=', 'sale_return_items.sale_return_id')
                 ->leftJoin('products', 'products.id', '=', 'sale_return_items.product_id')
                 ->whereBetween('sale_returns.created_at', [$startOfMonth, $endOfMonth])
+                ->when($branchId, fn($q) => $q->where('sale_returns.branch_id', $branchId))
                 ->select(
                     'sale_return_items.qty',
                     'sale_return_items.line_total',
@@ -389,6 +404,7 @@ class HomeController extends Controller
             // Accurate Accounting Receivables & Payables in Single SQL Queries (Instant Execution)
             $totalReceivables = DB::table('journal_entries')
                 ->where('party_type', \App\Models\Customer::class)
+                ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
                 ->selectRaw('COALESCE(SUM(debit) - SUM(credit), 0) as total')
                 ->value('total') ?? 0;
 
@@ -396,22 +412,24 @@ class HomeController extends Controller
             $totalPayables = DB::table('journal_entries')
                 ->where('party_type', \App\Models\Vendor::class)
                 ->where('account_id', $apId)
+                ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
                 ->selectRaw('COALESCE(SUM(credit) - SUM(debit), 0) as total')
                 ->value('total') ?? 0;
 
             // Expenses Today
-            $expensesTodayV1 = DB::table('expense_vouchers')->whereDate('entry_date', \Carbon\Carbon::today())->sum('total_amount');
-            $expensesTodayV2 = DB::table('voucher_masters')->where('voucher_type', 'expense')->whereDate('date', \Carbon\Carbon::today())->sum('total_amount');
+            $expensesTodayV1 = DB::table('expense_vouchers')->whereDate('entry_date', \Carbon\Carbon::today())->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
+            $expensesTodayV2 = DB::table('voucher_masters')->where('voucher_type', 'expense')->whereDate('date', \Carbon\Carbon::today())->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
             $expensesToday = $expensesTodayV1 + $expensesTodayV2;
 
             // Total Stock Valuation in Single SQL Query
             $totalStockValue = DB::table('warehouse_stocks')
                 ->join('products', 'products.id', '=', 'warehouse_stocks.product_id')
+                ->when($branchId, fn($q) => $q->where('products.branch_id', $branchId))
                 ->selectRaw('COALESCE(SUM(warehouse_stocks.total_pieces * (CASE WHEN products.size_mode = "by_size" THEN COALESCE(products.pieces_per_m2, 0) * COALESCE(products.purchase_price_per_m2, 0) ELSE COALESCE(products.purchase_price_per_piece, 0) END)), 0) as total')
                 ->value('total') ?? 0;
 
-            $vendorCount = DB::table('vendors')->count();
-            $employeeCount = \Illuminate\Support\Facades\Schema::hasTable('hr_employees') ? DB::table('hr_employees')->count() : DB::table('users')->count();
+            $vendorCount = DB::table('vendors')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count();
+            $employeeCount = \Illuminate\Support\Facades\Schema::hasTable('hr_employees') ? DB::table('hr_employees')->count() : DB::table('users')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count();
 
             // Sales by Category (Current Month)
             $salesByCategory = DB::table('sale_items')
@@ -420,6 +438,7 @@ class HomeController extends Controller
                 ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
                 ->whereBetween('sales.created_at', [$startOfMonth, $endOfMonth])
                 ->where('sales.sale_status', '!=', 'cancelled')
+                ->when($branchId, fn($q) => $q->where('sales.branch_id', $branchId))
                 ->select(DB::raw('COALESCE(categories.name, "General") as category_name'), DB::raw('SUM(sale_items.total) as total_amount'))
                 ->groupBy('category_name')
                 ->orderByDesc('total_amount')
@@ -427,8 +446,8 @@ class HomeController extends Controller
                 ->get();
 
             // Expenses This Month
-            $expensesThisMonthV1 = DB::table('expense_vouchers')->whereBetween('entry_date', [substr($startOfMonth, 0, 10), substr($endOfMonth, 0, 10)])->sum('total_amount');
-            $expensesThisMonthV2 = DB::table('voucher_masters')->where('voucher_type', 'expense')->whereBetween('date', [$startOfMonth, $endOfMonth])->sum('total_amount');
+            $expensesThisMonthV1 = DB::table('expense_vouchers')->whereBetween('entry_date', [substr($startOfMonth, 0, 10), substr($endOfMonth, 0, 10)])->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
+            $expensesThisMonthV2 = DB::table('voucher_masters')->where('voucher_type', 'expense')->whereBetween('date', [$startOfMonth, $endOfMonth])->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
             $expensesThisMonth = $expensesThisMonthV1 + $expensesThisMonthV2;
 
             $grossProfitThisMonth = $profitThisMonth;
@@ -436,6 +455,7 @@ class HomeController extends Controller
 
             // Expense Breakdown by type (column name is 'type', not 'expense_type')
             $expenseBreakdown = DB::table('expense_vouchers')
+                ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
                 ->select('type as name', DB::raw('SUM(total_amount) as total'))
                 ->groupBy('type')
                 ->orderByDesc('total')
@@ -443,7 +463,7 @@ class HomeController extends Controller
                 ->get();
 
             // Recent Activities Feed
-            $recentSales = DB::table('sales')->latest()->limit(3)->get()->map(function($s) {
+            $recentSales = DB::table('sales')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->latest()->limit(3)->get()->map(function($s) {
                 return [
                     'icon' => 'fa-receipt text-success',
                     'bg' => '#ecfdf5',
@@ -454,7 +474,7 @@ class HomeController extends Controller
                 ];
             });
 
-            $recentPurchases = DB::table('purchases')->latest()->limit(2)->get()->map(function($p) {
+            $recentPurchases = DB::table('purchases')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->latest()->limit(2)->get()->map(function($p) {
                 return [
                     'icon' => 'fa-cart-shopping text-primary',
                     'bg' => '#eef2ff',

@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Brand extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToBranch;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'branch_id'];
 
     public function products()
 {

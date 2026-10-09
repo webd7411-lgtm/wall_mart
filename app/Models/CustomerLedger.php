@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class CustomerLedger extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $guarded = [];
 
 

@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class CustomerPayment extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $fillable = [
         'customer_id',
         'admin_or_user_id',
@@ -15,6 +17,7 @@ class CustomerPayment extends Model
         'payment_method',
         'payment_date',
         'note',
+        'branch_id',
     ];
 
     public function customer()

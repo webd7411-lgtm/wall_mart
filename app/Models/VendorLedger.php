@@ -10,6 +10,7 @@ class VendorLedger extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use \App\Traits\BelongsToBranch;
 
     protected $guarded = [];
 

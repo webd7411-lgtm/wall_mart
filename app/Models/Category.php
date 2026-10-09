@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToBranch;
 
-    protected $fillable = ['name', 'show_on_website', 'web_image'];
+    protected $fillable = ['name', 'show_on_website', 'web_image', 'branch_id'];
 
     function subcategory(){
         return $this->hasMany(Subcategory::class);

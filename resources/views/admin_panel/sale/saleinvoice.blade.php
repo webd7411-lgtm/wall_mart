@@ -397,16 +397,17 @@
         @if(!($isEstimate ?? false))
         <div class="company-info">
             @php
-                $companyLogo = \App\Models\Setting::get('company_logo') ?: \App\Models\Setting::get('web_site_logo');
+                $branchId = $sale->branch_id ?? null;
+                $companyLogo = \App\Models\Setting::get('company_logo', null, $branchId);
             @endphp
             @if(!empty($companyLogo))
                 <div style="text-align: center; margin-bottom: 8px;">
                     <img src="{{ asset(ltrim($companyLogo, '/')) }}" alt="Company Logo" style="max-width: 160px; max-height: 75px; object-fit: contain; display: block; margin: 0 auto;">
                 </div>
             @endif
-            <div class="company-name">{{ \App\Models\Setting::get('company_name', 'prowave technogies') }}</div>
-            <div style="font-size: 12px;">{{ \App\Models\Setting::get('company_address', 'Hyderabad') }}</div>
-            <p>{{ \App\Models\Setting::get('company_phone', '0327-9226901') }}</p>
+            <div class="company-name">{{ \App\Models\Setting::get('company_name', 'prowave technogies', $branchId) }}</div>
+            <div style="font-size: 12px;">{{ \App\Models\Setting::get('company_address', 'Hyderabad', $branchId) }}</div>
+            <p>{{ \App\Models\Setting::get('company_phone', '0327-9226901', $branchId) }}</p>
         </div>
         @endif
 
@@ -705,7 +706,8 @@
                     <p class="fw-bold mb-1">Terms & Conditions:</p>
                     <ul style="font-size: 10px;">
                         @php
-                            $invoiceTerms = \App\Models\Setting::get('invoice_terms', "10% will be deducted on return of purchase goods within 7 days.\nLoose & Water Soak products will not be RETURNED.\nPlease bring this invoice for any returns or exchanges.");
+                            $branchId = $sale->branch_id ?? null;
+                            $invoiceTerms = \App\Models\Setting::get('invoice_terms', "10% will be deducted on return of purchase goods within 7 days.\nLoose & Water Soak products will not be RETURNED.\nPlease bring this invoice for any returns or exchanges.", $branchId);
                             $termLines = explode("\n", $invoiceTerms);
                         @endphp
                         @foreach($termLines as $line)
@@ -808,31 +810,32 @@
     <div class="receipt-container">
         <!-- Header -->
         @php
-            $companyLogo = \App\Models\Setting::get('company_logo') ?: \App\Models\Setting::get('web_site_logo');
+            $branchId = $sale->branch_id ?? null;
+            $companyLogo = \App\Models\Setting::get('company_logo', null, $branchId);
         @endphp
         @if(!empty($companyLogo))
             <div style="text-align: center; margin-bottom: 6px;">
                 <img src="{{ asset(ltrim($companyLogo, '/')) }}" alt="Company Logo" style="max-width: 140px; max-height: 70px; width: auto; height: auto; object-fit: contain; display: block; margin: 0 auto;">
             </div>
         @endif
-        <div class="company-name">{{ \App\Models\Setting::get('company_name', 'Three Stars Medical') }}</div>
+        <div class="company-name">{{ \App\Models\Setting::get('company_name', 'Three Stars Medical', $branchId) }}</div>
         <div class="company-info">
-            <div>{{ \App\Models\Setting::get('company_address', 'Hyderabad') }}</div>
-            <div>Ph: {{ \App\Models\Setting::get('company_phone', '0327-9226901') }}</div>
+            <div>{{ \App\Models\Setting::get('company_address', 'Hyderabad', $branchId) }}</div>
+            <div>Ph: {{ \App\Models\Setting::get('company_phone', '0327-9226901', $branchId) }}</div>
         </div>
-        @if(\App\Models\Setting::get('facebook_link') || \App\Models\Setting::get('tiktok_link') || \App\Models\Setting::get('instagram_link') || \App\Models\Setting::get('website_link'))
+        @if(\App\Models\Setting::get('facebook_link', null, $branchId) || \App\Models\Setting::get('tiktok_link', null, $branchId) || \App\Models\Setting::get('instagram_link', null, $branchId) || \App\Models\Setting::get('website_link', null, $branchId))
         <div style="text-align: left; font-size: 10px; line-height: 1.4; word-wrap: break-word; overflow-wrap: break-word; margin-top: 4px;">
-            @if(\App\Models\Setting::get('facebook_link'))
-                <div style="margin-bottom: 2px;"><strong>Facebook:</strong> {{ \App\Models\Setting::get('facebook_link') }}</div>
+            @if(\App\Models\Setting::get('facebook_link', null, $branchId))
+                <div style="margin-bottom: 2px;"><strong>Facebook:</strong> {{ \App\Models\Setting::get('facebook_link', null, $branchId) }}</div>
             @endif
-            @if(\App\Models\Setting::get('tiktok_link'))
-                <div style="margin-bottom: 2px;"><strong>TikTok:</strong> {{ \App\Models\Setting::get('tiktok_link') }}</div>
+            @if(\App\Models\Setting::get('tiktok_link', null, $branchId))
+                <div style="margin-bottom: 2px;"><strong>TikTok:</strong> {{ \App\Models\Setting::get('tiktok_link', null, $branchId) }}</div>
             @endif
-            @if(\App\Models\Setting::get('instagram_link'))
-                <div style="margin-bottom: 2px;"><strong>Instagram:</strong> {{ \App\Models\Setting::get('instagram_link') }}</div>
+            @if(\App\Models\Setting::get('instagram_link', null, $branchId))
+                <div style="margin-bottom: 2px;"><strong>Instagram:</strong> {{ \App\Models\Setting::get('instagram_link', null, $branchId) }}</div>
             @endif
-            @if(\App\Models\Setting::get('website_link'))
-                <div style="margin-bottom: 2px;"><strong>Website:</strong> {{ \App\Models\Setting::get('website_link') }}</div>
+            @if(\App\Models\Setting::get('website_link', null, $branchId))
+                <div style="margin-bottom: 2px;"><strong>Website:</strong> {{ \App\Models\Setting::get('website_link', null, $branchId) }}</div>
             @endif
         </div>
         @endif

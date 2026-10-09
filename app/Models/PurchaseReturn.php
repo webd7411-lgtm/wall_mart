@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class PurchaseReturn extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $fillable = [
     'purchase_id',
     'vendor_id',
     'warehouse_id',
+    'branch_id',
     'return_invoice',
     'return_date',
     'return_reason',

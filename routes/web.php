@@ -244,6 +244,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/branch', [BranchController::class, 'index'])->name('branch.index')->middleware('permission:branches.view');
     Route::post('/branch', [BranchController::class, 'store'])->name('branch.store')->middleware('permission:branches.create|branches.edit');
     Route::get('/branch/delete/{id}', [BranchController::class, 'delete'])->name('branch.delete')->middleware('permission:branches.delete');
+    Route::post('/branch/switch', [BranchController::class, 'switchBranch'])->name('branch.switch');
 
     // Roles
     Route::get('/roles', [RoleController::class, 'index'])->name('roles.index')->middleware('permission:roles.view');
@@ -495,33 +496,36 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [App\Http\Controllers\SettingsController::class, 'index'])->middleware('permission:settings.view|settings.read')->name('settings.index');
     Route::post('/settings', [App\Http\Controllers\SettingsController::class, 'update'])->middleware('permission:settings.edit|settings.update')->name('settings.update');
 
-    // Website Settings
-    Route::get('/website-settings', [App\Http\Controllers\WebsiteSettingsController::class, 'index'])->middleware('permission:website-settings.view')->name('website_settings.index');
-    Route::post('/website-settings', [App\Http\Controllers\WebsiteSettingsController::class, 'update'])->middleware('permission:website-settings.edit|website-settings.update|website-settings.create|website-settings.delete|website-settings.upload_manage')->name('website_settings.update');
-    Route::post('/website-settings/categories', [App\Http\Controllers\WebsiteSettingsController::class, 'updateCategories'])->middleware('permission:website-settings.edit|website-settings.update|website-settings.create|website-settings.delete|website-settings.upload_manage')->name('website_settings.categories.update');
+    // Website Control Routes (Controlled by ENABLE_WEBSITE_CONTROL in .env)
+    Route::middleware(['feature:website_control'])->group(function () {
+        // Website Settings
+        Route::get('/website-settings', [App\Http\Controllers\WebsiteSettingsController::class, 'index'])->middleware('permission:website-settings.view')->name('website_settings.index');
+        Route::post('/website-settings', [App\Http\Controllers\WebsiteSettingsController::class, 'update'])->middleware('permission:website-settings.edit|website-settings.update|website-settings.create|website-settings.delete|website-settings.upload_manage')->name('website_settings.update');
+        Route::post('/website-settings/categories', [App\Http\Controllers\WebsiteSettingsController::class, 'updateCategories'])->middleware('permission:website-settings.edit|website-settings.update|website-settings.create|website-settings.delete|website-settings.upload_manage')->name('website_settings.categories.update');
 
-    // Web Orders
-    Route::get('/web-orders', [App\Http\Controllers\WebOrderController::class, 'index'])->middleware('permission:web_orders.view|web_orders.read')->name('web_orders.index');
-    Route::get('/web-orders/dashboard', [App\Http\Controllers\WebOrderController::class, 'dashboard'])->middleware('permission:web_orders.view|web_orders.read')->name('web_orders.dashboard');
-    Route::get('/web-orders/{id}', [App\Http\Controllers\WebOrderController::class, 'show'])->middleware('permission:web_orders.view|web_orders.read')->name('web_orders.show');
-    Route::post('/web-orders/{id}/status', [App\Http\Controllers\WebOrderController::class, 'updateStatus'])->middleware('permission:web_orders.edit')->name('web_orders.status');
-    Route::post('/web-orders/{id}/verify-payment', [App\Http\Controllers\WebOrderController::class, 'verifyPayment'])->middleware('permission:web_orders.edit')->name('web_orders.verify_payment');
+        // Web Orders
+        Route::get('/web-orders', [App\Http\Controllers\WebOrderController::class, 'index'])->middleware('permission:web_orders.view|web_orders.read')->name('web_orders.index');
+        Route::get('/web-orders/dashboard', [App\Http\Controllers\WebOrderController::class, 'dashboard'])->middleware('permission:web_orders.view|web_orders.read')->name('web_orders.dashboard');
+        Route::get('/web-orders/{id}', [App\Http\Controllers\WebOrderController::class, 'show'])->middleware('permission:web_orders.view|web_orders.read')->name('web_orders.show');
+        Route::post('/web-orders/{id}/status', [App\Http\Controllers\WebOrderController::class, 'updateStatus'])->middleware('permission:web_orders.edit')->name('web_orders.status');
+        Route::post('/web-orders/{id}/verify-payment', [App\Http\Controllers\WebOrderController::class, 'verifyPayment'])->middleware('permission:web_orders.edit')->name('web_orders.verify_payment');
 
-    // Web Products (Quick Manage)
-    Route::get('/web-products', [App\Http\Controllers\WebProductController::class, 'index'])->middleware('permission:web_products.view|web_products.read')->name('web_products.index');
-    Route::post('/web-products/ajax-update', [App\Http\Controllers\WebProductController::class, 'updateAjax'])->middleware('permission:web_products.edit')->name('web_products.update_ajax');
-    Route::get('/web-products/{id}/settings', [App\Http\Controllers\WebProductController::class, 'getWebSettings'])->middleware('permission:web_products.view|web_products.read')->name('web_products.get_settings');
-    Route::post('/web-products/{id}/settings', [App\Http\Controllers\WebProductController::class, 'updateWebSettings'])->middleware('permission:web_products.edit')->name('web_products.update_settings');
+        // Web Products (Quick Manage)
+        Route::get('/web-products', [App\Http\Controllers\WebProductController::class, 'index'])->middleware('permission:web_products.view|web_products.read')->name('web_products.index');
+        Route::post('/web-products/ajax-update', [App\Http\Controllers\WebProductController::class, 'updateAjax'])->middleware('permission:web_products.edit')->name('web_products.update_ajax');
+        Route::get('/web-products/{id}/settings', [App\Http\Controllers\WebProductController::class, 'getWebSettings'])->middleware('permission:web_products.view|web_products.read')->name('web_products.get_settings');
+        Route::post('/web-products/{id}/settings', [App\Http\Controllers\WebProductController::class, 'updateWebSettings'])->middleware('permission:web_products.edit')->name('web_products.update_settings');
 
-    // Coupons
-    Route::get('/coupons', [App\Http\Controllers\CouponController::class, 'index'])->middleware('permission:coupons.view|coupons.read')->name('admin.coupons.index');
-    Route::post('/coupons', [App\Http\Controllers\CouponController::class, 'store'])->middleware('permission:coupons.create|coupons.add')->name('admin.coupons.store');
-    Route::put('/coupons/{coupon}', [App\Http\Controllers\CouponController::class, 'update'])->middleware('permission:coupons.edit')->name('admin.coupons.update');
-    Route::delete('/coupons/{coupon}', [App\Http\Controllers\CouponController::class, 'destroy'])->middleware('permission:coupons.delete')->name('admin.coupons.destroy');
+        // Coupons
+        Route::get('/coupons', [App\Http\Controllers\CouponController::class, 'index'])->middleware('permission:coupons.view|coupons.read')->name('admin.coupons.index');
+        Route::post('/coupons', [App\Http\Controllers\CouponController::class, 'store'])->middleware('permission:coupons.create|coupons.add')->name('admin.coupons.store');
+        Route::put('/coupons/{coupon}', [App\Http\Controllers\CouponController::class, 'update'])->middleware('permission:coupons.edit')->name('admin.coupons.update');
+        Route::delete('/coupons/{coupon}', [App\Http\Controllers\CouponController::class, 'destroy'])->middleware('permission:coupons.delete')->name('admin.coupons.destroy');
 
-    // Web Users (Separate Module)
-    Route::get('/web-users', [App\Http\Controllers\WebUserController::class, 'index'])->middleware('permission:web_users.view|web_users.read')->name('web_users.index');
-    Route::delete('/web-users/{id}', [App\Http\Controllers\WebUserController::class, 'destroy'])->middleware('permission:web_users.delete')->name('web_users.destroy');
+        // Web Users (Separate Module)
+        Route::get('/web-users', [App\Http\Controllers\WebUserController::class, 'index'])->middleware('permission:web_users.view|web_users.read')->name('web_users.index');
+        Route::delete('/web-users/{id}', [App\Http\Controllers\WebUserController::class, 'destroy'])->middleware('permission:web_users.delete')->name('web_users.destroy');
+    });
 
     // Return Policy Settings
     Route::get('/settings/return-policy', [App\Http\Controllers\SettingsController::class, 'returnSettings'])->middleware('permission:settings.view|settings.read')->name('settings.return-policy');

@@ -218,6 +218,25 @@
     </style>
 
     <div class="settings-container">
+        @if(isset($branches) && count($branches) > 1)
+            <div class="d-flex align-items-center justify-content-between p-3 mb-3 bg-white rounded shadow-sm border">
+                <div>
+                    <h6 class="mb-0 font-weight-bold text-dark"><i class="fas fa-code-branch text-primary mr-2"></i> Branch: {{ $branches->firstWhere('id', $branchId)->name ?? 'Default Branch' }}</h6>
+                    <small class="text-muted">Return policy settings below apply to this branch.</small>
+                </div>
+                <div class="d-flex align-items-center">
+                    <label for="returnBranchSelect" class="mb-0 mr-2 font-weight-bold small text-nowrap">Switch Branch:</label>
+                    <select id="returnBranchSelect" class="custom-select custom-select-sm" onchange="window.location.href='{{ route('settings.return-policy') }}?branch_id=' + this.value;">
+                        @foreach($branches as $b)
+                            <option value="{{ $b->id }}" {{ $b->id == $branchId ? 'selected' : '' }}>
+                                {{ $b->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        @endif
+
         <div class="settings-card">
             <div class="settings-header">
                 <h4>
@@ -237,6 +256,7 @@
 
                 <form action="{{ route('settings.return-policy.update') }}" method="POST">
                     @csrf
+                    <input type="hidden" name="branch_id" value="{{ $branchId }}">
 
                     <!-- Return Deadline -->
                     <div class="setting-group">

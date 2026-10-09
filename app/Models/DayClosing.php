@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DayClosing extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToBranch;
 
     protected $fillable = [
+        'branch_id',
         'opening_balance',
         'inflow_amount',
         'outflow_amount',

@@ -6,9 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class StockTransfer extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToBranch;
 
   protected $fillable = [
+    'branch_id',
     'from_warehouse_id',
     'to_warehouse_id',
     'to_shop',

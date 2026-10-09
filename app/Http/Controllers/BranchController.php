@@ -92,6 +92,48 @@ class BranchController extends Controller
         $branch->delete();
 
         return redirect()->route('branch.index')->with('success', 'Branch deleted successfully.');
+    }
 
+    /**
+     * Switch active branch in session
+     */
+    public function switchBranch(Request $request)
+    {
+        $user = auth()->user();
+        if (!\App\Helpers\BranchHelper::canSwitchBranch($user)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to switch branches.'
+            ], 403);
+        }
+
+        $branchId = $request->input('branch_id');
+
+        if ($branchId === 'all' || empty($branchId)) {
+            session(['active_branch_id' => 'all']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Switched to All Branches (Combined).',
+                'branch_id' => 'all',
+                'branch_name' => 'All Branches'
+            ]);
+        }
+
+        $branch = Branch::where('id', $branchId)->where('status', 1)->first();
+        if (!$branch) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid branch selected.'
+            ], 404);
+        }
+
+        session(['active_branch_id' => $branch->id]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Switched to ' . $branch->name . '.',
+            'branch_id' => $branch->id,
+            'branch_name' => $branch->name
+        ]);
     }
 }

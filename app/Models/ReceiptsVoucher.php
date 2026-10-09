@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReceiptsVoucher extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToBranch;
 
     protected $guarded = [];
 

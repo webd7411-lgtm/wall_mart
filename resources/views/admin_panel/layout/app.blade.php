@@ -440,16 +440,450 @@
             z-index: 1061 !important;
             position: relative;
         }
+        /* Universal Anti-Horizontal-Overflow */
+        html, body {
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
+        }
+        .container-scroller {
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
+        }
+
+        /* Top Header Styling */
+        .header-brand-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.15;
+            letter-spacing: -0.2px;
+        }
+        .header-brand-sub {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #a1a1aa;
+            letter-spacing: 1px;
+            line-height: 1;
+        }
+        .header-branch-bell-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        @media (min-width: 992px) {
+            .header-branch-bell-wrapper {
+                flex-direction: row !important;
+            }
+            .header-branch-bell-wrapper #notificationLi {
+                order: 1 !important;
+            }
+            .header-branch-bell-wrapper #branchSwitcherDropdownContainer,
+            .header-branch-bell-wrapper .header-static-branch-badge {
+                order: 2 !important;
+            }
+        }
+
         @media (max-width: 991px) {
             .rt_nav_header.horizontal-layout {
                 position: relative !important;
             }
+            .rt_nav_header.horizontal-layout .top_nav {
+                height: 62px !important;
+                padding: 0 4px !important;
+            }
+            .top_nav .container-fluid {
+                padding-left: 4px !important;
+                padding-right: 4px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
             .app-page-body {
-                padding-top: 35px !important;
+                padding-top: 25px !important;
             }
             .main-content {
-                padding-top: 15px !important;
+                padding-top: 10px !important;
             }
+            /* Brand Logo & Name - Starts at the very beginning */
+            .nav_logo {
+                max-width: 130px !important;
+                flex-shrink: 1 !important;
+                overflow: hidden !important;
+            }
+            .header-pw-badge {
+                width: 28px !important;
+                height: 28px !important;
+                font-size: 13px !important;
+                margin-right: 5px !important;
+                border-radius: 6px !important;
+                flex-shrink: 0 !important;
+            }
+            .header-brand-info {
+                min-width: 0 !important;
+                overflow: hidden !important;
+            }
+            .header-brand-title {
+                font-size: 12px !important;
+                font-weight: 800 !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                line-height: 1.15 !important;
+                display: block !important;
+            }
+            .header-brand-sub {
+                font-size: 8.5px !important;
+                letter-spacing: 0.5px !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                line-height: 1 !important;
+                display: block !important;
+            }
+
+            /* Right controls wrapper */
+            .header-right-actions {
+                gap: 5px !important;
+                flex-shrink: 0 !important;
+            }
+
+            /* Stacked: Branch on Top, Notification Bell Underneath */
+            .header-branch-bell-wrapper {
+                flex-direction: column !important;
+                align-items: flex-end !important;
+                justify-content: center !important;
+                gap: 2px !important;
+                flex-shrink: 0 !important;
+                margin-right: 0 !important;
+            }
+            .header-branch-bell-wrapper #branchSwitcherDropdownContainer,
+            .header-branch-bell-wrapper .header-static-branch-badge {
+                order: 1 !important;
+                margin: 0 !important;
+            }
+            .header-branch-bell-wrapper #notificationLi {
+                order: 2 !important;
+                margin: 0 !important;
+            }
+
+            /* Truncated Compact Branch Switcher */
+            #branchDropdown,
+            .header-static-branch-badge {
+                height: 23px !important;
+                padding: 1px 6px !important;
+                font-size: 10.5px !important;
+                border-radius: 6px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+            }
+            #activeBranchLabel {
+                max-width: 60px !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                display: inline-block !important;
+                vertical-align: middle !important;
+                font-size: 10.5px !important;
+                line-height: 1 !important;
+            }
+            .branch-btn-icon {
+                font-size: 10px !important;
+            }
+
+            /* Compact Bell Icon Underneath */
+            #notificationDropdown {
+                width: 24px !important;
+                height: 20px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                position: relative !important;
+            }
+            #notificationDropdown i {
+                font-size: 12.5px !important;
+                color: #94a3b8 !important;
+            }
+            #notificationDropdown .notification-badge {
+                font-size: 8px !important;
+                padding: 1px 3px !important;
+                top: -3px !important;
+                right: -3px !important;
+            }
+
+            /* Visible Hamburger Toggle */
+            .btn-mobile-sidebar-toggle {
+                width: 34px !important;
+                height: 34px !important;
+                font-size: 16px !important;
+                flex-shrink: 0 !important;
+                margin-left: 2px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .nav_logo {
+                max-width: 105px !important;
+            }
+            .header-brand-title {
+                font-size: 11px !important;
+            }
+            .header-brand-sub {
+                display: none !important;
+            }
+            #activeBranchLabel {
+                max-width: 48px !important;
+            }
+        }
+
+        /* =========================================================================
+           OFF-CANVAS MOBILE SIDEBAR DRAWER CSS
+           ========================================================================= */
+        .mobile-nav-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.28s ease, visibility 0.28s ease;
+        }
+        .mobile-nav-backdrop.is-open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .mobile-offcanvas-drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            max-width: 86vw;
+            height: 100vh;
+            background: #090e1a;
+            color: #ffffff;
+            z-index: 9999;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 10px 0 35px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .mobile-offcanvas-drawer.is-open {
+            transform: translateX(0);
+        }
+
+        .m-drawer-header {
+            height: 64px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: #0c1322;
+            flex-shrink: 0;
+        }
+
+        .m-drawer-close-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .m-drawer-close-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .m-drawer-user-card {
+            padding: 12px 16px;
+            background: #0f172a;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+        }
+        .m-user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #ffffff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .m-drawer-search-wrap {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            flex-shrink: 0;
+            background: #090e1a;
+        }
+        .m-drawer-search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 12px;
+        }
+        .m-drawer-search-input {
+            width: 100%;
+            height: 34px;
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            padding-left: 32px;
+            padding-right: 12px;
+            color: #ffffff;
+            font-size: 12px;
+            outline: none;
+        }
+        .m-drawer-search-input:focus {
+            border-color: #6366f1;
+            background: #0f172a;
+        }
+
+        .m-drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 12px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        }
+        .m-drawer-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .m-nav-item {
+            margin-bottom: 4px;
+        }
+        .m-nav-link {
+            display: flex;
+            align-items: center;
+            padding: 9px 12px;
+            border-radius: 8px;
+            color: #cbd5e1 !important;
+            text-decoration: none !important;
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: all 0.18s;
+        }
+        .m-nav-link:hover, .m-nav-link.active {
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc !important;
+        }
+        .m-nav-icon {
+            width: 22px;
+            font-size: 14px;
+            margin-right: 10px;
+            color: #818cf8;
+            text-align: center;
+        }
+        .m-nav-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            border-radius: 8px;
+            color: #e2e8f0;
+            cursor: pointer;
+            font-size: 13.5px;
+            font-weight: 600;
+            user-select: none;
+            transition: all 0.18s;
+        }
+        .m-nav-group-header:hover, .m-nav-group-header.active {
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+        }
+        .m-chevron {
+            font-size: 11px;
+            color: #64748b;
+            transition: transform 0.2s ease;
+        }
+        .m-chevron.rotate {
+            transform: rotate(90deg);
+            color: #a5b4fc;
+        }
+        .m-submenu {
+            list-style: none;
+            padding: 4px 0 6px 28px;
+            margin: 0;
+        }
+        .m-submenu li a {
+            display: flex;
+            align-items: center;
+            padding: 7px 10px;
+            border-radius: 6px;
+            color: #94a3b8 !important;
+            text-decoration: none !important;
+            font-size: 12.5px;
+            font-weight: 500;
+            transition: all 0.15s;
+            gap: 8px;
+        }
+        .m-submenu li a:hover, .m-submenu li a.active {
+            background: rgba(99, 102, 241, 0.12);
+            color: #ffffff !important;
+            font-weight: 600;
+        }
+        .m-submenu li.highlight-item a {
+            background: rgba(99, 102, 241, 0.15);
+            color: #c7d2fe !important;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        .m-drawer-footer {
+            padding: 12px 14px;
+            background: #0c1322;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .btn-mobile-sidebar-toggle {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-left: 4px;
+            transition: all 0.2s;
+        }
+        .btn-mobile-sidebar-toggle:hover {
+            background: #4f46e5;
+            border-color: #6366f1;
+        }
+        body.mobile-drawer-open {
+            overflow: hidden !important;
         }
     </style>
 
@@ -470,10 +904,10 @@
     *===========================-->
         <nav class="rt_nav_header horizontal-layout col-lg-12 col-12 p-0">
             <div class="top_nav flex-grow-1" style="background: #090e1a !important;">
-                <div class="container-fluid px-3 px-md-4 d-flex flex-row h-100 align-items-center justify-content-between">
+                <div class="container-fluid px-2 px-md-4 d-flex flex-row h-100 align-items-center justify-content-between">
                     
                     <!-- Left: Dynamic Brand Logo + Company Name Pill -->
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center" style="min-width: 0; flex-shrink: 1;">
                         @php
                             $dynCompName = \App\Models\Setting::get('company_name', 'TrendHub');
                             $init1 = strtoupper(substr($dynCompName, 0, 1));
@@ -483,9 +917,9 @@
                             <div class="header-pw-badge">
                                 <span style="color: #ffffff;">{{ $init1 }}</span><span style="color: #a1a1aa;">{{ $init2 }}</span>
                             </div>
-                            <div class="d-flex flex-column text-start justify-content-center">
-                                <span style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 800; color: #ffffff; line-height: 1.15; letter-spacing: -0.2px;">{{ $dynCompName }}</span>
-                                <span style="font-size: 10.5px; font-weight: 700; color: #a1a1aa; letter-spacing: 1px; line-height: 1;">Management</span>
+                            <div class="header-brand-info d-flex flex-column text-start justify-content-center">
+                                <span class="header-brand-title">{{ $dynCompName }}</span>
+                                <span class="header-brand-sub">Management</span>
                             </div>
                         </a>
 
@@ -496,8 +930,8 @@
                         </div>
                     </div>
 
-                    <!-- Right: Phone + Support + Online + Sun + Notification + Profile -->
-                    <div class="d-flex align-items-center" style="gap: 10px;">
+                    <!-- Right: Actions -->
+                    <div class="d-flex align-items-center header-right-actions">
                         
                         <!-- Phone Number -->
                         <a href="tel:+923173836223" class="d-none d-md-flex align-items-center text-decoration-none" style="gap: 8px; color: #ffffff; font-size: 13.5px; font-weight: 600;">
@@ -517,7 +951,7 @@
                         </a>
 
                         <!-- Online Status Pill -->
-                        <div class="header-online-pill">
+                        <div class="header-online-pill d-none d-md-flex">
                             <span class="online-dot"></span>
                             <span class="d-none d-sm-inline">Online</span>
                         </div>
@@ -534,38 +968,104 @@
                             </a>
                         @endcanany
 
-                        <!-- Notification Bell -->
-                        <div class="dropdown position-relative" id="notificationLi">
-                            <a class="d-flex align-items-center justify-content-center text-white-50 p-0 text-decoration-none"
-                                id="notificationDropdown" href="#" data-toggle="dropdown" data-display="static"
-                                aria-expanded="false" style="width: 32px; height: 32px; border-radius: 8px; cursor: pointer;">
-                                <i class="fas fa-bell" style="font-size: 16px; color: #94a3b8;"></i>
-                                <span class="badge badge-danger notification-badge"
-                                    style="display: none; position: absolute; top: -2px; right: -2px; font-size: 9px; padding: 2px 4px; border-radius: 50%;">0</span>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list shadow-lg border-0"
-                                aria-labelledby="notificationDropdown"
-                                style="width: 320px; border-radius: 12px; margin-top: 10px; overflow: hidden;">
-                                <div class="dropdown-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center"
-                                    style="border-radius: 12px 12px 0 0;">
-                                    <p class="mb-0 font-weight-bold text-dark">NOTIFICATIONS</p>
-                                </div>
-                                <div id="notificationList" style="max-height: 350px; overflow-y: auto;">
-                                    <div class="text-center p-4">
-                                        <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+                        <!-- Stacked on mobile: Branch Dropdown on top, Notification Bell underneath -->
+                        <div class="header-branch-bell-wrapper">
+                            <!-- Branch Switcher Dropdown (Top on mobile, 2nd on desktop) -->
+                            @if(!empty($can_switch_branch))
+                                <div class="dropdown position-relative" id="branchSwitcherDropdownContainer">
+                                    <a class="d-flex align-items-center text-white rounded text-decoration-none shadow-sm dropdown-toggle"
+                                       href="javascript:void(0)"
+                                       id="branchDropdown"
+                                       data-toggle="dropdown"
+                                       data-display="static"
+                                       aria-haspopup="true"
+                                       aria-expanded="false"
+                                       style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                        <i class="fas fa-store mr-1 text-warning branch-btn-icon"></i>
+                                        <span id="activeBranchLabel">
+                                            @if(!empty($is_all_branches))
+                                                All Branches
+                                            @else
+                                                {{ $current_branch ? $current_branch->name : 'Branch ' . $current_branch_id }}
+                                            @endif
+                                        </span>
+                                        <i class="fas fa-chevron-down ml-1" style="font-size: 9px; opacity: 0.8;"></i>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-right border-0 shadow-lg p-2"
+                                         id="branchDropdownMenu"
+                                         aria-labelledby="branchDropdown"
+                                         style="border-radius: 12px; margin-top: 10px; min-width: 240px; z-index: 1050; position: absolute; right: 0; left: auto;">
+                                        <div class="px-2 py-1 mb-1 border-bottom">
+                                            <small class="text-uppercase font-weight-bold text-muted" style="font-size: 10px; letter-spacing: 0.5px;">Switch Active Branch</small>
+                                        </div>
+                                        <a class="dropdown-item d-flex align-items-center py-2 px-2 rounded mb-1 {{ !empty($is_all_branches) ? 'bg-primary text-white font-weight-bold' : 'text-dark' }}"
+                                           href="javascript:void(0)" onclick="handleBranchSwitch('all')" style="font-size: 13px; cursor: pointer;">
+                                            <i class="fas fa-globe mr-2 {{ !empty($is_all_branches) ? 'text-white' : 'text-primary' }}"></i>
+                                            <span class="flex-grow-1">All Branches (Combined)</span>
+                                            @if(!empty($is_all_branches))
+                                                <i class="fas fa-check text-white ml-2"></i>
+                                            @endif
+                                        </a>
+                                        @if(!empty($available_branches))
+                                            @foreach($available_branches as $ab)
+                                                @php
+                                                    $isSelected = empty($is_all_branches) && ($current_branch_id == $ab->id);
+                                                    $icon = ($ab->type === 'restaurant') ? 'fa-utensils' : 'fa-shopping-cart';
+                                                @endphp
+                                                <a class="dropdown-item d-flex align-items-center py-2 px-2 rounded mb-1 {{ $isSelected ? 'bg-primary text-white font-weight-bold' : 'text-dark' }}"
+                                                   href="javascript:void(0)" onclick="handleBranchSwitch({{ $ab->id }})" style="font-size: 13px; cursor: pointer;">
+                                                    <i class="fas {{ $icon }} mr-2 {{ $isSelected ? 'text-white' : 'text-info' }}"></i>
+                                                    <span class="flex-grow-1">{{ $ab->name }}</span>
+                                                    <small class="mr-2 {{ $isSelected ? 'text-white-50' : 'text-muted' }}" style="font-size: 10px;">({{ ucfirst($ab->type) }})</small>
+                                                    @if($isSelected)
+                                                        <i class="fas fa-check text-white ml-1"></i>
+                                                    @endif
+                                                </a>
+                                            @endforeach
+                                        @endif
                                     </div>
                                 </div>
-                                <div class="dropdown-footer text-center bg-light border-top p-2"
-                                    style="position: sticky; bottom: 0; z-index: 10;">
-                                    <a href="{{ route('notifications.index') }}"
-                                        class="btn btn-primary btn-sm btn-block shadow-sm font-weight-bold">View
-                                        All Notifications</a>
+                            @else
+                                <div class="d-flex align-items-center text-white px-2 py-1 rounded shadow-sm header-static-branch-badge"
+                                     style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); font-weight: 500;">
+                                    <i class="fas fa-map-marker-alt mr-1 text-warning branch-btn-icon"></i>
+                                    <span id="activeBranchLabel">{{ $current_branch ? $current_branch->name : 'Branch' }}</span>
+                                </div>
+                            @endif
+
+                            <!-- Notification Bell (Bottom on mobile, 1st on desktop) -->
+                            <div class="dropdown position-relative" id="notificationLi">
+                                <a class="d-flex align-items-center justify-content-center text-white-50 p-0 text-decoration-none"
+                                    id="notificationDropdown" href="#" data-toggle="dropdown" data-display="static"
+                                    aria-expanded="false" style="border-radius: 8px; cursor: pointer;">
+                                    <i class="fas fa-bell"></i>
+                                    <span class="badge badge-danger notification-badge"
+                                        style="display: none; position: absolute; font-size: 9px; padding: 2px 4px; border-radius: 50%;">0</span>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list shadow-lg border-0"
+                                    aria-labelledby="notificationDropdown"
+                                    style="width: 320px; border-radius: 12px; margin-top: 10px; overflow: hidden;">
+                                    <div class="dropdown-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center"
+                                        style="border-radius: 12px 12px 0 0;">
+                                        <p class="mb-0 font-weight-bold text-dark">NOTIFICATIONS</p>
+                                    </div>
+                                    <div id="notificationList" style="max-height: 350px; overflow-y: auto;">
+                                        <div class="text-center p-4">
+                                            <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+                                        </div>
+                                    </div>
+                                    <div class="dropdown-footer text-center bg-light border-top p-2"
+                                        style="position: sticky; bottom: 0; z-index: 10;">
+                                        <a href="{{ route('notifications.index') }}"
+                                            class="btn btn-primary btn-sm btn-block shadow-sm font-weight-bold">View
+                                            All Notifications</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Profile Dropdown -->
-                        <div class="dropdown position-relative">
+                        <!-- Profile Dropdown (Desktop only, mobile user is inside the slide-in drawer) -->
+                        <div class="dropdown position-relative d-none d-md-block">
                             <a class="d-flex align-items-center justify-content-center p-0 text-decoration-none" 
                                href="#" data-toggle="dropdown" data-display="static" id="profileDropdown" style="cursor: pointer;">
                                 <div class="rounded-circle d-flex align-items-center justify-content-center" 
@@ -593,8 +1093,8 @@
                             </div>
                         </div>
 
-                        <!-- Mobile Hamburger Button -->
-                        <button class="navbar-toggler align-self-center border-0 p-0 text-white ms-1 d-lg-none" type="button" data-toggle="minimize" style="font-size: 18px; outline: none; background: transparent; cursor: pointer;">
+                        <!-- Dedicated Mobile Hamburger Button -->
+                        <button class="btn-mobile-sidebar-toggle d-lg-none" type="button" id="openMobileDrawerBtn" aria-label="Open Navigation Sidebar">
                             <i class="fas fa-bars"></i>
                         </button>
                     </div>
@@ -738,6 +1238,53 @@
             <div class="nav-bottom">
                 <div class="container-fluid" style="padding: 0 20px;">
                     <ul class="nav page-navigation justify-content-center">
+                        @if(!empty($is_restaurant_branch))
+                            <!-- =========================================
+                                 RESTAURANT POS EXCLUSIVE NAVIGATION
+                                 ========================================= -->
+                            <li class="nav-item {{ request()->is('pos*') ? 'active' : '' }}">
+                                <a href="{{ route('pos.index') }}" class="nav-link font-weight-bold" style="color: #4f46e5 !important;">
+                                    <i class="menu_icon fas fa-cash-register text-primary"></i>
+                                    <span class="menu-title">POS Counter</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {{ request()->is('product*') ? 'active' : '' }}">
+                                <a href="{{ url('product-catalog') }}" class="nav-link">
+                                    <i class="menu_icon fas fa-utensils text-success"></i>
+                                    <span class="menu-title">Products / Menu</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {{ request()->is('sale*') ? 'active' : '' }}">
+                                <a href="{{ url('sale') }}" class="nav-link">
+                                    <i class="menu_icon fas fa-receipt text-warning"></i>
+                                    <span class="menu-title">Sales / Orders</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {{ request()->is('category*') ? 'active' : '' }}">
+                                <a href="{{ route('Category.home') }}" class="nav-link">
+                                    <i class="menu_icon fas fa-tags text-info"></i>
+                                    <span class="menu-title">Categories</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {{ request()->is('*expense*') ? 'active' : '' }}">
+                                <a href="{{ route('all_expense_vochers') }}" class="nav-link">
+                                    <i class="menu_icon fas fa-file-invoice-dollar text-danger"></i>
+                                    <span class="menu-title">Expenses</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {{ request()->is('view_all*') || request()->is('accounts*') ? 'active' : '' }}">
+                                <a href="{{ route('view_all') }}" class="nav-link">
+                                    <i class="menu_icon fas fa-university text-primary"></i>
+                                    <span class="menu-title">Accounts</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {{ request()->is('settings*') ? 'active' : '' }}">
+                                <a href="{{ route('settings.index') }}" class="nav-link">
+                                    <i class="menu_icon fas fa-sliders-h text-secondary"></i>
+                                    <span class="menu-title">POS Settings</span>
+                                </a>
+                            </li>
+                        @else
                         <!--=========================*
                               Home
                     *===========================-->
@@ -1026,6 +1573,7 @@
                         @endcan
 
                         <!-- HR Management Menu -->
+                        @if (config('features.hr_management'))
                         <li class="nav-item">
                             @canany(['hr.departments.view', 'hr.designations.view', 'hr.employees.view',
                                 'hr.attendance.view', 'hr.payroll.view', 'hr.leaves.view', 'hr.salary.structure.view',
@@ -1085,6 +1633,7 @@
                                 </div>
                             @endcanany
                         </li>
+                        @endif
                         <!-- User Management Menu -->
                         <li class="nav-item">
                             @canany(['users.view', 'roles.view', 'permissions.view', 'branches.view'])
@@ -1118,6 +1667,7 @@
 
 
                         <!-- Website Management -->
+                        @if (config('features.website_control'))
                         @canany(['website-settings.view', 'web_products.view', 'web_products.read', 'coupons.view', 'coupons.read', 'web_orders.view', 'web_orders.read', 'web_users.view', 'web_users.read'])
                             <li class="nav-item">
                                 <a href="#" class="nav-link">
@@ -1147,6 +1697,8 @@
                                 </div>
                             </li>
                         @endcanany
+                        @endif
+                        @endif
 
                         <!-- Mobile User Profile & Direct Logout -->
                         @if (auth()->check())
@@ -1175,6 +1727,9 @@
                 </div>
             </div>
         </nav>
+
+        {{-- Off-Canvas Mobile Navigation Drawer --}}
+        @include('admin_panel.layout.mobile_sidebar')
 
         <div class="app-page-body">
             @yield('content')
@@ -1394,6 +1949,212 @@
                 altInput: true,      // Show a secondary visually formatted input
                 altFormat: "d/m/Y",  // Day/Month/Year
                 allowInput: true     // Allow typing
+            });
+        });
+    </script>
+
+    {{-- Branch Switcher Scripts --}}
+    <script>
+        (function() {
+            function setupBranchDropdown() {
+                var btn = document.getElementById('branchDropdown');
+                var menu = document.getElementById('branchDropdownMenu');
+                var container = document.getElementById('branchSwitcherDropdownContainer');
+
+                if (!btn || !menu) return;
+
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Close any other open dropdowns
+                    document.querySelectorAll('.dropdown-menu.show').forEach(function(m) {
+                        if (m !== menu) m.classList.remove('show');
+                    });
+
+                    var isShown = menu.classList.contains('show');
+                    if (isShown) {
+                        menu.classList.remove('show');
+                        if (container) container.classList.remove('show');
+                        btn.setAttribute('aria-expanded', 'false');
+                    } else {
+                        menu.classList.add('show');
+                        if (container) container.classList.add('show');
+                        btn.setAttribute('aria-expanded', 'true');
+                    }
+                });
+
+                // Close when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (container && !container.contains(e.target)) {
+                        menu.classList.remove('show');
+                        container.classList.remove('show');
+                        btn.setAttribute('aria-expanded', 'false');
+                    }
+                });
+
+                // Close on Escape
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        menu.classList.remove('show');
+                        if (container) container.classList.remove('show');
+                        btn.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', setupBranchDropdown);
+            } else {
+                setupBranchDropdown();
+            }
+        })();
+
+        window.handleBranchSwitch = function(branchId) {
+            console.log('Switching branch to:', branchId);
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Switching Branch...',
+                    text: 'Updating active branch data, please wait.',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: function() {
+                        Swal.showLoading();
+                    }
+                });
+            }
+
+            fetch("{{ route('branch.switch') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({ branch_id: branchId })
+            })
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire('Error', data.message || 'Could not switch branch', 'error');
+                    } else {
+                        alert(data.message || 'Could not switch branch');
+                    }
+                }
+            })
+            .catch(function(err) {
+                console.error('Switch branch error:', err);
+            });
+        };
+    </script>
+
+    <!-- =========================================================================
+         OFF-CANVAS MOBILE DRAWER INTERACTIVE CONTROLLER
+         ========================================================================= -->
+    <script>
+        $(document).ready(function() {
+            var $drawer = $('#mobileOffCanvasSidebar');
+            var $backdrop = $('#mobileNavBackdrop');
+
+            function openMobileDrawer() {
+                $drawer.addClass('is-open');
+                $backdrop.addClass('is-open');
+                $('body').addClass('mobile-drawer-open');
+            }
+
+            function closeMobileDrawer() {
+                $drawer.removeClass('is-open');
+                $backdrop.removeClass('is-open');
+                $('body').removeClass('mobile-drawer-open');
+            }
+
+            // Open trigger
+            $(document).on('click', '#openMobileDrawerBtn', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                openMobileDrawer();
+            });
+
+            // Close triggers
+            $(document).on('click', '#closeMobileDrawerBtn, #mobileNavBackdrop', function(e) {
+                e.preventDefault();
+                closeMobileDrawer();
+            });
+
+            // Auto-close on link click (if navigating)
+            $(document).on('click', '.m-drawer-body a', function() {
+                closeMobileDrawer();
+            });
+
+            // Close on Escape key
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape' && $drawer.hasClass('is-open')) {
+                    closeMobileDrawer();
+                }
+            });
+
+            // Accordion toggle handler
+            $(document).on('click', '.m-nav-group-header', function(e) {
+                e.preventDefault();
+                var targetId = $(this).data('target');
+                var $target = $(targetId);
+                var $chevron = $(this).find('.m-chevron');
+
+                if ($target.length) {
+                    $target.collapse('toggle');
+                    $chevron.toggleClass('rotate');
+                }
+            });
+
+            // Instant menu search inside drawer
+            $('#mDrawerMenuSearch').on('input keyup', function() {
+                var query = $(this).val().toLowerCase().trim();
+
+                if (query.length === 0) {
+                    $('.m-nav-item').show();
+                    $('.m-submenu li').show();
+                    return;
+                }
+
+                $('.m-nav-item').each(function() {
+                    var $item = $(this);
+                    if ($item.hasClass('m-nav-group')) {
+                        var $subLinks = $item.find('.m-submenu li');
+                        var matchedSub = 0;
+
+                        $subLinks.each(function() {
+                            var linkText = $(this).text().toLowerCase();
+                            if (linkText.indexOf(query) !== -1) {
+                                $(this).show();
+                                matchedSub++;
+                            } else {
+                                $(this).hide();
+                            }
+                        });
+
+                        var groupTitle = $item.find('.m-nav-text').text().toLowerCase();
+                        if (matchedSub > 0 || groupTitle.indexOf(query) !== -1) {
+                            $item.show();
+                            $item.find('.m-submenu').collapse('show');
+                            $item.find('.m-chevron').addClass('rotate');
+                        } else {
+                            $item.hide();
+                        }
+                    } else {
+                        var text = $item.text().toLowerCase();
+                        if (text.indexOf(query) !== -1) {
+                            $item.show();
+                        } else {
+                            $item.hide();
+                        }
+                    }
+                });
             });
         });
     </script>

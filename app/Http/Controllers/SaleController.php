@@ -428,7 +428,7 @@ class SaleController extends Controller
             ->get();
 
         // Calculate return deadline from database settings
-        $returnDeadlineDays = \App\Models\SystemSetting::get('return_deadline_days', 30);
+        $returnDeadlineDays = \App\Models\SystemSetting::get('return_deadline_days', 30, $sale->branch_id ?? null);
         $returnDeadline = $sale->created_at->copy()->addDays($returnDeadlineDays);
         $isWithinDeadline = now()->lte($returnDeadline);
 
@@ -483,7 +483,7 @@ class SaleController extends Controller
         $sale = Sale::findOrFail($request->sale_id);
 
         // --- VALIDATION 1: Return Deadline Policy ---
-        $returnDeadlineDays = \App\Models\SystemSetting::get('return_deadline_days', 30);
+        $returnDeadlineDays = \App\Models\SystemSetting::get('return_deadline_days', 30, $sale->branch_id ?? null);
 
         // Check if returns are disabled (0 days = no returns allowed)
         if ($returnDeadlineDays == 0) {
@@ -655,9 +655,9 @@ class SaleController extends Controller
             ]);
 
             // --- WORKFLOW STATUS FIELDS ---
-            $autoApproveThreshold = \App\Models\SystemSetting::get('return_auto_approve_threshold', 0);
+            $autoApproveThreshold = \App\Models\SystemSetting::get('return_auto_approve_threshold', 0, $sale->branch_id ?? null);
             $returnAmount = (float) $request->total_net;
-            $requireApproval = \App\Models\SystemSetting::get('return_require_approval', true);
+            $requireApproval = \App\Models\SystemSetting::get('return_require_approval', true, $sale->branch_id ?? null);
 
             if (($autoApproveThreshold > 0 && $returnAmount <= $autoApproveThreshold) || ! $requireApproval) {
                 $saleReturn->return_status = 'approved';

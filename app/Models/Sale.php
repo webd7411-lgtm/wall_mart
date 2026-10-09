@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Sale extends Model
 {
+    use \App\Traits\BelongsToBranch;
+
     protected $fillable = [
         'customer_id', 'user_id', 'reference', 'total_amount_Words', 'total_bill_amount',
         'total_extradiscount', 'total_net', 'cash', 'card', 'change',
-        'total_items', 'discount_type', 'sale_status', 'invoice_no', 'is_booking'
+        'total_items', 'discount_type', 'sale_status', 'invoice_no', 'is_booking', 'branch_id'
     ];
 
     public function user()

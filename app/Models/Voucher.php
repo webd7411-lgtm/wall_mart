@@ -7,14 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Voucher extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\BelongsToBranch;
     //     protected $fillable = [
     //     'voucher_type', 'date', 'sales_officer', 'type', 'party',
     //     'sub_head', 'narration', 'amount'
     // ];
     protected $fillable = [
         'voucher_type', 'date', 'sales_officer', 'type', 'person',
-        'sub_head', 'narration', 'amount', 'status'
+        'sub_head', 'narration', 'amount', 'status', 'branch_id'
     ];
 
 }
