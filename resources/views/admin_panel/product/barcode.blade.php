@@ -111,7 +111,7 @@
         /* Optimized for Zebra & Thermal Barcode Roll Printers (e.g. 50mm x 25mm / 38mm x 25mm) */
         .label {
             border: 1px dashed #777;
-            padding: 6px 8px;
+            padding: 5px 8px;
             width: 260px;
             max-width: 100%;
             margin: 0 auto;
@@ -146,7 +146,7 @@
             text-align: center;
         }
         .barcode-wrap {
-            margin: 3px auto;
+            margin: 2px auto;
             width: 100%;
             display: flex;
             justify-content: center;
@@ -158,7 +158,7 @@
             display: block;
             margin: 0 auto;
             max-width: 100%;
-            height: 26px;
+            height: 24px;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: pixelated;
         }
@@ -173,16 +173,16 @@
             color: #000;
             letter-spacing: 1px;
             line-height: 1.1;
-            margin-top: 2px;
-            margin-bottom: 2px;
+            margin-top: 1px;
+            margin-bottom: 1px;
             text-align: center;
         }
         .price {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 800;
             color: #000;
             line-height: 1.1;
-            margin-top: 2px;
+            margin-top: 1px;
             text-align: center;
         }
         .btn-print-single {
@@ -235,14 +235,14 @@
                 border: none !important;
                 box-shadow: none !important;
                 margin: 0 auto !important;
-                padding: 2mm 0 !important;
+                padding: 1.5mm 0 !important;
                 width: 100% !important;
                 max-width: 50mm !important;
                 text-align: center !important;
                 page-break-inside: avoid;
             }
             .barcode-wrap {
-                margin: 1mm auto !important;
+                margin: 0.5mm auto !important;
                 width: 100% !important;
                 text-align: center !important;
                 display: block !important;
@@ -251,6 +251,24 @@
                 display: block !important;
                 margin: 0 auto !important;
                 max-width: 90% !important;
+                height: 22px !important;
+            }
+            .product-name {
+                font-size: 11px !important;
+                margin-bottom: 1px !important;
+            }
+            .variant-info {
+                font-size: 9px !important;
+                margin-bottom: 1px !important;
+            }
+            .barcode-number {
+                font-size: 9px !important;
+                margin-top: 1px !important;
+                margin-bottom: 1px !important;
+            }
+            .price {
+                font-size: 10px !important;
+                margin-top: 1px !important;
             }
 
             /* Single or Selected print mode */
@@ -285,11 +303,9 @@
 @forelse ($variants as $index => $variant)
     <div class="barcode-card" id="card-{{ $index }}">
         <div class="label" id="label-{{ $index }}">
-            <div class="product-name">{{ $product->item_name }}</div>
+            <div class="product-name">Wall Mart</div>
             <div class="variant-info">
-                {{ $variant['name'] ?? '' }}
-                @if(!empty($variant['size']) && $variant['size'] !== '-') | {{ $variant['size'] }} @endif
-                @if(!empty($variant['color']) && $variant['color'] !== '-') | {{ $variant['color'] }} @endif
+                {{ $variant['name'] ?? $product->item_name }} @if(!empty($variant['size']) && $variant['size'] !== '-')| {{ $variant['size'] }} @endif @if(!empty($variant['color']) && $variant['color'] !== '-')| {{ $variant['color'] }}@endif
             </div>
             <div class="barcode-wrap">
                 @if(!empty($variant['barcode']))
@@ -299,7 +315,7 @@
                 @endif
             </div>
             <div class="barcode-number">{{ $variant['barcode'] ?? '—' }}</div>
-            <!-- <div class="price">PKR: {{ number_format((float)($variant['sale_price'] ?? 0)) }}</div> -->
+            <div class="price">Rs. {{ number_format((float)($variant['sale_price'] ?? ($product->sale_price_per_piece ?: $product->sale_price_per_box ?: 0))) }}</div>
         </div>
         <div class="card-btns">
             <label class="card-select-wrap">
@@ -315,7 +331,8 @@
     {{-- Fallback: product has no variants --}}
     <div class="barcode-card" id="card-main">
         <div class="label" id="label-main">
-            <div class="product-name">{{ $product->item_name }}</div>
+            <div class="product-name">Wall Mart</div>
+            <div class="variant-info">{{ $product->item_name }}</div>
             <div class="barcode-wrap">
                 @php $fallbackCode = $product->barcode_path ?: $product->item_code; @endphp
                 @if(!empty($fallbackCode))
@@ -325,7 +342,7 @@
                 @endif
             </div>
             <div class="barcode-number">{{ $product->barcode_path ?? $product->item_code }}</div>
-            <!-- <div class="price">PKR: {{ number_format((float)($product->sale_price_per_piece ?: $product->sale_price_per_box ?: 0)) }}</div> -->
+            <div class="price">Rs. {{ number_format((float)($product->sale_price_per_piece ?: $product->sale_price_per_box ?: 0)) }}</div>
         </div>
         <div class="card-btns">
             <label class="card-select-wrap">
