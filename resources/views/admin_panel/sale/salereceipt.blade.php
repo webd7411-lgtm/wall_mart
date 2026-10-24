@@ -342,6 +342,20 @@
                 <span class="meta-label">Invoice #:</span>
                 <span class="meta-value">{{ $sale->invoice_no }}</span>
             </div>
+            @if(!empty($sale->order_type))
+            <div class="meta-row" style="font-weight: 700; font-size: 11px;">
+                <span class="meta-label">Order Type:</span>
+                <span class="meta-value" style="text-transform: uppercase;">
+                    @if($sale->order_type === 'dine_in')
+                        Dine-In (Table #{{ $sale->table_no ?? '-' }})
+                    @elseif($sale->order_type === 'takeaway')
+                        Takeaway (Token #{{ $sale->token_no ?? '-' }})
+                    @else
+                        Delivery
+                    @endif
+                </span>
+            </div>
+            @endif
             <div class="meta-row">
                 <span class="meta-label">Date:</span>
                 <span class="meta-value">{{ $sale->created_at->format('d/m/Y h:i A') }}</span>
@@ -593,7 +607,11 @@
                 }
                 if (countdown <= 0) {
                     clearInterval(countdownInterval);
-                    window.location.href = "{{ route('pos.index') }}";
+                    if (window.opener) {
+                        try { window.close(); } catch(e){}
+                    } else {
+                        window.location.href = "{{ route('pos.index') }}";
+                    }
                 }
             }, 1000);
         }
@@ -630,7 +648,11 @@
 
         // When print dialog closes (printed or cancelled)
         window.onafterprint = function() {
-            if (isFromPos && !isPaused) {
+            if (window.opener) {
+                setTimeout(() => {
+                    try { window.close(); } catch(e){}
+                }, 800);
+            } else if (isFromPos && !isPaused) {
                 countdown = 3;
                 startCountdown();
             }
@@ -642,7 +664,11 @@
             printFired = true;
         });
         window.addEventListener('focus', () => {
-            if (printFired && isFromPos && !isPaused && !countdownInterval) {
+            if (printFired && window.opener) {
+                setTimeout(() => {
+                    try { window.close(); } catch(e){}
+                }, 800);
+            } else if (printFired && isFromPos && !isPaused && !countdownInterval) {
                 countdown = 3;
                 startCountdown();
             }

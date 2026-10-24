@@ -59,6 +59,23 @@
                     {{ strtoupper(substr(optional($sale->customer_relation)->customer_name ?? 'C', 0, 1)) }}
                 </div>
                 <span class="fw-medium text-dark">{{ optional($sale->customer_relation)->customer_name ?? 'N/A' }}</span>
+                @if(!empty($sale->order_type))
+                    <div class="mt-1">
+                        @if($sale->order_type === 'dine_in')
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 10px;">
+                                <i class="fas fa-chair me-1"></i>Table {{ $sale->table_no }}
+                            </span>
+                        @elseif($sale->order_type === 'takeaway')
+                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle" style="font-size: 10px;">
+                                <i class="fas fa-shopping-bag me-1"></i>Token {{ $sale->token_no }}
+                            </span>
+                        @else
+                            <span class="badge bg-info-subtle text-info border border-info-subtle" style="font-size: 10px;">
+                                <i class="fas fa-motorcycle me-1"></i>Delivery
+                            </span>
+                        @endif
+                    </div>
+                @endif
             </div>
         </td>
         <td>
@@ -171,6 +188,11 @@
                         <li>
                             <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('sales.receipt', $sale->id) }}" target="_blank">
                                 <i class="fas fa-receipt text-success fa-fw"></i> Receipt
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{ route('sales.kot', $sale->id) }}" target="_blank">
+                                <i class="fas fa-utensils text-warning fa-fw"></i> Print KOT (Kitchen)
                             </a>
                         </li>
                     @endcanany

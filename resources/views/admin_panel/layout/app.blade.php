@@ -986,7 +986,7 @@
                                             @if(!empty($is_all_branches))
                                                 All Branches
                                             @else
-                                                {{ $current_branch ? $current_branch->name : 'Branch ' . $current_branch_id }}
+                                                {{ !empty($current_branch) ? $current_branch->name : 'Branch ' . ($current_branch_id ?? '') }}
                                             @endif
                                         </span>
                                         <i class="fas fa-chevron-down ml-1" style="font-size: 9px; opacity: 0.8;"></i>
@@ -1029,7 +1029,7 @@
                                 <div class="d-flex align-items-center text-white px-2 py-1 rounded shadow-sm header-static-branch-badge"
                                      style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); font-weight: 500;">
                                     <i class="fas fa-map-marker-alt mr-1 text-warning branch-btn-icon"></i>
-                                    <span id="activeBranchLabel">{{ $current_branch ? $current_branch->name : 'Branch' }}</span>
+                                    <span id="activeBranchLabel">{{ !empty($current_branch) ? $current_branch->name : 'Branch' }}</span>
                                 </div>
                             @endif
 
@@ -1242,13 +1242,39 @@
                             <!-- =========================================
                                  RESTAURANT POS EXCLUSIVE NAVIGATION
                                  ========================================= -->
+                            @canany(['dashboard.view', 'home.view'])
+                            <li class="nav-item {{ request()->is('home*') || request()->is('dashboard*') ? 'active' : '' }}">
+                                <a href="{{ url('/home') }}" class="nav-link font-weight-bold">
+                                    <i class="menu_icon fas fa-home text-primary"></i>
+                                    <span class="menu-title">Dashboard</span>
+                                </a>
+                            </li>
+                            @endcanany
                             <li class="nav-item {{ request()->is('pos*') ? 'active' : '' }}">
                                 <a href="{{ route('pos.index') }}" class="nav-link font-weight-bold" style="color: #4f46e5 !important;">
                                     <i class="menu_icon fas fa-cash-register text-primary"></i>
                                     <span class="menu-title">POS Counter</span>
                                 </a>
                             </li>
-                            <li class="nav-item {{ request()->is('product*') ? 'active' : '' }}">
+                            <li class="nav-item {{ request()->is('restaurant/tables*') ? 'active' : '' }}">
+                                <a href="{{ route('restaurant.tables.index') }}" class="nav-link">
+                                    <i class="menu_icon fas fa-chair text-primary"></i>
+                                    <span class="menu-title">Tables</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {{ request()->is('restaurant/deliveries*') ? 'active' : '' }}">
+                                <a href="{{ route('restaurant.deliveries.index') }}" class="nav-link">
+                                    <i class="menu_icon fas fa-shipping-fast text-warning"></i>
+                                    <span class="menu-title">Deliveries</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {{ request()->is('restaurant/riders*') ? 'active' : '' }}">
+                                <a href="{{ route('restaurant.riders.index') }}" class="nav-link">
+                                    <i class="menu_icon fas fa-motorcycle text-info"></i>
+                                    <span class="menu-title">Riders</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {{ request()->is('product*') || request()->is('create*') ? 'active' : '' }}">
                                 <a href="{{ url('product-catalog') }}" class="nav-link">
                                     <i class="menu_icon fas fa-utensils text-success"></i>
                                     <span class="menu-title">Products / Menu</span>
@@ -1276,6 +1302,12 @@
                                 <a href="{{ route('view_all') }}" class="nav-link">
                                     <i class="menu_icon fas fa-university text-primary"></i>
                                     <span class="menu-title">Accounts</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {{ request()->is('report/sale*') ? 'active' : '' }}">
+                                <a href="{{ route('report.sale') }}" class="nav-link">
+                                    <i class="menu_icon fas fa-chart-line text-warning"></i>
+                                    <span class="menu-title">Sale Report</span>
                                 </a>
                             </li>
                             <li class="nav-item {{ request()->is('settings*') ? 'active' : '' }}">
@@ -1409,6 +1441,12 @@
                                                     @can('sales.create')
                                                         <li><a href="{{ route('pos.index') }}"><i class="fas fa-cash-register"></i>
                                                                 POS System</a></li>
+                                                        <li><a href="{{ route('restaurant.tables.index') }}"><i class="fas fa-chair"></i>
+                                                                Restaurant Tables</a></li>
+                                                        <li><a href="{{ route('restaurant.deliveries.index') }}"><i class="fas fa-shipping-fast"></i>
+                                                                Deliveries & Dispatch</a></li>
+                                                        <li><a href="{{ route('restaurant.riders.index') }}"><i class="fas fa-motorcycle"></i>
+                                                                Riders Management</a></li>
                                                     @endcan
                                                     @can('customers.view')
                                                         <li><a href="{{ url('customers') }}"><i class="fas fa-user"></i>
@@ -2039,7 +2077,11 @@
             })
             .then(function(data) {
                 if (data.success) {
-                    window.location.reload();
+                    if (window.location.pathname.indexOf('restaurant') > -1) {
+                        window.location.href = "{{ route('pos.index') }}";
+                    } else {
+                        window.location.reload();
+                    }
                 } else {
                     if (typeof Swal !== 'undefined') {
                         Swal.fire('Error', data.message || 'Could not switch branch', 'error');

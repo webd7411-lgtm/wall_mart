@@ -10,10 +10,18 @@ class Sale extends Model
     use \App\Traits\BelongsToBranch;
 
     protected $fillable = [
-        'customer_id', 'user_id', 'reference', 'total_amount_Words', 'total_bill_amount',
+        'customer_id', 'user_id', 'walkin_name', 'reference', 'total_amount_Words', 'total_bill_amount',
         'total_extradiscount', 'total_net', 'cash', 'card', 'change',
-        'total_items', 'discount_type', 'sale_status', 'invoice_no', 'is_booking', 'branch_id'
+        'total_items', 'discount_type', 'sale_status', 'invoice_no', 'is_booking', 'branch_id',
+        'credit_days', 'due_date',
+        'order_type', 'table_no', 'token_no', 'order_status', 'order_notes', 'rider_name', 'rider_phone', 'kot_printed_at',
+        'rider_id', 'delivery_address', 'delivery_charges', 'delivery_status', 'dispatched_at', 'delivered_at', 'rider_cash_settled'
     ];
+
+    public function rider()
+    {
+        return $this->belongsTo(Rider::class, 'rider_id');
+    }
 
     public function user()
     {

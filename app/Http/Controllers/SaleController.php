@@ -1210,6 +1210,26 @@ class SaleController extends Controller
         return view('admin_panel.sale.saledc_thermal', ['sale' => $sale, 'saleItems' => $items]);
     }
 
+    public function kotReceipt($id)
+    {
+        $sale = Sale::resolveByIdOrInvoice($id, ['customer_relation', 'user']);
+        if (!$sale) {
+            abort(404, 'Order not found');
+        }
+        $this->checkSaleViewPermission($sale);
+        $items = $this->_getSaleItems($sale);
+
+        // Mark items as printed
+        foreach ($sale->items as $item) {
+            $item->kot_printed_qty = $item->qty ?: $item->total_pieces;
+            $item->save();
+        }
+        $sale->kot_printed_at = now();
+        $sale->save();
+
+        return view('admin_panel.sale.kot_thermal', ['sale' => $sale, 'saleItems' => $items]);
+    }
+
     public function salereceipt($id)
     {
         $sale = Sale::resolveByIdOrInvoice($id, ['customer_relation']);
@@ -1310,6 +1330,53 @@ class SaleController extends Controller
             $sale->total_amount_Words = $request->total_amount_Words; // Consider auto-generating this too?
             $sale->sale_status = $status;
 
+            // Restaurant Fields
+            if ($request->filled('order_type')) {
+                $sale->order_type = $request->order_type;
+            }
+            if ($request->filled('table_no')) {
+                $sale->table_no = $request->table_no;
+            }
+            if ($request->filled('token_no')) {
+                $sale->token_no = $request->token_no;
+            }
+            if ($request->filled('order_status')) {
+                $sale->order_status = $request->order_status;
+            } elseif ($request->action === 'running' || $request->action === 'kot' || $request->action === 'hold') {
+                $sale->order_status = 'running';
+                $status = 'booked';
+                $sale->sale_status = 'booked';
+                $sale->is_booking = 1;
+            } elseif ($request->action === 'post') {
+                $sale->order_status = 'completed';
+            }
+            if ($request->filled('order_notes')) {
+                $sale->order_notes = $request->order_notes;
+            }
+            if ($request->filled('rider_id')) {
+                $sale->rider_id = $request->rider_id;
+            }
+            if ($request->filled('rider_name')) {
+                $sale->rider_name = $request->rider_name;
+            }
+            if ($request->filled('rider_phone')) {
+                $sale->rider_phone = $request->rider_phone;
+            }
+            if ($request->filled('delivery_address')) {
+                $sale->delivery_address = $request->delivery_address;
+            }
+            if ($request->filled('delivery_charges')) {
+                $sale->delivery_charges = (float) $request->delivery_charges;
+            }
+            if ($request->filled('delivery_status')) {
+                $sale->delivery_status = $request->delivery_status;
+            } elseif ($request->order_type === 'delivery' && empty($sale->delivery_status)) {
+                $sale->delivery_status = $request->filled('rider_id') ? 'dispatched' : 'pending';
+                if ($request->filled('rider_id')) {
+                    $sale->dispatched_at = now();
+                }
+            }
+
             if ($isNew || empty($sale->user_id)) {
                 $sale->user_id = auth()->id();
             }
@@ -1334,17 +1401,21 @@ class SaleController extends Controller
                 if (!empty($invInput)) {
                     $manualInvoice = trim($invInput);
 
-                    // Check for duplicates
-                    $exists = Sale::where('invoice_no', $manualInvoice)->exists();
+                    // Check for duplicates across all branches
+                    $exists = Sale::withoutGlobalScopes()->where('invoice_no', $manualInvoice)->exists();
                     if ($exists) {
-                        throw \Illuminate\Validation\ValidationException::withMessages([
-                            'invoice_no' => "Invoice number '{$manualInvoice}' already exists. Please use a different number or click refresh.",
-                        ]);
+                        if ($request->ajax() || $request->wantsJson()) {
+                            $sale->invoice_no = Sale::generateInvoiceNo();
+                        } else {
+                            throw \Illuminate\Validation\ValidationException::withMessages([
+                                'invoice_no' => "Invoice number '{$manualInvoice}' already exists. Please use a different number or click refresh.",
+                            ]);
+                        }
+                    } else {
+                        $sale->invoice_no = $manualInvoice;
                     }
-
-                    $sale->invoice_no = $manualInvoice;
                 } else {
-                    // Auto-generate unique invoice number
+                    // Auto-generate unique collision-free invoice number
                     $sale->invoice_no = Sale::generateInvoiceNo();
                 }
             }
@@ -1470,6 +1541,15 @@ class SaleController extends Controller
                     $storedQtyBox = $ppb > 0 ? ($totalPieces / $ppb) : 0;
                     
                     $productName = $product->item_name;
+                    if (!empty($request->color[$index])) {
+                        $decoded = base64_decode($request->color[$index], true);
+                        $vData = $decoded !== false ? json_decode($decoded, true) : json_decode($request->color[$index], true);
+                        if (is_array($vData) && !empty($vData['name'])) {
+                            $productName = $vData['name'];
+                        } elseif (is_array($vData) && !empty($vData['size']) && $vData['size'] !== '-') {
+                            $productName = $product->item_name . ' (' . $vData['size'] . ')';
+                        }
+                    }
                     $brandId = $product->brand_id;
                     $unitId = $product->unit_id;
                     $sizeMode = $product->size_mode;
@@ -1523,6 +1603,10 @@ class SaleController extends Controller
                 $saleItem->brand_id = $brandId;
                 $saleItem->unit_id = $unitId;
                 $saleItem->size_mode = $sizeMode;
+
+                if (!empty($request->item_notes[$index])) {
+                    $saleItem->item_notes = $request->item_notes[$index];
+                }
 
                 if ($isManual) {
                     $saleItem->is_manual = 1;
@@ -1949,12 +2033,18 @@ class SaleController extends Controller
             // If AJAX/JSON response needed
             if ($request->ajax() || $request->wantsJson()) {
                 $receiptUrl = route('sales.receipt', $sale->id) . '?from=pos';
+                $kotUrl = route('sales.kot', $sale->id);
                 return response()->json([
                     'ok' => true,
                     'booking_id' => $sale->id,
+                    'sale_id' => $sale->id,
+                    'order_status' => $sale->order_status,
+                    'table_no' => $sale->table_no,
+                    'token_no' => $sale->token_no,
                     'msg' => 'Sale '.ucfirst($status).' Successfully',
                     'invoice_url' => $receiptUrl,
                     'receipt_url' => $receiptUrl,
+                    'kot_url' => $kotUrl,
                 ]);
             }
 
@@ -1986,6 +2076,11 @@ class SaleController extends Controller
         if (! $sale->relationLoaded('items')) {
             $sale->load('items.product');
         }
+
+        $isRestaurant = ($sale->branch && strtolower(trim($sale->branch->type ?? '')) === 'restaurant')
+                     || \App\Helpers\BranchHelper::isRestaurantBranch()
+                     || !empty($sale->order_type)
+                     || ($sale->branch_id == 2);
 
         foreach ($sale->items as $item) {
             // Outsourced / Manual products do not affect warehouse stock
@@ -2059,40 +2154,52 @@ class SaleController extends Controller
             }
 
             if (! $stock) {
-                $stock = WarehouseStock::where('product_id', $item->product_id)->lockForUpdate()->first();
-                if ($stock && (float)$stock->total_pieces <= 0 && (float)$stock->quantity > 0) {
-                    $stock->total_pieces = round($stock->quantity * $ppb, 2);
-                    $stock->save();
+                if ($isRestaurant) {
+                    $stock = WarehouseStock::firstOrCreate(
+                        ['product_id' => $item->product_id, 'warehouse_id' => $targetWhId],
+                        ['total_pieces' => 0, 'quantity' => 0, 'remarks' => 'Auto-created for Restaurant']
+                    );
+                } else {
+                    $stock = WarehouseStock::where('product_id', $item->product_id)->lockForUpdate()->first();
+                    if ($stock && (float)$stock->total_pieces <= 0 && (float)$stock->quantity > 0) {
+                        $stock->total_pieces = round($stock->quantity * $ppb, 2);
+                        $stock->save();
+                    }
                 }
             }
 
             if (! $stock) {
+                if ($isRestaurant) {
+                    continue;
+                }
                 throw new \Exception('Stock record not found in warehouse for product: '.$item->product_name);
             }
 
             if ($type === 'out') {
                 // Deduct with float tolerance
                 if ((float)$stock->total_pieces < ((float)$qtyPieces - 0.0001)) {
-                    $availFormatted = number_format($stock->total_pieces, 3);
-                    $unitLabel = ($productMode === 'by_kg' || $productMode === 'by_gm') ? 'Kg' : 'Pcs';
-                    $whObj = \App\Models\Warehouse::find($stock->warehouse_id);
-                    $whName = $whObj ? $whObj->warehouse_name : "Warehouse #{$stock->warehouse_id}";
+                    if (!$isRestaurant) {
+                        $availFormatted = number_format($stock->total_pieces, 3);
+                        $unitLabel = ($productMode === 'by_kg' || $productMode === 'by_gm') ? 'Kg' : 'Pcs';
+                        $whObj = \App\Models\Warehouse::find($stock->warehouse_id);
+                        $whName = $whObj ? $whObj->warehouse_name : "Warehouse #{$stock->warehouse_id}";
 
-                    $otherStocks = WarehouseStock::where('product_id', $item->product_id)
-                        ->where('warehouse_id', '!=', $stock->warehouse_id)
-                        ->where('total_pieces', '>', 0)
-                        ->get();
+                        $otherStocks = WarehouseStock::where('product_id', $item->product_id)
+                            ->where('warehouse_id', '!=', $stock->warehouse_id)
+                            ->where('total_pieces', '>', 0)
+                            ->get();
 
-                    $otherInfo = '';
-                    if ($otherStocks->isNotEmpty()) {
-                        $whList = $otherStocks->map(function($ws) {
-                            $name = \App\Models\Warehouse::find($ws->warehouse_id)->warehouse_name ?? "WH #{$ws->warehouse_id}";
-                            return "{$name}: ".number_format($ws->total_pieces, 2);
-                        })->join(', ');
-                        $otherInfo = " (Stock in other warehouse(s): {$whList})";
+                        $otherInfo = '';
+                        if ($otherStocks->isNotEmpty()) {
+                            $whList = $otherStocks->map(function($ws) {
+                                $name = \App\Models\Warehouse::find($ws->warehouse_id)->warehouse_name ?? "WH #{$ws->warehouse_id}";
+                                return "{$name}: ".number_format($ws->total_pieces, 2);
+                            })->join(', ');
+                            $otherInfo = " (Stock in other warehouse(s): {$whList})";
+                        }
+
+                        throw new \Exception("Insufficient stock for {$item->product_name} in {$whName}. Available: {$availFormatted} {$unitLabel}, Required: {$qtyPieces} {$unitLabel}.{$otherInfo}");
                     }
-
-                    throw new \Exception("Insufficient stock for {$item->product_name} in {$whName}. Available: {$availFormatted} {$unitLabel}, Required: {$qtyPieces} {$unitLabel}.{$otherInfo}");
                 }
                 $stock->total_pieces -= $qtyPieces;
                 // Update approx boxes for display
@@ -2261,6 +2368,7 @@ class SaleController extends Controller
                 'width' => $item->product->width ?? 0,
                 'pieces_per_m2' => $item->product->pieces_per_m2 ?? 0,
                 'size_mode' => $item->size_mode ?? $item->product->size_mode ?? 'std',
+                'item_notes' => $item->item_notes ?? '',
             ];
         });
     }

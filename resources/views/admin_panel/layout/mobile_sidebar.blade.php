@@ -60,14 +60,40 @@
         <ul class="m-drawer-nav">
             @if(!empty($is_restaurant_branch))
                 {{-- Restaurant POS Navigation (Mobile) --}}
+                @canany(['dashboard.view', 'home.view'])
                 <li class="m-nav-item">
-                    <a href="{{ route('pos.index') }}" class="m-nav-link {{ request()->is('pos*') ? 'active' : '' }}">
-                        <i class="fas fa-cash-register m-nav-icon text-primary"></i>
-                        <span class="m-nav-text font-weight-bold">POS Counter</span>
+                    <a href="{{ url('/home') }}" class="m-nav-link {{ request()->is('home*') || request()->is('dashboard*') ? 'active' : '' }}">
+                        <i class="fas fa-home m-nav-icon text-primary"></i>
+                        <span class="m-nav-text font-weight-bold">Dashboard</span>
+                    </a>
+                </li>
+                @endcanany
+                <li class="m-nav-item">
+                    <a href="{{ route('restaurant.pos') }}" class="m-nav-link {{ request()->is('restaurant/pos*') || request()->is('pos*') ? 'active' : '' }}">
+                        <i class="fas fa-cash-register m-nav-icon text-warning"></i>
+                        <span class="m-nav-text font-weight-bold">Restaurant POS</span>
                     </a>
                 </li>
                 <li class="m-nav-item">
-                    <a href="{{ url('product-catalog') }}" class="m-nav-link {{ request()->is('product*') ? 'active' : '' }}">
+                    <a href="{{ route('restaurant.tables.index') }}" class="m-nav-link {{ request()->is('restaurant/tables*') ? 'active' : '' }}">
+                        <i class="fas fa-chair m-nav-icon text-primary"></i>
+                        <span class="m-nav-text">Tables</span>
+                    </a>
+                </li>
+                <li class="m-nav-item">
+                    <a href="{{ route('restaurant.deliveries.index') }}" class="m-nav-link {{ request()->is('restaurant/deliveries*') ? 'active' : '' }}">
+                        <i class="fas fa-shipping-fast m-nav-icon text-warning"></i>
+                        <span class="m-nav-text">Deliveries</span>
+                    </a>
+                </li>
+                <li class="m-nav-item">
+                    <a href="{{ route('restaurant.riders.index') }}" class="m-nav-link {{ request()->is('restaurant/riders*') ? 'active' : '' }}">
+                        <i class="fas fa-motorcycle m-nav-icon text-info"></i>
+                        <span class="m-nav-text">Riders</span>
+                    </a>
+                </li>
+                <li class="m-nav-item">
+                    <a href="{{ url('product-catalog') }}" class="m-nav-link {{ request()->is('product*') || request()->is('create*') ? 'active' : '' }}">
                         <i class="fas fa-utensils m-nav-icon text-success"></i>
                         <span class="m-nav-text">Products / Menu</span>
                     </a>
@@ -94,6 +120,12 @@
                     <a href="{{ route('view_all') }}" class="m-nav-link {{ request()->is('view_all*') || request()->is('accounts*') ? 'active' : '' }}">
                         <i class="fas fa-university m-nav-icon text-primary"></i>
                         <span class="m-nav-text">Accounts</span>
+                    </a>
+                </li>
+                <li class="m-nav-item">
+                    <a href="{{ route('report.sale') }}" class="m-nav-link {{ request()->is('report/sale*') ? 'active' : '' }}">
+                        <i class="fas fa-chart-line m-nav-icon text-warning"></i>
+                        <span class="m-nav-text">Sale Report</span>
                     </a>
                 </li>
                 <li class="m-nav-item">
@@ -198,6 +230,7 @@
                         @endcanany
                         @can('sales.create')
                             <li><a href="{{ route('pos.index') }}"><i class="fas fa-calculator"></i> POS Terminal</a></li>
+                            <li><a href="{{ route('restaurant.pos') }}"><i class="fas fa-utensils text-warning"></i> Restaurant POS</a></li>
                         @endcan
                         @can('customers.view')
                             <li><a href="{{ url('customers') }}"><i class="fas fa-user-friends"></i> Customers</a></li>

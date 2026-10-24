@@ -150,6 +150,8 @@ Route::middleware('auth')->group(function () {
 
     // ////////
     Route::get('/create_prodcut', [ProductController::class, 'view_store'])->middleware('permission:products.create')->name('store');
+    Route::get('/create-product', [ProductController::class, 'view_store'])->middleware('permission:products.create');
+    Route::get('/products/create', [ProductController::class, 'view_store'])->middleware('permission:products.create')->name('products.create');
     Route::post('/store-product', [ProductController::class, 'store_product'])->middleware('permission:products.create|products.edit')->name('store-product');
     Route::put('/product/update/{id}', [ProductController::class, 'update'])->middleware('permission:products.edit')->name('product.update');
     Route::post('/products/bulk-update', [ProductController::class, 'bulkUpdate'])->middleware('permission:products.edit')->name('products.bulk-update');
@@ -359,6 +361,36 @@ Route::middleware('auth')->group(function () {
     Route::get('/sales/{id}/dc', [SaleController::class, 'saledc'])->middleware('permission:sales.view|sales.view_own')->name('sales.dc');
     Route::get('/sales/{id}/dc-thermal', [SaleController::class, 'saledcThermal'])->middleware('permission:sales.view|sales.view_own')->name('sales.dc_thermal');
     Route::get('/sales/{id}/recepit', [SaleController::class, 'salereceipt'])->middleware('permission:sales.view|sales.view_own')->name('sales.receipt');
+    Route::get('/sales/{id}/kot', [SaleController::class, 'kotReceipt'])->middleware('permission:sales.view|sales.view_own')->name('sales.kot');
+
+    // Restaurant Operations
+    Route::get('/restaurant/pos', [\App\Http\Controllers\RestaurantController::class, 'pos'])->middleware('permission:sales.create')->name('restaurant.pos');
+    Route::get('/restaurant/active-orders', [\App\Http\Controllers\RestaurantController::class, 'activeOrders'])->middleware('permission:sales.view|sales.view_own')->name('restaurant.active_orders');
+    Route::get('/restaurant/order/{id}', [\App\Http\Controllers\RestaurantController::class, 'getOrder'])->middleware('permission:sales.view|sales.view_own')->name('restaurant.get_order');
+    Route::post('/restaurant/order/{id}/cancel', [\App\Http\Controllers\RestaurantController::class, 'cancelOrder'])->middleware('permission:sales.edit')->name('restaurant.cancel_order');
+
+    // Restaurant Table Management
+    Route::get('/restaurant/tables', [\App\Http\Controllers\RestaurantTableController::class, 'index'])->name('restaurant.tables.index');
+    Route::post('/restaurant/tables/store', [\App\Http\Controllers\RestaurantTableController::class, 'store'])->name('restaurant.tables.store');
+    Route::post('/restaurant/tables/batch-create', [\App\Http\Controllers\RestaurantTableController::class, 'batchCreate'])->name('restaurant.tables.batch_create');
+    Route::get('/restaurant/tables/delete/{id}', [\App\Http\Controllers\RestaurantTableController::class, 'destroy'])->name('restaurant.tables.delete');
+    Route::post('/restaurant/tables/{id}/toggle-status', [\App\Http\Controllers\RestaurantTableController::class, 'toggleStatus'])->name('restaurant.tables.toggle_status');
+    Route::get('/restaurant/tables/api-list', [\App\Http\Controllers\RestaurantTableController::class, 'apiList'])->name('restaurant.tables.api_list');
+
+    // Restaurant Rider Management
+    Route::get('/restaurant/riders', [\App\Http\Controllers\RiderController::class, 'index'])->name('restaurant.riders.index');
+    Route::post('/restaurant/riders/store', [\App\Http\Controllers\RiderController::class, 'store'])->name('restaurant.riders.store');
+    Route::get('/restaurant/riders/delete/{id}', [\App\Http\Controllers\RiderController::class, 'destroy'])->name('restaurant.riders.delete');
+    Route::post('/restaurant/riders/{id}/toggle-status', [\App\Http\Controllers\RiderController::class, 'toggleStatus'])->name('restaurant.riders.toggle_status');
+    Route::post('/restaurant/riders/{id}/settle-cash', [\App\Http\Controllers\RiderController::class, 'settleCash'])->name('restaurant.riders.settle_cash');
+    Route::get('/restaurant/riders/api-list', [\App\Http\Controllers\RiderController::class, 'apiList'])->name('restaurant.riders.api_list');
+
+    // Restaurant Delivery Dispatch Management
+    Route::get('/restaurant/deliveries', [\App\Http\Controllers\DeliveryOrderController::class, 'index'])->name('restaurant.deliveries.index');
+    Route::post('/restaurant/deliveries/{id}/assign-rider', [\App\Http\Controllers\DeliveryOrderController::class, 'assignRider'])->name('restaurant.deliveries.assign_rider');
+    Route::post('/restaurant/deliveries/{id}/mark-delivered', [\App\Http\Controllers\DeliveryOrderController::class, 'markDelivered'])->name('restaurant.deliveries.mark_delivered');
+    Route::post('/restaurant/deliveries/{id}/cancel', [\App\Http\Controllers\DeliveryOrderController::class, 'cancelDelivery'])->name('restaurant.deliveries.cancel');
+    Route::get('/restaurant/deliveries/{id}/slip', [\App\Http\Controllers\DeliveryOrderController::class, 'deliverySlip'])->name('restaurant.deliveries.slip');
 
     // booking system
 

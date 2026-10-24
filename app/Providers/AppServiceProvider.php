@@ -20,5 +20,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         \Illuminate\Pagination\Paginator::useBootstrapFive();
+
+        view()->composer('*', function ($view) {
+            $view->with('is_restaurant_branch', \App\Helpers\BranchHelper::isRestaurantBranch());
+        });
     }
 }

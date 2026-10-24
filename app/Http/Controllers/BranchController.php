@@ -17,66 +17,49 @@ class BranchController extends Controller
     public function index()
     {
         $branches = Branch::all();
-        $users = User::where('email', '!=' ,'admin@admin.com')->get();
+        $users = User::all();
         return view('admin_panel.branch.branch', compact('branches', 'users')); 
     }
 
     public function store(Request $request)
     {
         $editId = $request->edit_id ?? null;
-         $validator = Validator::make($request->all(), [
-            'name' => 'required|unique:branches,name,'.$request->edit_id,
-            'address' => 'required',
-            'number' => 'required',
-            'user_id' => 'required|exists:users,id',
+
+        $validator = Validator::make($request->all(), [
+            'name'    => ['required', 'string', 'max:255', Rule::unique('branches', 'name')->ignore($editId)],
+            'type'    => 'required|in:mart,restaurant',
+            'address' => 'required|string|max:255',
+            'number'  => 'nullable|string|max:50',
+            'user_id' => 'nullable|exists:users,id',
         ]);
 
-        if ($validator->fails()) {
-            return ['errors' => $validator->errors()];
-        }
-
-
-      
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()]);
         }
 
-        // Step 2: Check for user_id uniqueness (exclude self in edit)
-        $userExists = Branch::where('user_id', $request->user_id)
-            ->when($editId, fn($q) => $q->where('id', '!=', $editId))
-            ->exists();
-
-        if ($userExists) {
-            return response()->json([
-                'errors' => [
-                    'user_id' => ['This user is already assigned to another branch.']
-                ]
-            ]);
-        }
-
-        // Step 3: Save or update logic
+        // Save or update logic
         if (!empty($editId)) {
-            $branch = Branch::find($editId);
+            $branch = Branch::findOrFail($editId);
             $msg = [
                 'success' => 'Branch Updated Successfully',
-                'reload' => true
+                'reload'  => true
             ];
         } else {
             $branch = new Branch();
             $msg = [
-                'success' => 'Branch Created Successfully',
+                'success'  => 'Branch Created Successfully',
                 'redirect' => route('branch.index')
             ];
         }
 
-        $branch->name = $request->name;
+        $branch->name    = $request->name;
+        $branch->type    = $request->type ?? 'mart';
         $branch->address = $request->address;
-        $branch->number = $request->number;
-        $branch->user_id = $request->user_id;
+        $branch->number  = $request->number ?? '';
+        $branch->user_id = $request->filled('user_id') ? $request->user_id : null;
         $branch->save();
 
         return response()->json($msg);
-        
     }
 
     /**

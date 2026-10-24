@@ -505,7 +505,7 @@
                     <button type="button" class="btn-hdr btn-hdr-warning" id="openImportModalBtn">
                         <i class="fas fa-file-upload"></i> Import CSV
                     </button>
-                    <a href="create_prodcut" class="btn-hdr btn-hdr-primary">
+                    <a href="{{ url('create_prodcut') }}" class="btn-hdr btn-hdr-primary">
                         <i class="fas fa-plus"></i> Add Product
                     </a>
                 @endif
@@ -622,7 +622,9 @@
                             <th style="width:40px;">#</th>
                             <th style="width:52px;">Image</th>
                             <th>Item Details</th>
+                            @if(empty($is_restaurant_branch))
                             <th>Stock</th>
+                            @endif
                             <th>Purchase Price</th>
                             <th>Sale Price</th>
                             <th style="width:90px;">Status</th>
@@ -707,6 +709,7 @@
                                         @endif
                                     @endif
                                 </td>
+                                @if(empty($is_restaurant_branch))
                                 <td>
                                     <span class="stock-badge {{ $stockClass }}">
                                         <i class="fas fa-cubes" style="font-size:.65rem;"></i>
@@ -714,6 +717,7 @@
                                         <span class="stock-unit">{{ $stockUnit }}</span>
                                     </span>
                                 </td>
+                                @endif
                                 <td class="price-purchase">Rs. {{ number_format($tradePrice, 2) }}</td>
                                 <td class="price-sale">Rs. {{ number_format($retailPrice, 2) }}</td>
                                 <td>
@@ -817,12 +821,14 @@
                             <div class="prod-mcard-price">Rs. {{ number_format($retailPrice, 2) }}</div>
                             <div style="font-size:.7rem; color:var(--erp-muted);">Cost: Rs. {{ number_format($tradePrice, 2) }}</div>
                         </div>
+                        @if(empty($is_restaurant_branch))
                         <div class="text-end">
                             <div style="font-size:.68rem; font-weight:700; color:var(--erp-muted); text-transform:uppercase; margin-bottom:2px;">Stock</div>
                             <span class="stock-badge {{ $stockClass }}">
                                 <i class="fas fa-cubes"></i> {{ $stockDisplay }} <span class="stock-unit">{{ $stockUnit }}</span>
                             </span>
                         </div>
+                        @endif
                     </div>
                     <div class="prod-mcard-actions">
                         <button type="button" class="btn-act btn-act-view viewProductBtn" data-id="{{ $product->id }}">
@@ -959,7 +965,9 @@
                                 <th class="text-start ps-4" style="font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#475569;">Variant Name</th>
                                 <th style="font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#475569;">Size</th>
                                 <th style="font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#475569;">Color</th>
+                                @if(empty($is_restaurant_branch))
                                 <th style="font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#475569;">Stock</th>
+                                @endif
                                 <th style="font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#475569;">Sale Price</th>
                                 <th style="font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#475569;">Purch Price</th>
                                 <th style="font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#475569;">Alert</th>
@@ -1004,7 +1012,7 @@ $(document).ready(function () {
         order:      [[3, 'asc']],
         dom:        'rt',
         scrollX:    false,
-        columnDefs: [{ targets: [0, 8], orderable: false, searchable: false }]
+        columnDefs: [{ targets: [0, -1], orderable: false, searchable: false }]
     });   // DataTable closes here
 
     // ── Select All ──
@@ -1033,6 +1041,7 @@ $(document).ready(function () {
                     (product.brand?.name ?? '')
                 );
 
+                let isRestaurantBranch = {{ !empty($is_restaurant_branch) ? 'true' : 'false' }};
                 let tbody = $('#variantTableBody');
                 tbody.empty();
 
@@ -1093,11 +1102,12 @@ $(document).ready(function () {
                         if (product.size_mode === 'by_kg' && v.conv_factor != 1 && !v.unit) vUnit = 'Pcs';
                         let vPriceLabel = product.size_mode === 'by_size' ? '/m²' : '/' + vUnit;
 
+                        let stockCol = isRestaurantBranch ? '' : `<td>${stockBadgeHtml(vStock, vAlert)}</td>`;
                         tbody.append(`<tr>
                             <td class="text-start ps-4 fw-semibold">${vName}</td>
                             <td>${vSize}</td>
                             <td>${colorBadge}</td>
-                            <td>${stockBadgeHtml(vStock, vAlert)}</td>
+                            ${stockCol}
                             <td class="fw-bold" style="color:#059669;">Rs. ${parseFloat(vSale||0).toFixed(2)} <small class="fw-normal text-muted">${vPriceLabel}</small></td>
                             <td class="text-muted">Rs. ${parseFloat(vPurch||0).toFixed(2)} <small>${vPriceLabel}</small></td>
                             <td><span style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:4px;padding:2px 6px;font-size:.72rem;">${alertQty}</span></td>
@@ -1108,11 +1118,12 @@ $(document).ready(function () {
                     colorList.forEach((color, index) => {
                         let barcode   = (product.barcode_path ?? product.item_code ?? '') + (index > 0 ? '-' + String(index+1).padStart(2,'0') : '');
                         let colorBadge = (color && color !== '-') ? `<span style="background:#e2e8f0;border-radius:4px;padding:2px 6px;font-size:.72rem;">${color}</span>` : '<span style="color:#94a3b8;">—</span>';
+                        let stockCol = isRestaurantBranch ? '' : `<td>${stockBadgeHtml(stock, product.alert_carton_quantity)}</td>`;
                         tbody.append(`<tr>
                             <td class="text-start ps-4 fw-semibold">${product.item_name}</td>
                             <td>${sizeStr}</td>
                             <td>${colorBadge}</td>
-                            <td>${stockBadgeHtml(stock, product.alert_carton_quantity)}</td>
+                            ${stockCol}
                             <td class="fw-bold" style="color:#059669;">Rs. ${parseFloat(salePrice||0).toFixed(2)} <small class="fw-normal text-muted">${priceLabel}</small></td>
                             <td class="text-muted">Rs. ${parseFloat(purchPrice||0).toFixed(2)} <small>${priceLabel}</small></td>
                             <td><span style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:4px;padding:2px 6px;font-size:.72rem;">${alertDef}</span></td>

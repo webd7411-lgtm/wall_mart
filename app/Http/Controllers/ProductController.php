@@ -717,11 +717,13 @@ class ProductController extends Controller
     {
         // When called from the product list with a product ID → show the barcode page
         if ($id) {
-            $product  = \App\Models\Product::findOrFail($id);
+            $product  = \App\Models\Product::with('branch')->findOrFail($id);
             // Variants are stored as JSON in the `color` column
             $variants = json_decode($product->color, true) ?? [];
-            $shopName = \App\Models\Setting::get('company_name', config('app.name', 'Shop'), $product->branch_id ?? null);
-            return view('admin_panel.product.barcode', compact('product', 'variants', 'shopName'));
+            $branchName = $product->branch->name 
+                ?? \App\Helpers\BranchHelper::getActiveBranch()?->name 
+                ?? \App\Models\Setting::get('company_name', config('app.name', 'Wall Mart'), $product->branch_id ?? null);
+            return view('admin_panel.product.barcode', compact('product', 'variants', 'branchName'));
         }
 
         // When called via AJAX (no ID) → return JSON with a generated barcode number/image

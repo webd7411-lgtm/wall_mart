@@ -170,6 +170,17 @@
                     </select>
                 </div>
 
+                {{-- Order Type Filter --}}
+                <div class="sale-filter-group" style="margin-right: 18px;">
+                    <label for="order_type_desk" class="sale-filter-label">Type:</label>
+                    <select name="order_type" id="order_type_desk" class="form-select form-select-sm fw-bold orderTypeInput" style="height: 36px; width: 130px; font-size: .78rem; border-radius: 6px;">
+                        <option value="">All Types</option>
+                        <option value="dine_in">🍽️ Dine-In</option>
+                        <option value="takeaway">🥡 Takeaway</option>
+                        <option value="delivery">🛵 Delivery</option>
+                    </select>
+                </div>
+
                 {{-- Search Input --}}
                 <div class="flex-grow-1" style="min-width: 210px; margin-right: 18px;">
                     <div class="position-relative">
@@ -209,7 +220,7 @@
                         <label class="form-label mb-1 fw-bold text-secondary" style="font-size: 11px;">End Date</label>
                         <input type="datetime-local" name="end_date" id="end_date_mob" class="form-control form-control-sm endDateInput" style="font-size: 11px;">
                     </div>
-                    <div class="col-12 mb-1">
+                    <div class="col-6 mb-1">
                         <label class="form-label mb-1 fw-bold text-secondary" style="font-size: 11px;">Cashier</label>
                         <select name="user_id" id="user_id_mob" class="form-select form-select-sm userIdInput" style="font-size: 11px;">
                             <option value="">All Cashiers</option>
@@ -218,6 +229,15 @@
                                     <option value="{{ $u->id }}">{{ $u->name }}</option>
                                 @endforeach
                             @endif
+                        </select>
+                    </div>
+                    <div class="col-6 mb-1">
+                        <label class="form-label mb-1 fw-bold text-secondary" style="font-size: 11px;">Order Type</label>
+                        <select name="order_type" id="order_type_mob" class="form-select form-select-sm orderTypeInput" style="font-size: 11px;">
+                            <option value="">All Types</option>
+                            <option value="dine_in">🍽️ Dine-In</option>
+                            <option value="takeaway">🥡 Takeaway</option>
+                            <option value="delivery">🛵 Delivery</option>
                         </select>
                     </div>
                     <div class="col-12 mb-2">
@@ -355,6 +375,7 @@
                             <th style="width:40px;">#</th>
                             <th style="width:130px;">Date &amp; Time</th>
                             <th style="width:110px;">Invoice</th>
+                            <th style="width:115px;">Type</th>
                             <th style="width:110px;">Customer</th>
                             <th style="width:100px;">Cashier</th>
                             <th style="width:90px;">Ref</th>
@@ -396,13 +417,15 @@
         $('.startDateInput').on('change', function() { $('.startDateInput').val($(this).val()); });
         $('.endDateInput').on('change', function() { $('.endDateInput').val($(this).val()); });
         $('.userIdInput').on('change', function() { $('.userIdInput').val($(this).val()); });
+        $('.orderTypeInput').on('change', function() { $('.orderTypeInput').val($(this).val()); });
         $('.searchProductInput').on('input', function() { $('.searchProductInput').val($(this).val()); });
 
         // Auto Search Trigger
         $(document).on('click', '.btnSearchTrigger', function() {
-            let start  = $('#start_date_desk').val() || $('#start_date_mob').val();
-            let end    = $('#end_date_desk').val() || $('#end_date_mob').val();
-            let userId = $('#user_id_desk').val() || $('#user_id_mob').val();
+            let start     = $('#start_date_desk').val() || $('#start_date_mob').val();
+            let end       = $('#end_date_desk').val() || $('#end_date_mob').val();
+            let userId    = $('#user_id_desk').val() || $('#user_id_mob').val();
+            let orderType = $('#order_type_desk').val() || $('#order_type_mob').val();
             $('.searchProductInput').val('');
 
             $(".loader").show();
@@ -412,7 +435,8 @@
                 data: {
                     start_date: start,
                     end_date: end,
-                    user_id: userId
+                    user_id: userId,
+                    order_type: orderType
                 },
                 success: function(res) {
                     $(".loader").hide();
@@ -453,11 +477,25 @@
                         }
                         grandReturn += returnTotal;
 
+                        let typeBadge = '';
+                        if (s.order_type === 'dine_in') {
+                            typeBadge = `<span class="badge bg-primary text-white" style="font-size: 10px;">🍽️ Dine-In ${s.table_no ? '(' + s.table_no + ')' : ''}</span>`;
+                        } else if (s.order_type === 'takeaway') {
+                            typeBadge = `<span class="badge bg-warning text-dark" style="font-size: 10px;">🥡 Takeaway ${s.token_no ? '#' + s.token_no : ''}</span>`;
+                        } else if (s.order_type === 'delivery') {
+                            typeBadge = `<span class="badge bg-info text-white" style="font-size: 10px;">🛵 Delivery</span>`;
+                        } else {
+                            typeBadge = `<span class="badge bg-light text-secondary border" style="font-size: 10px;">Standard</span>`;
+                        }
+
+                        let invCode = s.invoice_no || ('INVSLE-' + s.id);
+
                         // Desktop Row
                         html += `<tr data-qty="${rowQty}" data-total="${rowTotal}" data-net="${s.total_net}" data-return="${returnTotal}">
                             <td>${i+1}</td>
                             <td class="small text-nowrap">${s.created_at}</td>
-                            <td class="font-monospace fw-bold text-primary">INVSLE-${s.id}</td>
+                            <td class="font-monospace fw-bold text-primary">${invCode}</td>
+                            <td class="text-nowrap">${typeBadge}</td>
                             <td>${s.customer_name ?? '-'}</td>
                             <td><span class="badge bg-light text-dark border px-2 py-1"><i class="fas fa-user-circle text-primary me-1"></i>${s.cashier || 'System'}</span></td>
                             <td>${s.reference ?? '-'}</td>
@@ -471,11 +509,12 @@
 
                         // Mobile Card
                         mobHtml += `
-                        <div class="mob-card p-2.5 p-2 mb-2 mob-sale-card" data-search="${(s.product + ' INVSLE-' + s.id + ' ' + (s.customer_name||'') + ' ' + (s.cashier||'') + ' ' + (s.reference||'')).toLowerCase()}">
+                        <div class="mob-card p-2.5 p-2 mb-2 mob-sale-card" data-search="${(s.product + ' ' + invCode + ' ' + (s.customer_name||'') + ' ' + (s.cashier||'') + ' ' + (s.reference||'') + ' ' + (s.order_type||'')).toLowerCase()}">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <div class="d-flex align-items-center gap-1">
                                     <span class="badge bg-light text-muted border" style="font-size: 10px;">#${i+1}</span>
-                                    <span class="badge bg-light text-primary border font-monospace fw-bold" style="font-size: 11px;">INVSLE-${s.id}</span>
+                                    <span class="badge bg-light text-primary border font-monospace fw-bold" style="font-size: 11px;">${invCode}</span>
+                                    ${typeBadge}
                                 </div>
                                 <small class="text-muted" style="font-size: 10.5px;">${s.created_at}</small>
                             </div>
@@ -511,7 +550,7 @@
 
                     // Grand total row inside desktop table
                     html += `<tr class="fw-bold bg-light" id="grandTotalRow">
-                        <td colspan="7" class="text-end">Grand Total:</td>
+                        <td colspan="8" class="text-end">Grand Total:</td>
                         <td id="grandQty">${grandQty.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                         <td>-</td>
                         <td id="grandTotal">${grandTotal.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
@@ -583,7 +622,7 @@
         // Export CSV Handler
         $(document).on('click', '.btnExportCsvTrigger', function() {
             let csv = [];
-            csv.push(['#', 'Date & Time', 'Invoice', 'Customer', 'Cashier', 'Reference', 'Products', 'Qty', 'Price', 'Total', 'Net Amount', 'Returns'].join(','));
+            csv.push(['#', 'Date & Time', 'Invoice', 'Type', 'Customer', 'Cashier', 'Reference', 'Products', 'Qty', 'Price', 'Total', 'Net Amount', 'Returns'].join(','));
             $('#saleBody tr').each(function() {
                 if ($(this).attr('id') === 'grandTotalRow') return;
                 let row = [];

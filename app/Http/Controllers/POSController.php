@@ -15,6 +15,11 @@ class POSController extends Controller
 {
     public function index(Request $request = null)
     {
+        // If active branch is restaurant, open streamlined Restaurant POS
+        if (\App\Helpers\BranchHelper::isRestaurantBranch() && !request()->has('mode_retail')) {
+            return redirect()->route('restaurant.pos');
+        }
+
         // 1. Fetch all active products
         $products = Product::where('is_active', true)->with('warehouseStocks')->get();
 

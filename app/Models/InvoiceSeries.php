@@ -22,6 +22,9 @@ class InvoiceSeries extends Model
 
         if ($prefix) {
             $series = self::where('prefix', strtoupper(trim($prefix)))->first();
+            if (!$series) {
+                $series = self::withoutGlobalScopes()->where('prefix', strtoupper(trim($prefix)))->first();
+            }
         }
 
         if (!$series) {
@@ -29,14 +32,16 @@ class InvoiceSeries extends Model
         }
 
         if (!$series) {
-            return 'INV-0001';
+            $series = self::withoutGlobalScopes()->where('is_default', 1)->first() ?: self::withoutGlobalScopes()->first();
         }
 
-        $pref = strtoupper($series->prefix);
-        $padding = $series->padding ?: 4;
+        $pref = $series ? strtoupper($series->prefix) : 'INV';
+        $padding = $series ? ($series->padding ?: 4) : 4;
+        $startNum = $series ? (int) $series->next_number : 1;
 
-        // Find highest existing invoice number in sales table for this prefix
-        $lastSale = Sale::where('invoice_no', 'LIKE', $pref . '-%')
+        // Find highest existing numeric suffix across ALL branches to ensure global uniqueness
+        $lastSale = Sale::withoutGlobalScopes()
+            ->where('invoice_no', 'LIKE', $pref . '-%')
             ->orderBy('id', 'desc')
             ->first();
 
@@ -47,9 +52,18 @@ class InvoiceSeries extends Model
             }
         }
 
-        $nextNum = max((int) $series->next_number, $numFromSale + 1);
+        $nextNum = max($startNum, $numFromSale + 1);
 
-        return $pref . '-' . str_pad($nextNum, $padding, '0', STR_PAD_LEFT);
+        // Loop until guaranteed unused unique candidate is found
+        do {
+            $candidate = $pref . '-' . str_pad($nextNum, $padding, '0', STR_PAD_LEFT);
+            $exists = Sale::withoutGlobalScopes()->where('invoice_no', $candidate)->exists();
+            if ($exists) {
+                $nextNum++;
+            }
+        } while ($exists);
+
+        return $candidate;
     }
 
     /**
@@ -64,6 +78,10 @@ class InvoiceSeries extends Model
             $number = (int) $matches[2];
 
             $series = self::where('prefix', $prefix)->first();
+            if (!$series) {
+                $series = self::withoutGlobalScopes()->where('prefix', $prefix)->first();
+            }
+
             if ($series) {
                 if ($number >= $series->next_number) {
                     $series->next_number = $number + 1;

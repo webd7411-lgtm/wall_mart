@@ -14,18 +14,31 @@ class EnforceRestaurantBranchRestriction
      * Whitelist of route names allowed in Restaurant POS mode.
      */
     protected array $allowedRoutePatterns = [
+        // Dashboard
+        'home',
+        'dashboard',
+
         // POS Billing
         'pos.*',
         'purchase-pos.*',
+        'restaurant.*',
 
         // Products / Catalog / Menu
         'product',
         'product.*',
         'products.*',
+        'store',
+        'create_prodcut',
+        'create-product',
         'store-product',
         'productget',
         'productview',
         'search-product-name',
+        'generate-barcode-image',
+        'fetch-subcategories',
+        'get-all-subcategories',
+        'get-categories',
+        'get-brands',
 
         // Sales / Orders / Invoices
         'sale',
@@ -41,6 +54,18 @@ class EnforceRestaurantBranchRestriction
         'Unit.*',
         'brand.*',
         'Brand.*',
+        'store.category',
+        'store.subcategory',
+        'store.brand',
+        'store.Brand',
+        'store.unit',
+        'store.Unit',
+        'delete.category',
+        'delete.subcategory',
+        'delete.brand',
+        'delete.Brand',
+        'delete.unit',
+        'delete.Unit',
 
         // Customer management
         'customer',
@@ -64,6 +89,10 @@ class EnforceRestaurantBranchRestriction
         'settings.index',
         'settings.update',
 
+        // Sale Report
+        'report.sale',
+        'report.sale.*',
+
         // Branch switching & Auth
         'branch.switch',
         'logout',
@@ -75,14 +104,24 @@ class EnforceRestaurantBranchRestriction
      * Whitelist of exact or prefix URI paths allowed.
      */
     protected array $allowedUriPrefixes = [
+        'home',
+        'dashboard',
         'pos',
+        'restaurant',
         'product',
         'products',
         'product-catalog',
+        'create_prodcut',
+        'create-product',
         'store-product',
         'productget',
         'productview',
         'search-product-name',
+        'generate-barcode-image',
+        'get-subcategories',
+        'get-all-subcategories',
+        'get-categories',
+        'get-brands',
         'sale',
         'sales',
         'invoice-series',
@@ -106,6 +145,7 @@ class EnforceRestaurantBranchRestriction
         'accounts-head',
         'get-accounts-by-head',
         'settings',
+        'report/sale',
         'branch/switch',
         'logout',
         'notifications',
@@ -129,11 +169,6 @@ class EnforceRestaurantBranchRestriction
         $routeName = $request->route() ? $request->route()->getName() : null;
         $path = trim($request->path(), '/');
 
-        // Home / Dashboard auto-redirects to POS
-        if ($path === '' || $path === 'home' || $path === 'dashboard' || $routeName === 'home' || $routeName === 'dashboard') {
-            return redirect()->route('pos.index');
-        }
-
         // Check if route name matches any allowed pattern
         if ($routeName) {
             foreach ($this->allowedRoutePatterns as $pattern) {
@@ -143,9 +178,11 @@ class EnforceRestaurantBranchRestriction
             }
         }
 
-        // Check if URI matches any allowed prefix
+        // Check if URI matches any allowed prefix (case-insensitive)
+        $pathLower = strtolower($path);
         foreach ($this->allowedUriPrefixes as $prefix) {
-            if ($path === $prefix || Str::startsWith($path, $prefix . '/')) {
+            $prefixLower = strtolower($prefix);
+            if ($pathLower === $prefixLower || Str::startsWith($pathLower, $prefixLower . '/')) {
                 return $next($request);
             }
         }

@@ -1235,6 +1235,10 @@ class ReportingController extends Controller
                 $query->where('user_id', $request->user_id);
             }
 
+            if ($request->filled('order_type')) {
+                $query->where('order_type', $request->order_type);
+            }
+
             $sales = $query->orderBy('created_at', 'asc')->get();
 
             // Transform to match the structure expected by the frontend (CSV strings)
@@ -1326,6 +1330,10 @@ class ReportingController extends Controller
 
                 return [
                     'id' => $sale->id,
+                    'invoice_no' => $sale->invoice_no ?? ('INVSLE-' . $sale->id),
+                    'order_type' => $sale->order_type,
+                    'table_no' => $sale->table_no,
+                    'token_no' => $sale->token_no,
                     'reference' => $sale->reference ?? '-',
                     'product' => $productNames,      // Names
                     'product_code' => $productCodes, // Codes
@@ -1339,7 +1347,7 @@ class ReportingController extends Controller
                     'per_total' => $totals,
                     'total_net' => $netAmount,
                     'created_at' => $sale->created_at->format('Y-m-d h:i:s A'),
-                    'customer_name' => $sale->customer_relation ? $sale->customer_relation->customer_name : 'Walk-in',
+                    'customer_name' => $sale->customer_relation ? $sale->customer_relation->customer_name : ($sale->walkin_name ?: 'Walk-in'),
                     'cashier' => optional($sale->user)->name ?? 'System',
                     'returns' => $sale->returns->map(function($ret) {
                          // Robust return display handling both legacy strings and new relation items

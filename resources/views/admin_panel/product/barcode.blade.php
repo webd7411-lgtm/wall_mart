@@ -303,7 +303,7 @@
 @forelse ($variants as $index => $variant)
     <div class="barcode-card" id="card-{{ $index }}">
         <div class="label" id="label-{{ $index }}">
-            <div class="product-name">Wall Mart</div>
+            <div class="product-name">{{ $branchName ?? ($shopName ?? 'Wall Mart') }}</div>
             <div class="variant-info">
                 {{ $variant['name'] ?? $product->item_name }} @if(!empty($variant['size']) && $variant['size'] !== '-')| {{ $variant['size'] }} @endif @if(!empty($variant['color']) && $variant['color'] !== '-')| {{ $variant['color'] }}@endif
             </div>
@@ -331,7 +331,7 @@
     {{-- Fallback: product has no variants --}}
     <div class="barcode-card" id="card-main">
         <div class="label" id="label-main">
-            <div class="product-name">Wall Mart</div>
+            <div class="product-name">{{ $branchName ?? ($shopName ?? 'Wall Mart') }}</div>
             <div class="variant-info">{{ $product->item_name }}</div>
             <div class="barcode-wrap">
                 @php $fallbackCode = $product->barcode_path ?: $product->item_code; @endphp
