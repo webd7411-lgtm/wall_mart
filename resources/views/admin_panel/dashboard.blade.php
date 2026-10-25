@@ -464,6 +464,9 @@
 </style>
 
 <div class="db-wrap">
+    @php
+        $isRestaurant = !empty($isRestaurantBranch) || \App\Helpers\BranchHelper::isRestaurantBranch();
+    @endphp
 
     {{-- =============================================
          1. HEADER
@@ -485,75 +488,140 @@
     ============================================= --}}
     <div class="db-nav-pills">
         <a href="{{ route('report.sale') }}"           class="db-pill"><i class="fa-solid fa-receipt"              style="color: var(--green);"></i>  Sales Report</a>
-        <a href="{{ route('report.purchase') }}"       class="db-pill"><i class="fa-solid fa-cart-shopping"        style="color: var(--blue);"></i>   Purchase Report</a>
-        <a href="{{ route('report.profit_loss') }}"    class="db-pill"><i class="fa-solid fa-chart-line"           style="color: var(--cyan);"></i>   Profit & Loss</a>
-        <a href="{{ route('report.executive') }}"      class="db-pill"><i class="fa-solid fa-briefcase"            style="color: var(--purple);"></i>  Executive Report</a>
-        <a href="{{ route('report.recovery') }}"       class="db-pill"><i class="fa-solid fa-file-invoice-dollar"  style="color: var(--amber);"></i>  Recovery Report</a>
-        <a href="{{ route('report.payable') }}"        class="db-pill"><i class="fa-solid fa-hand-holding-dollar"  style="color: var(--red);"></i>    Payable Report</a>
-        <a href="{{ route('report.parties_balance') }}" class="db-pill"><i class="fa-solid fa-users-viewfinder"   style="color: var(--blue);"></i>   Parties Balance</a>
-        <a href="{{ route('reports.onhand') }}"        class="db-pill"><i class="fa-solid fa-boxes-stacked"        style="color: var(--green);"></i>  On-Hand Stock</a>
-        <a href="{{ route('report.balance_sheet') }}"  class="db-pill"><i class="fa-solid fa-scale-balanced"      style="color: var(--muted);"></i>  Balance Sheet</a>
+        @if($isRestaurant)
+            <a href="{{ route('pos.index') }}"             class="db-pill"><i class="fa-solid fa-cash-register"        style="color: var(--indigo);"></i> Restaurant POS</a>
+            <a href="{{ route('restaurant.tables.index') }}" class="db-pill"><i class="fa-solid fa-chair"             style="color: var(--amber);"></i>  Tables Management</a>
+            <a href="{{ route('restaurant.deliveries.index') }}" class="db-pill"><i class="fa-solid fa-motorcycle"    style="color: var(--blue);"></i>   Deliveries & Riders</a>
+            <a href="{{ route('all_expense_vochers') }}" class="db-pill"><i class="fa-solid fa-file-invoice"       style="color: var(--red);"></i>    Expense Vouchers</a>
+        @else
+            <a href="{{ route('report.purchase') }}"       class="db-pill"><i class="fa-solid fa-cart-shopping"        style="color: var(--blue);"></i>   Purchase Report</a>
+            <a href="{{ route('report.profit_loss') }}"    class="db-pill"><i class="fa-solid fa-chart-line"           style="color: var(--cyan);"></i>   Profit & Loss</a>
+            <a href="{{ route('report.executive') }}"      class="db-pill"><i class="fa-solid fa-briefcase"            style="color: var(--purple);"></i>  Executive Report</a>
+            <a href="{{ route('report.recovery') }}"       class="db-pill"><i class="fa-solid fa-file-invoice-dollar"  style="color: var(--amber);"></i>  Recovery Report</a>
+            <a href="{{ route('report.payable') }}"        class="db-pill"><i class="fa-solid fa-hand-holding-dollar"  style="color: var(--red);"></i>    Payable Report</a>
+            <a href="{{ route('report.parties_balance') }}" class="db-pill"><i class="fa-solid fa-users-viewfinder"   style="color: var(--blue);"></i>   Parties Balance</a>
+            <a href="{{ route('reports.onhand') }}"        class="db-pill"><i class="fa-solid fa-boxes-stacked"        style="color: var(--green);"></i>  On-Hand Stock</a>
+            <a href="{{ route('report.balance_sheet') }}"  class="db-pill"><i class="fa-solid fa-scale-balanced"      style="color: var(--muted);"></i>  Balance Sheet</a>
+        @endif
     </div>
 
     {{-- =============================================
-         3. TOP 6 KPI STAT CARDS
+         3. TOP KPI STAT CARDS
     ============================================= --}}
     <div class="db-section-label"><i class="fas fa-chart-bar text-primary"></i> Key Performance Indicators</div>
     <div class="kpi-grid">
 
-        <div class="kpi-card" style="--kpi-color: var(--purple); --kpi-icon-bg: #f5f3ff;">
-            <div class="kpi-top">
-                <span class="kpi-label">Total Sales (This Month)</span>
-                <div class="kpi-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+        @if($isRestaurant)
+            {{-- RESTAURANT KPI CARDS (NO PROFIT, NO PURCHASES) --}}
+            <div class="kpi-card" style="--kpi-color: var(--purple); --kpi-icon-bg: #f5f3ff;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Today's Sales</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-cash-register"></i></div>
+                </div>
+                <div class="kpi-value">Rs {{ number_format($salesToday ?? 0, 0) }}</div>
+                <span class="kpi-trend up"><i class="fas fa-calendar-day"></i> Today's Total Sales</span>
             </div>
-            <div class="kpi-value">Rs {{ number_format($salesThisMonth, 0) }}</div>
-            <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 18.6% <span class="kpi-trend-sub">vs last month</span></span>
-        </div>
 
-        <div class="kpi-card" style="--kpi-color: var(--red); --kpi-icon-bg: #fff1f2;">
-            <div class="kpi-top">
-                <span class="kpi-label">Total Purchases (This Month)</span>
-                <div class="kpi-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+            <div class="kpi-card" style="--kpi-color: var(--indigo); --kpi-icon-bg: #eef2ff;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Total Sales (This Month)</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+                </div>
+                <div class="kpi-value">Rs {{ number_format($salesThisMonth ?? 0, 0) }}</div>
+                <span class="kpi-trend up"><i class="fas fa-calendar-alt"></i> Current Month Sales</span>
             </div>
-            <div class="kpi-value">Rs {{ number_format($purchasesThisMonth, 0) }}</div>
-            <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 12.3% <span class="kpi-trend-sub">vs last month</span></span>
-        </div>
 
-        <div class="kpi-card" style="--kpi-color: var(--amber); --kpi-icon-bg: #fffbeb;">
-            <div class="kpi-top">
-                <span class="kpi-label">Gross Profit (This Month)</span>
-                <div class="kpi-icon"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="kpi-card" style="--kpi-color: var(--blue); --kpi-icon-bg: #eff6ff;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Today's Total Orders</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-receipt"></i></div>
+                </div>
+                <div class="kpi-value">{{ number_format($restaurantStats['todayOrdersCount'] ?? 0) }}</div>
+                <span class="kpi-trend up"><i class="fas fa-utensils"></i> Total Invoices Billed</span>
             </div>
-            <div class="kpi-value">Rs {{ number_format($grossProfitThisMonth, 0) }}</div>
-            <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 22.5% <span class="kpi-trend-sub">vs last month</span></span>
-        </div>
 
-        <div class="kpi-card" style="--kpi-color: var(--red); --kpi-icon-bg: #fff1f2;">
-            <div class="kpi-top">
-                <span class="kpi-label">Total Expenses (This Month)</span>
-                <div class="kpi-icon"><i class="fa-solid fa-file-invoice"></i></div>
+            <div class="kpi-card" style="--kpi-color: var(--amber); --kpi-icon-bg: #fffbeb;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Dine-In Sales (Today)</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-chair"></i></div>
+                </div>
+                <div class="kpi-value">Rs {{ number_format($restaurantStats['dineInSales'] ?? 0, 0) }}</div>
+                <span style="font-size: 0.68rem; color: var(--muted); font-weight: 600;">Table Dining Sales</span>
             </div>
-            <div class="kpi-value">Rs {{ number_format($expensesThisMonth, 0) }}</div>
-            <span class="kpi-trend down"><i class="fas fa-arrow-down"></i> 5.4% <span class="kpi-trend-sub">vs last month</span></span>
-        </div>
 
-        <div class="kpi-card" style="--kpi-color: var(--green); --kpi-icon-bg: #ecfdf5;">
-            <div class="kpi-top">
-                <span class="kpi-label">Net Profit (This Month)</span>
-                <div class="kpi-icon"><i class="fa-solid fa-circle-dollar-to-slot"></i></div>
+            <div class="kpi-card" style="--kpi-color: var(--red); --kpi-icon-bg: #fff1f2;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Total Expenses (This Month)</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-file-invoice"></i></div>
+                </div>
+                <div class="kpi-value">Rs {{ number_format($expensesThisMonth ?? 0, 0) }}</div>
+                <span class="kpi-trend down"><i class="fas fa-arrow-down"></i> Monthly Expenses</span>
             </div>
-            <div class="kpi-value">Rs {{ number_format($netProfitThisMonth, 0) }}</div>
-            <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 28.7% <span class="kpi-trend-sub">vs last month</span></span>
-        </div>
 
-        <div class="kpi-card" style="--kpi-color: var(--blue); --kpi-icon-bg: #eff6ff;">
-            <div class="kpi-top">
-                <span class="kpi-label">Cash Balance</span>
-                <div class="kpi-icon"><i class="fa-solid fa-wallet"></i></div>
+            <div class="kpi-card" style="--kpi-color: var(--green); --kpi-icon-bg: #ecfdf5;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Cash Balance</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-wallet"></i></div>
+                </div>
+                <div class="kpi-value">Rs {{ number_format($totalCashAndBankBalance ?? 0, 0) }}</div>
+                <span style="font-size: 0.68rem; color: var(--muted); font-weight: 600;">Available Counter Cash</span>
             </div>
-            <div class="kpi-value">Rs {{ number_format($totalCashAndBankBalance, 0) }}</div>
-            <span style="font-size: 0.68rem; color: var(--muted); font-weight: 600;">Available Liquid Balance</span>
-        </div>
+        @else
+            {{-- STANDARD RETAIL / WHOLESALE KPI CARDS --}}
+            <div class="kpi-card" style="--kpi-color: var(--purple); --kpi-icon-bg: #f5f3ff;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Total Sales (This Month)</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+                </div>
+                <div class="kpi-value">Rs {{ number_format($salesThisMonth, 0) }}</div>
+                <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 18.6% <span class="kpi-trend-sub">vs last month</span></span>
+            </div>
+
+            <div class="kpi-card" style="--kpi-color: var(--red); --kpi-icon-bg: #fff1f2;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Total Purchases (This Month)</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+                </div>
+                <div class="kpi-value">Rs {{ number_format($purchasesThisMonth, 0) }}</div>
+                <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 12.3% <span class="kpi-trend-sub">vs last month</span></span>
+            </div>
+
+            <div class="kpi-card" style="--kpi-color: var(--amber); --kpi-icon-bg: #fffbeb;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Gross Profit (This Month)</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-chart-line"></i></div>
+                </div>
+                <div class="kpi-value">Rs {{ number_format($grossProfitThisMonth, 0) }}</div>
+                <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 22.5% <span class="kpi-trend-sub">vs last month</span></span>
+            </div>
+
+            <div class="kpi-card" style="--kpi-color: var(--red); --kpi-icon-bg: #fff1f2;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Total Expenses (This Month)</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-file-invoice"></i></div>
+                </div>
+                <div class="kpi-value">Rs {{ number_format($expensesThisMonth, 0) }}</div>
+                <span class="kpi-trend down"><i class="fas fa-arrow-down"></i> 5.4% <span class="kpi-trend-sub">vs last month</span></span>
+            </div>
+
+            <div class="kpi-card" style="--kpi-color: var(--green); --kpi-icon-bg: #ecfdf5;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Net Profit (This Month)</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-circle-dollar-to-slot"></i></div>
+                </div>
+                <div class="kpi-value">Rs {{ number_format($netProfitThisMonth, 0) }}</div>
+                <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> 28.7% <span class="kpi-trend-sub">vs last month</span></span>
+            </div>
+
+            <div class="kpi-card" style="--kpi-color: var(--blue); --kpi-icon-bg: #eff6ff;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Cash Balance</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-wallet"></i></div>
+                </div>
+                <div class="kpi-value">Rs {{ number_format($totalCashAndBankBalance, 0) }}</div>
+                <span style="font-size: 0.68rem; color: var(--muted); font-weight: 600;">Available Liquid Balance</span>
+            </div>
+        @endif
 
     </div>
 
@@ -636,40 +704,74 @@
                 <span class="panel-title"><i class="fas fa-building" style="color:var(--indigo);"></i> Business Summary</span>
             </div>
             <div class="panel-body-flex">
-                <div class="biz-grid">
-                    <div class="biz-box">
-                        <div class="biz-icon" style="background:#e0f2fe; color:#0284c7;"><i class="fas fa-users"></i></div>
-                        <div>
-                            <div class="biz-val">{{ number_format($customerscount) }}</div>
-                            <div class="biz-lbl">Customers</div>
-                            <div class="biz-trend up">↑ 15.3%</div>
+                @if($isRestaurant)
+                    <div class="biz-grid">
+                        <div class="biz-box">
+                            <div class="biz-icon" style="background:#e0f2fe; color:#0284c7;"><i class="fas fa-chair"></i></div>
+                            <div>
+                                <div class="biz-val">{{ number_format($restaurantStats['occupiedTables'] ?? 0) }} / {{ number_format($restaurantStats['totalTables'] ?? 0) }}</div>
+                                <div class="biz-lbl">Occupied Tables</div>
+                                <div class="biz-trend up"><a href="{{ route('restaurant.tables.index') }}" style="text-decoration:none; color:var(--indigo); font-size:0.68rem; font-weight:700;">Tables →</a></div>
+                            </div>
+                        </div>
+                        <div class="biz-box">
+                            <div class="biz-icon" style="background:#fef3c7; color:#d97706;"><i class="fas fa-bag-shopping"></i></div>
+                            <div>
+                                <div class="biz-val">Rs {{ number_format($restaurantStats['takeawaySales'] ?? 0, 0) }}</div>
+                                <div class="biz-lbl">Takeaway Today</div>
+                            </div>
+                        </div>
+                        <div class="biz-box">
+                            <div class="biz-icon" style="background:#f3e8ff; color:#8b5cf6;"><i class="fas fa-motorcycle"></i></div>
+                            <div>
+                                <div class="biz-val">Rs {{ number_format($restaurantStats['deliverySales'] ?? 0, 0) }}</div>
+                                <div class="biz-lbl">Delivery Today</div>
+                            </div>
+                        </div>
+                        <div class="biz-box">
+                            <div class="biz-icon" style="background:#ecfdf5; color:#10b981;"><i class="fas fa-utensils"></i></div>
+                            <div>
+                                <div class="biz-val">{{ number_format($productCount) }}</div>
+                                <div class="biz-lbl">Menu Items</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="biz-box">
-                        <div class="biz-icon" style="background:#f3e8ff; color:#8b5cf6;"><i class="fas fa-truck"></i></div>
-                        <div>
-                            <div class="biz-val">{{ number_format($vendorCount) }}</div>
-                            <div class="biz-lbl">Suppliers</div>
-                            <div class="biz-trend up">↑ 10.6%</div>
+                @else
+                    <div class="biz-grid">
+                        <div class="biz-box">
+                            <div class="biz-icon" style="background:#e0f2fe; color:#0284c7;"><i class="fas fa-users"></i></div>
+                            <div>
+                                <div class="biz-val">{{ number_format($customerscount) }}</div>
+                                <div class="biz-lbl">Customers</div>
+                                <div class="biz-trend up">↑ 15.3%</div>
+                            </div>
+                        </div>
+                        <div class="biz-box">
+                            <div class="biz-icon" style="background:#f3e8ff; color:#8b5cf6;"><i class="fas fa-truck"></i></div>
+                            <div>
+                                <div class="biz-val">{{ number_format($vendorCount) }}</div>
+                                <div class="biz-lbl">Suppliers</div>
+                                <div class="biz-trend up">↑ 10.6%</div>
+                            </div>
+                        </div>
+                        <div class="biz-box">
+                            <div class="biz-icon" style="background:#fef3c7; color:#d97706;"><i class="fas fa-box-open"></i></div>
+                            <div>
+                                <div class="biz-val">{{ number_format($productCount) }}</div>
+                                <div class="biz-lbl">Products</div>
+                                <div class="biz-trend up">↑ 8.3%</div>
+                            </div>
+                        </div>
+                        <div class="biz-box">
+                            <div class="biz-icon" style="background:#ecfdf5; color:#10b981;"><i class="fas fa-user-tie"></i></div>
+                            <div>
+                                <div class="biz-val">{{ number_format($employeeCount) }}</div>
+                                <div class="biz-lbl">Employees</div>
+                                <div class="biz-trend up">↑ 5.2%</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="biz-box">
-                        <div class="biz-icon" style="background:#fef3c7; color:#d97706;"><i class="fas fa-box-open"></i></div>
-                        <div>
-                            <div class="biz-val">{{ number_format($productCount) }}</div>
-                            <div class="biz-lbl">Products</div>
-                            <div class="biz-trend up">↑ 8.3%</div>
-                        </div>
-                    </div>
-                    <div class="biz-box">
-                        <div class="biz-icon" style="background:#ecfdf5; color:#10b981;"><i class="fas fa-user-tie"></i></div>
-                        <div>
-                            <div class="biz-val">{{ number_format($employeeCount) }}</div>
-                            <div class="biz-lbl">Employees</div>
-                            <div class="biz-trend up">↑ 5.2%</div>
-                        </div>
-                    </div>
-                </div>
+                @endif
             </div>
         </div>
 
@@ -739,37 +841,57 @@
     {{-- =============================================
          6. RECEIVABLES / PAYABLES / STOCK / ACCOUNTS
     ============================================= --}}
-    <div class="db-section-label"><i class="fas fa-balance-scale text-info"></i> Financial Position</div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+    @if(!$isRestaurant)
+        <div class="db-section-label"><i class="fas fa-balance-scale text-info"></i> Financial Position</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
 
-        <div class="kpi-card" style="--kpi-color: var(--indigo); --kpi-icon-bg: #eef2ff;">
-            <div class="kpi-top">
-                <span class="kpi-label">Customer Receivables</span>
-                <div class="kpi-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            <div class="kpi-card" style="--kpi-color: var(--indigo); --kpi-icon-bg: #eef2ff;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Customer Receivables</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                </div>
+                <div class="kpi-value">Rs {{ number_format($totalReceivables, 0) }}</div>
+                <a href="{{ route('report.recovery') }}" style="font-size:0.7rem; color:var(--indigo); font-weight:700; text-decoration:none;">View Recovery Report →</a>
             </div>
-            <div class="kpi-value">Rs {{ number_format($totalReceivables, 0) }}</div>
-            <a href="{{ route('report.recovery') }}" style="font-size:0.7rem; color:var(--indigo); font-weight:700; text-decoration:none;">View Recovery Report →</a>
-        </div>
 
-        <div class="kpi-card" style="--kpi-color: var(--amber); --kpi-icon-bg: #fffbeb;">
-            <div class="kpi-top">
-                <span class="kpi-label">Vendor Payables</span>
-                <div class="kpi-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+            <div class="kpi-card" style="--kpi-color: var(--amber); --kpi-icon-bg: #fffbeb;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Vendor Payables</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                </div>
+                <div class="kpi-value">Rs {{ number_format($totalPayables, 0) }}</div>
+                <a href="{{ route('report.payable') }}" style="font-size:0.7rem; color:var(--amber); font-weight:700; text-decoration:none;">View Payable Report →</a>
             </div>
-            <div class="kpi-value">Rs {{ number_format($totalPayables, 0) }}</div>
-            <a href="{{ route('report.payable') }}" style="font-size:0.7rem; color:var(--amber); font-weight:700; text-decoration:none;">View Payable Report →</a>
-        </div>
 
-        <div class="kpi-card" style="--kpi-color: var(--purple); --kpi-icon-bg: #faf5ff;">
-            <div class="kpi-top">
-                <span class="kpi-label">Stock Inventory Value</span>
-                <div class="kpi-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+            <div class="kpi-card" style="--kpi-color: var(--purple); --kpi-icon-bg: #faf5ff;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Stock Inventory Value</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+                </div>
+                <div class="kpi-value">Rs {{ number_format($totalStockValue, 0) }}</div>
+                <a href="{{ route('reports.onhand') }}" style="font-size:0.7rem; color:var(--purple); font-weight:700; text-decoration:none;">View On-Hand Stock →</a>
             </div>
-            <div class="kpi-value">Rs {{ number_format($totalStockValue, 0) }}</div>
-            <a href="{{ route('reports.onhand') }}" style="font-size:0.7rem; color:var(--purple); font-weight:700; text-decoration:none;">View On-Hand Stock →</a>
-        </div>
 
-        @if(isset($cashAndBankAccounts))
+            @if(isset($cashAndBankAccounts))
+                @foreach($cashAndBankAccounts as $acc)
+                    @php $isCash = strtolower($acc->head->name) == 'cash'; @endphp
+                    <div class="kpi-card" style="--kpi-color: {{ $isCash ? 'var(--blue)' : 'var(--cyan)' }}; --kpi-icon-bg: {{ $isCash ? '#eff6ff' : '#ecfeff' }};">
+                        <div class="kpi-top">
+                            <span class="kpi-label">{{ $acc->title }}</span>
+                            <div class="kpi-icon">
+                                <i class="fa-solid {{ $isCash ? 'fa-wallet' : 'fa-building-columns' }}"></i>
+                            </div>
+                        </div>
+                        <div class="kpi-value">Rs {{ number_format($acc->current_balance, 0) }}</div>
+                        <a href="{{ route('accounts.ledger', $acc->id) }}" style="font-size:0.7rem; color:{{ $isCash ? 'var(--blue)' : 'var(--cyan)' }}; font-weight:700; text-decoration:none;">View Ledger →</a>
+                    </div>
+                @endforeach
+            @endif
+
+        </div>
+    @elseif(isset($cashAndBankAccounts) && count($cashAndBankAccounts) > 0)
+        <div class="db-section-label"><i class="fas fa-wallet text-info"></i> Cash & Counter Accounts</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
             @foreach($cashAndBankAccounts as $acc)
                 @php $isCash = strtolower($acc->head->name) == 'cash'; @endphp
                 <div class="kpi-card" style="--kpi-color: {{ $isCash ? 'var(--blue)' : 'var(--cyan)' }}; --kpi-icon-bg: {{ $isCash ? '#eff6ff' : '#ecfeff' }};">
@@ -783,76 +905,79 @@
                     <a href="{{ route('accounts.ledger', $acc->id) }}" style="font-size:0.7rem; color:{{ $isCash ? 'var(--blue)' : 'var(--cyan)' }}; font-weight:700; text-decoration:none;">View Ledger →</a>
                 </div>
             @endforeach
-        @endif
-
-    </div>
+        </div>
+    @endif
 
     {{-- =============================================
          7. MONTHLY PERFORMANCE SPARKLINES
     ============================================= --}}
-    <div class="db-section-label"><i class="fas fa-chart-line text-success"></i> Monthly Performance Trend</div>
-    <div class="spark-grid">
+    @if(!$isRestaurant)
+        <div class="db-section-label"><i class="fas fa-chart-line text-success"></i> Monthly Performance Trend</div>
+        <div class="spark-grid">
 
-        <div class="spark-card">
-            <div>
-                <div class="spark-label">Total Sales</div>
-                <div class="spark-value">Rs {{ number_format($salesThisMonth, 0) }}</div>
-                <div class="spark-trend up">↑ 18.6% vs last month</div>
+            <div class="spark-card">
+                <div>
+                    <div class="spark-label">Total Sales</div>
+                    <div class="spark-value">Rs {{ number_format($salesThisMonth, 0) }}</div>
+                    <div class="spark-trend up">↑ 18.6% vs last month</div>
+                </div>
+                <div class="spark-canvas-wrap"><canvas id="spkSales"></canvas></div>
             </div>
-            <div class="spark-canvas-wrap"><canvas id="spkSales"></canvas></div>
-        </div>
 
-        <div class="spark-card">
-            <div>
-                <div class="spark-label">Total Purchases</div>
-                <div class="spark-value">Rs {{ number_format($purchasesThisMonth, 0) }}</div>
-                <div class="spark-trend up">↑ 12.3% vs last month</div>
+            <div class="spark-card">
+                <div>
+                    <div class="spark-label">Total Purchases</div>
+                    <div class="spark-value">Rs {{ number_format($purchasesThisMonth, 0) }}</div>
+                    <div class="spark-trend up">↑ 12.3% vs last month</div>
+                </div>
+                <div class="spark-canvas-wrap"><canvas id="spkPurchases"></canvas></div>
             </div>
-            <div class="spark-canvas-wrap"><canvas id="spkPurchases"></canvas></div>
-        </div>
 
-        <div class="spark-card">
-            <div>
-                <div class="spark-label">Gross Profit</div>
-                <div class="spark-value">Rs {{ number_format($grossProfitThisMonth, 0) }}</div>
-                <div class="spark-trend up">↑ 22.5% vs last month</div>
+            <div class="spark-card">
+                <div>
+                    <div class="spark-label">Gross Profit</div>
+                    <div class="spark-value">Rs {{ number_format($grossProfitThisMonth, 0) }}</div>
+                    <div class="spark-trend up">↑ 22.5% vs last month</div>
+                </div>
+                <div class="spark-canvas-wrap"><canvas id="spkGross"></canvas></div>
             </div>
-            <div class="spark-canvas-wrap"><canvas id="spkGross"></canvas></div>
-        </div>
 
-        <div class="spark-card">
-            <div>
-                <div class="spark-label">Net Profit</div>
-                <div class="spark-value">Rs {{ number_format($netProfitThisMonth, 0) }}</div>
-                <div class="spark-trend up">↑ 28.7% vs last month</div>
+            <div class="spark-card">
+                <div>
+                    <div class="spark-label">Net Profit</div>
+                    <div class="spark-value">Rs {{ number_format($netProfitThisMonth, 0) }}</div>
+                    <div class="spark-trend up">↑ 28.7% vs last month</div>
+                </div>
+                <div class="spark-canvas-wrap"><canvas id="spkNet"></canvas></div>
             </div>
-            <div class="spark-canvas-wrap"><canvas id="spkNet"></canvas></div>
-        </div>
 
-    </div>
+        </div>
+    @endif
 
     {{-- Low Stock Alert --}}
-    @can('products.view')
-        @if(isset($lowStockProducts) && $lowStockProducts->count() > 0)
-            <div class="db-section-label" style="margin-top: 0.5rem;">
-                <i class="fas fa-triangle-exclamation text-danger"></i> Low Stock Alarm
-            </div>
-            <div class="panel" style="margin-bottom: 2rem;">
-                <div class="panel-hd">
-                    <span class="panel-title" style="color: var(--red);">
-                        <i class="fas fa-triangle-exclamation"></i> Low Stock Alert Products
-                        <span style="background:#fff1f2; color:var(--red); font-size:0.7rem; font-weight:800; padding:3px 10px; border-radius:99px; border:1px solid #fecdd3;">
-                            {{ $lowStockProducts->count() }} Items
+    @if(!$isRestaurant)
+        @can('products.view')
+            @if(isset($lowStockProducts) && $lowStockProducts->count() > 0)
+                <div class="db-section-label" style="margin-top: 0.5rem;">
+                    <i class="fas fa-triangle-exclamation text-danger"></i> Low Stock Alarm
+                </div>
+                <div class="panel" style="margin-bottom: 2rem;">
+                    <div class="panel-hd">
+                        <span class="panel-title" style="color: var(--red);">
+                            <i class="fas fa-triangle-exclamation"></i> Low Stock Alert Products
+                            <span style="background:#fff1f2; color:var(--red); font-size:0.7rem; font-weight:800; padding:3px 10px; border-radius:99px; border:1px solid #fecdd3;">
+                                {{ $lowStockProducts->count() }} Items
+                            </span>
                         </span>
-                    </span>
-                    <a href="{{ route('product') }}?status=active" style="font-size:0.78rem; color:var(--red); font-weight:700; text-decoration:none;">Manage Inventory →</a>
+                        <a href="{{ route('product') }}?status=active" style="font-size:0.78rem; color:var(--red); font-weight:700; text-decoration:none;">Manage Inventory →</a>
+                    </div>
+                    <div style="height: 280px; position: relative;">
+                        <canvas id="chartLowStock"></canvas>
+                    </div>
                 </div>
-                <div style="height: 280px; position: relative;">
-                    <canvas id="chartLowStock"></canvas>
-                </div>
-            </div>
-        @endif
-    @endcan
+            @endif
+        @endcan
+    @endif
 
 </div>
 

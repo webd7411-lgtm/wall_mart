@@ -37,16 +37,21 @@ class HomeController extends Controller
             return view('user_panel.dashboard', compact('userId'));
         } elseif ($usertype == 'admin') {
             $branchId = \App\Helpers\BranchHelper::getActiveBranchId();
+            $isRestaurantBranch = \App\Helpers\BranchHelper::isRestaurantBranch();
 
             // Counts
             $categoryCount = Auth::user()->can('categories.view') ? DB::table('categories')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count() : 0;
             $subcategoryCount = Auth::user()->can('subcategories.view') ? DB::table('subcategories')->count() : 0;
             $productCount = Auth::user()->can('products.view') ? DB::table('products')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count() : 0;
-            $customerscount = Auth::user()->can('customers.view') ? DB::table('customers')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count() : 0;
+            $customerscount = (!$isRestaurantBranch && Auth::user()->can('customers.view')) ? DB::table('customers')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count() : 0;
 
             // Stats
-            $totalPurchases = Auth::user()->can('purchases.view') ? DB::table('purchases')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('net_amount') : 0;
-            $totalPurchaseReturns = Auth::user()->can('purchase.returns.view') ? DB::table('purchase_returns')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('net_amount') : 0;
+            $totalPurchases = 0;
+            $totalPurchaseReturns = 0;
+            if (!$isRestaurantBranch) {
+                $totalPurchases = Auth::user()->can('purchases.view') ? DB::table('purchases')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('net_amount') : 0;
+                $totalPurchaseReturns = Auth::user()->can('purchase.returns.view') ? DB::table('purchase_returns')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('net_amount') : 0;
+            }
             
             $canAllSales = Auth::user()->can('sales.view');
             $canOwnSales = Auth::user()->can('sales.view_own');
@@ -61,7 +66,7 @@ class HomeController extends Controller
 
             // Financial Summary (Accounting Based)
             $financialSummary = [];
-            if (Auth::user()->can('purchases.view') || $canAllSales || $canOwnSales) {
+            if (!$isRestaurantBranch && (Auth::user()->can('purchases.view') || $canAllSales || $canOwnSales)) {
                 try {
                     $balanceService = app(\App\Services\BalanceService::class);
                     $fromDate = request('from_date', now()->startOfMonth()->format('Y-m-d'));
@@ -128,8 +133,8 @@ class HomeController extends Controller
             }
 
             // ===== PURCHASE CHARTS =====
-            $purchaseChartStats = ['daily' => ['series' => [], 'categories' => []]];
-            if (Auth::user()->can('purchases.view')) {
+            $purchaseChartStats = ['daily' => ['series' => [], 'categories' => []], 'weekly' => ['series' => [], 'categories' => []], 'monthly' => ['series' => [], 'categories' => []]];
+            if (!$isRestaurantBranch && Auth::user()->can('purchases.view')) {
                 // DAILY
                 $purchaseDailyLabels = collect(range(6, 0))->map(fn($i) => Carbon::today()->subDays($i)->format('Y-m-d'));
                 $purchaseDailySeries = [[
@@ -248,7 +253,7 @@ class HomeController extends Controller
 
             // ===== LOW STOCK PRODUCTS =====
             $lowStockProducts = collect();
-            if (Auth::user()->can('products.view')) {
+            if (!$isRestaurantBranch && Auth::user()->can('products.view')) {
                 $lowStockProducts = \App\Models\Product::withSum('warehouseStocks', 'total_pieces')
                     ->whereNotNull('alert_carton_quantity')
                     ->where('is_active', 1)
@@ -276,10 +281,10 @@ class HomeController extends Controller
                 ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
                 ->sum('total_net');
 
-            $purchasesThisMonth = DB::table('purchases')
+            $purchasesThisMonth = !$isRestaurantBranch ? DB::table('purchases')
                 ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
                 ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
-                ->sum('net_amount');
+                ->sum('net_amount') : 0;
 
             $salesToday = DB::table('sales')
                 ->whereDate('created_at', \Carbon\Carbon::today())
@@ -287,149 +292,199 @@ class HomeController extends Controller
                 ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
                 ->sum('total_net');
 
-            $purchasesToday = DB::table('purchases')
+            $purchasesToday = !$isRestaurantBranch ? DB::table('purchases')
                 ->whereDate('created_at', \Carbon\Carbon::today())
                 ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
-                ->sum('net_amount');
-
-            // Calculate real profit for current month (matching Profit & Loss Report)
-            $saleItemsThisMonth = DB::table('sale_items')
-                ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
-                ->leftJoin('products', 'products.id', '=', 'sale_items.product_id')
-                ->whereBetween('sales.created_at', [$startOfMonth, $endOfMonth])
-                ->where('sales.sale_status', '!=', 'cancelled')
-                ->when($branchId, fn($q) => $q->where('sales.branch_id', $branchId))
-                ->select(
-                    'sale_items.price',
-                    'sale_items.color',
-                    'sale_items.total_pieces',
-                    'sale_items.total',
-                    'sale_items.is_manual',
-                    'sale_items.purchase_price as manual_purchase_price',
-                    'sales.total_extradiscount',
-                    'sales.total_bill_amount',
-                    'products.size_mode',
-                    'products.pieces_per_m2',
-                    'products.purchase_price_per_m2',
-                    'products.purchase_price_per_piece'
-                )->get();
+                ->sum('net_amount') : 0;
 
             $totalCostThisMonth = 0;
             $totalRevenueThisMonth = 0;
-            foreach ($saleItemsThisMonth as $si) {
-                $qty = (float)($si->total_pieces ?? 1);
-                
-                if ($si->is_manual) {
-                    $purchPrice = (float) $si->manual_purchase_price;
-                } else {
-                    $purchPrice = 0;
-                    if (!empty($si->color)) {
-                        $decoded = base64_decode($si->color, true);
-                        $json = $decoded ? json_decode($decoded, true) : json_decode($si->color, true);
-                        if (is_array($json)) {
-                            $purchPrice = (float)($json['purch_price'] ?? 0);
+            $profitThisMonth = 0;
+            $totalReceivables = 0;
+            $totalPayables = 0;
+            $totalStockValue = 0;
+
+            if (!$isRestaurantBranch) {
+                // Calculate real profit for current month (matching Profit & Loss Report)
+                $saleItemsThisMonth = DB::table('sale_items')
+                    ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
+                    ->leftJoin('products', 'products.id', '=', 'sale_items.product_id')
+                    ->whereBetween('sales.created_at', [$startOfMonth, $endOfMonth])
+                    ->where('sales.sale_status', '!=', 'cancelled')
+                    ->when($branchId, fn($q) => $q->where('sales.branch_id', $branchId))
+                    ->select(
+                        'sale_items.price',
+                        'sale_items.color',
+                        'sale_items.total_pieces',
+                        'sale_items.total',
+                        'sale_items.is_manual',
+                        'sale_items.purchase_price as manual_purchase_price',
+                        'sales.total_extradiscount',
+                        'sales.total_bill_amount',
+                        'products.size_mode',
+                        'products.pieces_per_m2',
+                        'products.purchase_price_per_m2',
+                        'products.purchase_price_per_piece'
+                    )->get();
+
+                foreach ($saleItemsThisMonth as $si) {
+                    $qty = (float)($si->total_pieces ?? 1);
+                    
+                    if ($si->is_manual) {
+                        $purchPrice = (float) $si->manual_purchase_price;
+                    } else {
+                        $purchPrice = 0;
+                        if (!empty($si->color)) {
+                            $decoded = base64_decode($si->color, true);
+                            $json = $decoded ? json_decode($decoded, true) : json_decode($si->color, true);
+                            if (is_array($json)) {
+                                $purchPrice = (float)($json['purch_price'] ?? 0);
+                            }
+                        }
+
+                        if ($purchPrice <= 0) {
+                            if ($si->size_mode === 'by_size') {
+                                $m2PerPiece = (float) ($si->pieces_per_m2 ?? 0);
+                                $purchPerM2 = (float) ($si->purchase_price_per_m2 ?? 0);
+                                $purchPrice = $m2PerPiece * $purchPerM2;
+                            } else {
+                                $purchPrice = (float) ($si->purchase_price_per_piece ?? 0);
+                            }
                         }
                     }
 
-                    if ($purchPrice <= 0) {
-                        if ($si->size_mode === 'by_size') {
-                            $m2PerPiece = (float) ($si->pieces_per_m2 ?? 0);
-                            $purchPerM2 = (float) ($si->purchase_price_per_m2 ?? 0);
-                            $purchPrice = $m2PerPiece * $purchPerM2;
-                        } else {
-                            $purchPrice = (float) ($si->purchase_price_per_piece ?? 0);
+                    $itemNet = (float) $si->total;
+                    if ($si->total_bill_amount > 0 && $si->total_extradiscount > 0) {
+                        $proportion = $itemNet / (float) $si->total_bill_amount;
+                        $itemNet -= ($si->total_extradiscount * $proportion);
+                    }
+
+                    $totalRevenueThisMonth += $itemNet;
+                    $totalCostThisMonth    += $purchPrice * $qty;
+                }
+
+                // Accurately deduct any returned items in current month
+                $saleReturnsThisMonth = DB::table('sale_return_items')
+                    ->join('sale_returns', 'sale_returns.id', '=', 'sale_return_items.sale_return_id')
+                    ->leftJoin('products', 'products.id', '=', 'sale_return_items.product_id')
+                    ->whereBetween('sale_returns.created_at', [$startOfMonth, $endOfMonth])
+                    ->when($branchId, fn($q) => $q->where('sale_returns.branch_id', $branchId))
+                    ->select(
+                        'sale_return_items.qty',
+                        'sale_return_items.line_total',
+                        'sale_return_items.color',
+                        'sale_return_items.is_manual',
+                        'sale_return_items.purchase_price as manual_purchase_price',
+                        'products.size_mode',
+                        'products.pieces_per_m2',
+                        'products.purchase_price_per_m2',
+                        'products.purchase_price_per_piece'
+                    )->get();
+
+                foreach ($saleReturnsThisMonth as $sr) {
+                    $qty = (float)($sr->qty ?? 1);
+                    
+                    if ($sr->is_manual) {
+                        $purchPrice = (float) $sr->manual_purchase_price;
+                    } else {
+                        $purchPrice = 0;
+                        if (!empty($sr->color)) {
+                            $decoded = base64_decode($sr->color, true);
+                            $json = $decoded ? json_decode($decoded, true) : json_decode($sr->color, true);
+                            if (is_array($json)) {
+                                $purchPrice = (float)($json['purch_price'] ?? 0);
+                            }
+                        }
+
+                        if ($purchPrice <= 0) {
+                            if ($sr->size_mode === 'by_size') {
+                                $m2PerPiece = (float) ($sr->pieces_per_m2 ?? 0);
+                                $purchPerM2 = (float) ($sr->purchase_price_per_m2 ?? 0);
+                                $purchPrice = $m2PerPiece * $purchPerM2;
+                            } else {
+                                $purchPrice = (float) ($sr->purchase_price_per_piece ?? 0);
+                            }
                         }
                     }
-                }
 
-                $itemNet = (float) $si->total;
-                if ($si->total_bill_amount > 0 && $si->total_extradiscount > 0) {
-                    $proportion = $itemNet / (float) $si->total_bill_amount;
-                    $itemNet -= ($si->total_extradiscount * $proportion);
+                    $totalRevenueThisMonth -= (float) $sr->line_total;
+                    $totalCostThisMonth    -= $purchPrice * $qty;
                 }
+                $profitThisMonth = $totalRevenueThisMonth - $totalCostThisMonth;
 
-                $totalRevenueThisMonth += $itemNet;
-                $totalCostThisMonth    += $purchPrice * $qty;
+                // Accurate Accounting Receivables & Payables in Single SQL Queries (Instant Execution)
+                $totalReceivables = DB::table('journal_entries')
+                    ->where('party_type', \App\Models\Customer::class)
+                    ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+                    ->selectRaw('COALESCE(SUM(debit) - SUM(credit), 0) as total')
+                    ->value('total') ?? 0;
+
+                $apId = app(\App\Services\BalanceService::class)->getAccountsPayableId();
+                $totalPayables = DB::table('journal_entries')
+                    ->where('party_type', \App\Models\Vendor::class)
+                    ->where('account_id', $apId)
+                    ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+                    ->selectRaw('COALESCE(SUM(credit) - SUM(debit), 0) as total')
+                    ->value('total') ?? 0;
+
+                // Total Stock Valuation in Single SQL Query
+                $totalStockValue = DB::table('warehouse_stocks')
+                    ->join('products', 'products.id', '=', 'warehouse_stocks.product_id')
+                    ->when($branchId, fn($q) => $q->where('products.branch_id', $branchId))
+                    ->selectRaw('COALESCE(SUM(warehouse_stocks.total_pieces * (CASE WHEN products.size_mode = "by_size" THEN COALESCE(products.pieces_per_m2, 0) * COALESCE(products.purchase_price_per_m2, 0) ELSE COALESCE(products.purchase_price_per_piece, 0) END)), 0) as total')
+                    ->value('total') ?? 0;
             }
 
-            // Accurately deduct any returned items in current month
-            $saleReturnsThisMonth = DB::table('sale_return_items')
-                ->join('sale_returns', 'sale_returns.id', '=', 'sale_return_items.sale_return_id')
-                ->leftJoin('products', 'products.id', '=', 'sale_return_items.product_id')
-                ->whereBetween('sale_returns.created_at', [$startOfMonth, $endOfMonth])
-                ->when($branchId, fn($q) => $q->where('sale_returns.branch_id', $branchId))
-                ->select(
-                    'sale_return_items.qty',
-                    'sale_return_items.line_total',
-                    'sale_return_items.color',
-                    'sale_return_items.is_manual',
-                    'sale_return_items.purchase_price as manual_purchase_price',
-                    'products.size_mode',
-                    'products.pieces_per_m2',
-                    'products.purchase_price_per_m2',
-                    'products.purchase_price_per_piece'
-                )->get();
+            // Restaurant Specific Stats
+            $restaurantStats = [];
+            if ($isRestaurantBranch) {
+                $todayOrdersCount = DB::table('sales')
+                    ->whereDate('created_at', \Carbon\Carbon::today())
+                    ->whereNotIn('sale_status', ['cancelled'])
+                    ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+                    ->count();
 
-            foreach ($saleReturnsThisMonth as $sr) {
-                $qty = (float)($sr->qty ?? 1);
-                
-                if ($sr->is_manual) {
-                    $purchPrice = (float) $sr->manual_purchase_price;
-                } else {
-                    $purchPrice = 0;
-                    if (!empty($sr->color)) {
-                        $decoded = base64_decode($sr->color, true);
-                        $json = $decoded ? json_decode($decoded, true) : json_decode($sr->color, true);
-                        if (is_array($json)) {
-                            $purchPrice = (float)($json['purch_price'] ?? 0);
-                        }
-                    }
+                $dineInSales = DB::table('sales')
+                    ->whereDate('created_at', \Carbon\Carbon::today())
+                    ->whereNotIn('sale_status', ['cancelled'])
+                    ->where('order_type', 'dine_in')
+                    ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+                    ->sum('total_net');
 
-                    if ($purchPrice <= 0) {
-                        if ($sr->size_mode === 'by_size') {
-                            $m2PerPiece = (float) ($sr->pieces_per_m2 ?? 0);
-                            $purchPerM2 = (float) ($sr->purchase_price_per_m2 ?? 0);
-                            $purchPrice = $m2PerPiece * $purchPerM2;
-                        } else {
-                            $purchPrice = (float) ($sr->purchase_price_per_piece ?? 0);
-                        }
-                    }
-                }
+                $takeawaySales = DB::table('sales')
+                    ->whereDate('created_at', \Carbon\Carbon::today())
+                    ->whereNotIn('sale_status', ['cancelled'])
+                    ->where('order_type', 'takeaway')
+                    ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+                    ->sum('total_net');
 
-                $totalRevenueThisMonth -= (float) $sr->line_total;
-                $totalCostThisMonth    -= $purchPrice * $qty;
+                $deliverySales = DB::table('sales')
+                    ->whereDate('created_at', \Carbon\Carbon::today())
+                    ->whereNotIn('sale_status', ['cancelled'])
+                    ->where('order_type', 'delivery')
+                    ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+                    ->sum('total_net');
+
+                $totalTables = \Illuminate\Support\Facades\Schema::hasTable('restaurant_tables')
+                    ? DB::table('restaurant_tables')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count()
+                    : 0;
+
+                $occupiedTables = \Illuminate\Support\Facades\Schema::hasTable('restaurant_tables')
+                    ? DB::table('restaurant_tables')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->where('status', 'occupied')->count()
+                    : 0;
+
+                $restaurantStats = [
+                    'todayOrdersCount' => $todayOrdersCount,
+                    'dineInSales' => $dineInSales,
+                    'takeawaySales' => $takeawaySales,
+                    'deliverySales' => $deliverySales,
+                    'totalTables' => $totalTables,
+                    'occupiedTables' => $occupiedTables,
+                ];
             }
-            $profitThisMonth = $totalRevenueThisMonth - $totalCostThisMonth;
 
-            // Accurate Accounting Receivables & Payables in Single SQL Queries (Instant Execution)
-            $totalReceivables = DB::table('journal_entries')
-                ->where('party_type', \App\Models\Customer::class)
-                ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
-                ->selectRaw('COALESCE(SUM(debit) - SUM(credit), 0) as total')
-                ->value('total') ?? 0;
-
-            $apId = app(\App\Services\BalanceService::class)->getAccountsPayableId();
-            $totalPayables = DB::table('journal_entries')
-                ->where('party_type', \App\Models\Vendor::class)
-                ->where('account_id', $apId)
-                ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
-                ->selectRaw('COALESCE(SUM(credit) - SUM(debit), 0) as total')
-                ->value('total') ?? 0;
-
-            // Expenses Today
-            $expensesTodayV1 = DB::table('expense_vouchers')->whereDate('entry_date', \Carbon\Carbon::today())->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
-            $expensesTodayV2 = DB::table('voucher_masters')->where('voucher_type', 'expense')->whereDate('date', \Carbon\Carbon::today())->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
-            $expensesToday = $expensesTodayV1 + $expensesTodayV2;
-
-            // Total Stock Valuation in Single SQL Query
-            $totalStockValue = DB::table('warehouse_stocks')
-                ->join('products', 'products.id', '=', 'warehouse_stocks.product_id')
-                ->when($branchId, fn($q) => $q->where('products.branch_id', $branchId))
-                ->selectRaw('COALESCE(SUM(warehouse_stocks.total_pieces * (CASE WHEN products.size_mode = "by_size" THEN COALESCE(products.pieces_per_m2, 0) * COALESCE(products.purchase_price_per_m2, 0) ELSE COALESCE(products.purchase_price_per_piece, 0) END)), 0) as total')
-                ->value('total') ?? 0;
-
-            $vendorCount = DB::table('vendors')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count();
-            $employeeCount = \Illuminate\Support\Facades\Schema::hasTable('hr_employees') ? DB::table('hr_employees')->count() : DB::table('users')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count();
+            $vendorCount = !$isRestaurantBranch ? DB::table('vendors')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count() : 0;
+            $employeeCount = !$isRestaurantBranch ? (\Illuminate\Support\Facades\Schema::hasTable('hr_employees') ? DB::table('hr_employees')->count() : DB::table('users')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count()) : 0;
 
             // Sales by Category (Current Month)
             $salesByCategory = DB::table('sale_items')
@@ -444,6 +499,11 @@ class HomeController extends Controller
                 ->orderByDesc('total_amount')
                 ->limit(5)
                 ->get();
+
+            // Expenses Today
+            $expensesTodayV1 = DB::table('expense_vouchers')->whereDate('entry_date', \Carbon\Carbon::today())->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
+            $expensesTodayV2 = DB::table('voucher_masters')->where('voucher_type', 'expense')->whereDate('date', \Carbon\Carbon::today())->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
+            $expensesToday = $expensesTodayV1 + $expensesTodayV2;
 
             // Expenses This Month
             $expensesThisMonthV1 = DB::table('expense_vouchers')->whereBetween('entry_date', [substr($startOfMonth, 0, 10), substr($endOfMonth, 0, 10)])->when($branchId, fn($q) => $q->where('branch_id', $branchId))->sum('total_amount');
@@ -463,31 +523,52 @@ class HomeController extends Controller
                 ->get();
 
             // Recent Activities Feed
-            $recentSales = DB::table('sales')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->latest()->limit(3)->get()->map(function($s) {
-                return [
-                    'icon' => 'fa-receipt text-success',
-                    'bg' => '#ecfdf5',
-                    'title' => 'New Sale Invoice #' . $s->invoice_no,
-                    'subtitle' => 'Sale Transaction',
-                    'amount' => 'Rs ' . number_format($s->total_net, 0),
-                    'time' => \Carbon\Carbon::parse($s->created_at)->diffForHumans()
-                ];
-            });
+            if ($isRestaurantBranch) {
+                $recentActivities = DB::table('sales')
+                    ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+                    ->latest()
+                    ->limit(5)
+                    ->get()
+                    ->map(function($s) {
+                        $type = ucfirst(str_replace('_', ' ', $s->order_type ?? 'Sale'));
+                        return [
+                            'icon' => 'fa-receipt text-success',
+                            'bg' => '#ecfdf5',
+                            'title' => 'Order #' . $s->invoice_no . ' (' . $type . ')',
+                            'subtitle' => !empty($s->table_no) ? 'Table ' . $s->table_no : ($s->walkin_name ?: 'Counter Order'),
+                            'amount' => 'Rs ' . number_format($s->total_net, 0),
+                            'time' => \Carbon\Carbon::parse($s->created_at)->diffForHumans()
+                        ];
+                    });
+            } else {
+                $recentSales = DB::table('sales')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->latest()->limit(3)->get()->map(function($s) {
+                    return [
+                        'icon' => 'fa-receipt text-success',
+                        'bg' => '#ecfdf5',
+                        'title' => 'New Sale Invoice #' . $s->invoice_no,
+                        'subtitle' => 'Sale Transaction',
+                        'amount' => 'Rs ' . number_format($s->total_net, 0),
+                        'time' => \Carbon\Carbon::parse($s->created_at)->diffForHumans()
+                    ];
+                });
 
-            $recentPurchases = DB::table('purchases')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->latest()->limit(2)->get()->map(function($p) {
-                return [
-                    'icon' => 'fa-cart-shopping text-primary',
-                    'bg' => '#eef2ff',
-                    'title' => 'Purchase Bill #' . $p->invoice_no,
-                    'subtitle' => 'Procurement',
-                    'amount' => 'Rs ' . number_format($p->net_amount, 0),
-                    'time' => \Carbon\Carbon::parse($p->created_at)->diffForHumans()
-                ];
-            });
+                $recentPurchases = DB::table('purchases')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->latest()->limit(2)->get()->map(function($p) {
+                    return [
+                        'icon' => 'fa-cart-shopping text-primary',
+                        'bg' => '#eef2ff',
+                        'title' => 'Purchase Bill #' . $p->invoice_no,
+                        'subtitle' => 'Procurement',
+                        'amount' => 'Rs ' . number_format($p->net_amount, 0),
+                        'time' => \Carbon\Carbon::parse($p->created_at)->diffForHumans()
+                    ];
+                });
 
-            $recentActivities = $recentSales->concat($recentPurchases)->values();
+                $recentActivities = $recentSales->concat($recentPurchases)->values();
+            }
 
             return view('admin_panel.dashboard', compact(
+                'isRestaurantBranch',
+                'restaurantStats',
                 'categoryCount',
                 'subcategoryCount',
                 'productCount',
@@ -512,6 +593,8 @@ class HomeController extends Controller
                 'lowStockProducts',
                 'salesThisMonth',
                 'purchasesThisMonth',
+                'salesToday',
+                'purchasesToday',
                 'profitThisMonth',
                 'totalRevenueThisMonth',
                 'totalCostThisMonth',
