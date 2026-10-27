@@ -203,6 +203,40 @@
                 padding: 8px 12px;
             }
         }
+
+        /* ── Global DataTables Sorting Fix: Eliminate double empty square boxes (tofu glyphs) ── */
+        table.dataTable thead .sorting:before,
+        table.dataTable thead .sorting:after,
+        .dataTables_wrapper .dataTable thead .sorting:before,
+        .dataTables_wrapper .dataTable thead .sorting:after {
+            display: none !important;
+            content: "" !important;
+        }
+        table.dataTable thead .sorting_asc:after,
+        table.dataTable thead .sorting_desc:before,
+        .dataTables_wrapper .dataTable thead .sorting_asc:after,
+        .dataTables_wrapper .dataTable thead .sorting_desc:before {
+            display: none !important;
+            content: "" !important;
+        }
+        table.dataTable thead .sorting_asc:before,
+        .dataTables_wrapper .dataTable thead .sorting_asc:before {
+            content: "\f0de" !important;
+            font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome", sans-serif !important;
+            font-weight: 900 !important;
+            font-size: 0.75rem !important;
+            right: 8px !important;
+            opacity: 0.85 !important;
+        }
+        table.dataTable thead .sorting_desc:after,
+        .dataTables_wrapper .dataTable thead .sorting_desc:after {
+            content: "\f0dd" !important;
+            font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome", sans-serif !important;
+            font-weight: 900 !important;
+            font-size: 0.75rem !important;
+            right: 8px !important;
+            opacity: 0.85 !important;
+        }
     </style>
     <!--=========================*
                 Met Data

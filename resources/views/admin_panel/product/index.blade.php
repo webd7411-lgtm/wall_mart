@@ -321,6 +321,33 @@
     .dataTables_wrapper .dataTables_paginate { display: none !important; }
     .dataTables_wrapper { overflow-x: visible !important; }
 
+    /* ── Fix: Remove DataTables sorting pseudo-elements (fixes double empty square boxes / tofu glyphs) ── */
+    table.dataTable thead .sorting:before,
+    table.dataTable thead .sorting:after,
+    table.dataTable thead .sorting_asc:before,
+    table.dataTable thead .sorting_asc:after,
+    table.dataTable thead .sorting_desc:before,
+    table.dataTable thead .sorting_desc:after,
+    table.dataTable thead > tr > th.sorting:before,
+    table.dataTable thead > tr > th.sorting:after,
+    table.dataTable thead > tr > th.sorting_asc:before,
+    table.dataTable thead > tr > th.sorting_asc:after,
+    table.dataTable thead > tr > th.sorting_desc:before,
+    table.dataTable thead > tr > th.sorting_desc:after,
+    #productTable thead th:before,
+    #productTable thead th:after {
+        display: none !important;
+        content: "" !important;
+    }
+    table.dataTable thead .sorting,
+    table.dataTable thead .sorting_asc,
+    table.dataTable thead .sorting_desc,
+    #productTable thead th {
+        background-image: none !important;
+        padding-right: 14px !important;
+        cursor: default !important;
+    }
+
     /* ════════════════════════════════════════════════════
        MOBILE RESPONSIVE  ≤ 768px
     ════════════════════════════════════════════════════ */
@@ -1003,22 +1030,16 @@ $(document).ready(function () {
         $('.selectProduct').prop('checked', this.checked);
     });
 
-    // ── DataTable init ── (responsive:false – we use CSS horizontal scroll instead)
+    // ── DataTable init ── (responsive:false – we use CSS horizontal scroll instead; ordering:false prevents sorting tofu boxes)
     let table = $('#productTable').DataTable({
         responsive: false,
         paging:     false,
-        ordering:   true,
+        ordering:   false,
         info:       false,
-        order:      [[3, 'asc']],
         dom:        'rt',
         scrollX:    false,
-        columnDefs: [{ targets: [0, -1], orderable: false, searchable: false }]
+        columnDefs: [{ targets: '_all', orderable: false, searchable: false }]
     });   // DataTable closes here
-
-    // ── Select All ──
-    $('#selectAll').click(function() {
-        $('.selectProduct').prop('checked', this.checked);
-    });
 
     // ── View Product Modal ──
     $(document).on('click', '.viewProductBtn', function() {
