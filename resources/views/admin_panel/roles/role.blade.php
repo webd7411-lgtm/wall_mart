@@ -831,12 +831,26 @@
                         @forelse($roles as $role)
                             <div class="role-card" data-role-id="{{ $role->id }}"
                                 data-name="{{ strtolower($role->name) }}"
+                                data-branch-id="{{ $role->branch_id ?? '' }}"
+                                data-branch-type="{{ $role->branch?->type ?? 'global' }}"
+                                data-branch-name="{{ $role->branch ? $role->branch->name . ' (' . ucfirst($role->branch->type) . ')' : 'Global (All Branches)' }}"
                                 data-permissions="{{ json_encode($role->getPermissionNames()) }}">
                                 <div class="role-card-header">
                                     <div class="d-flex align-items-center">
                                         <div class="role-avatar">{{ strtoupper(substr($role->name, 0, 2)) }}</div>
                                         <div class="role-info">
                                             <h4 class="role-name">{{ $role->name }}</h4>
+                                            <div class="mb-1">
+                                                @if($role->branch)
+                                                    <span class="badge {{ $role->branch->type === 'restaurant' ? 'bg-danger text-white' : 'bg-primary text-white' }}" style="font-size: 11px; padding: 3px 8px; border-radius: 6px;">
+                                                        <i class="fa {{ $role->branch->type === 'restaurant' ? 'fa-utensils' : 'fa-store' }}"></i> {{ $role->branch->name }}
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-secondary text-white" style="font-size: 11px; padding: 3px 8px; border-radius: 6px;">
+                                                        <i class="fa fa-globe"></i> Global Scope
+                                                    </span>
+                                                @endif
+                                            </div>
                                             <div class="role-meta">ID: {{ $role->id }} • Created
                                                 {{ $role->created_at?->diffForHumans() ?? 'N/A' }}</div>
                                         </div>
@@ -912,10 +926,27 @@
                                 Role Name
                             </label>
                             <input type="text" name="name" id="roleName" class="form-control"
-                                placeholder="Enter role name (e.g., Manager, Admin)" required autocomplete="off">
+                                placeholder="Enter role name (e.g., Manager, Cashier, Waiter)" required autocomplete="off">
                             <div class="form-hint">
                                 <i class="fa fa-info-circle"></i>
                                 Choose a descriptive name that reflects the role's purpose
+                            </div>
+                        </div>
+
+                        <div class="form-group-modern">
+                            <label class="form-label">
+                                <i class="fa fa-code-branch"></i>
+                                Branch Scope
+                            </label>
+                            <select name="branch_id" id="roleBranchId" class="form-control" style="height: 48px;">
+                                <option value="">Global (All Branches / Head Office)</option>
+                                @foreach($branches ?? [] as $b)
+                                    <option value="{{ $b->id }}" data-type="{{ $b->type }}">{{ $b->name }} ({{ ucfirst($b->type) }})</option>
+                                @endforeach
+                            </select>
+                            <div class="form-hint">
+                                <i class="fa fa-info-circle"></i>
+                                Select a specific branch to scope roles and auto-match branch functions (Mart vs Restaurant).
                             </div>
                         </div>
                     </div>
@@ -923,6 +954,7 @@
                     <div class="modal-footer-modern">
                         <button type="button" class="btn btn-cancel" data-dismiss="modal">
                             <i class="fa fa-times me-2"></i>Cancel
+                        </button>
                         </button>
                         <button type="submit" class="btn btn-save">
                             <i class="fa fa-check"></i>
@@ -1011,6 +1043,7 @@
             $('#createRoleBtn').click(function() {
                 $('#roleEditId').val('');
                 $('#roleName').val('');
+                $('#roleBranchId').val('');
                 $('#roleModalTitle').html('<i class="fa fa-user-shield"></i><span>Create New Role</span>');
             });
 
@@ -1018,10 +1051,12 @@
             $(document).on('click', '.edit-role-btn', function() {
                 var card = $(this).closest('.role-card');
                 var id = card.data('role-id');
-                var name = card.find('.role-name').text();
+                var name = card.find('.role-name').text().trim();
+                var branchId = card.data('branch-id') || '';
 
                 $('#roleEditId').val(id);
                 $('#roleName').val(name);
+                $('#roleBranchId').val(branchId);
                 $('#roleModalTitle').html('<i class="fa fa-pen"></i><span>Edit Role</span>');
                 $('#roleModal').modal('show');
             });
@@ -1037,11 +1072,13 @@
                     contentType: false,
                     success: function(response) {
                         if (response.success) {
-                            Swal.fire('Success', response.message || 'Role saved successfully',
+                            Swal.fire('Success', response.message || response.success || 'Role saved successfully',
                                 'success').then(() => location.reload());
+                        } else if (response.errors) {
+                            var errMessages = Object.values(response.errors).flat().join('<br>');
+                            Swal.fire('Validation Error', errMessages, 'warning');
                         } else {
-                            Swal.fire('Error', response.message || 'Something went wrong',
-                                'error');
+                            Swal.fire('Error', response.message || 'Something went wrong', 'error');
                         }
                     },
                     error: function(xhr) {
@@ -1071,19 +1108,21 @@
             $(document).on('click', '.edit-permission-btn', function() {
                 var card = $(this).closest('.role-card');
                 var id = card.data('role-id');
-                var name = card.find('.role-name').text();
+                var name = card.find('.role-name').text().trim();
+                var branchType = card.data('branch-type') || 'global';
+                var branchName = card.data('branch-name') || 'Global';
                 var assignedPerms = card.data('permissions') || [];
 
                 $('#permEditId').val(id);
-                $('#permRoleName').text('Role: ' + name);
+                $('#permRoleName').html('Role: <strong>' + name + '</strong> &nbsp;•&nbsp; <span class="badge ' + (branchType === 'restaurant' ? 'bg-danger text-white' : (branchType === 'mart' ? 'bg-primary text-white' : 'bg-secondary text-white')) + '" style="font-size: 11px; padding: 4px 10px;">' + branchName + '</span>');
                 $('#permRoleNameInput').val(name);
 
-                buildPermissionGroups(assignedPerms);
+                buildPermissionGroups(assignedPerms, branchType);
                 $('#permissionModal').modal('show');
             });
 
             // Build Permission Groups UI
-            function buildPermissionGroups(assignedPerms) {
+            function buildPermissionGroups(assignedPerms, branchType) {
                 var container = $('#permissionGroupsContainer');
                 container.empty();
 
@@ -1094,13 +1133,49 @@
                     'hr': 'fa-users',
                     'users': 'fa-user',
                     'roles': 'fa-user-shield',
+                    'permissions': 'fa-key',
+                    'branches': 'fa-code-branch',
                     'settings': 'fa-cog',
                     'reports': 'fa-chart-bar',
                     'inventory': 'fa-boxes',
                     'sales': 'fa-shopping-cart',
-                    'purchase': 'fa-cart-plus',
-                    'accounts': 'fa-calculator'
+                    'purchases': 'fa-cart-plus',
+                    'vendors': 'fa-truck',
+                    'vendor.payments': 'fa-hand-holding-usd',
+                    'vendor.bilties': 'fa-file-invoice',
+                    'customers': 'fa-user-tag',
+                    'customer.payments': 'fa-money-bill-wave',
+                    'customer.ledger': 'fa-file-invoice-dollar',
+                    'payment.voucher': 'fa-wallet',
+                    'receipts.voucher': 'fa-receipt',
+                    'expense.voucher': 'fa-file-invoice',
+                    'journal.voucher': 'fa-book',
+                    'income.voucher': 'fa-coins',
+                    'chart.of.accounts': 'fa-sitemap',
+                    'restaurant.tables': 'fa-chair',
+                    'restaurant.riders': 'fa-motorcycle',
+                    'restaurant.deliveries': 'fa-shipping-fast',
+                    'restaurant.kds': 'fa-fire-burner',
+                    'restaurant.pos': 'fa-cash-register',
+                    'inward.gatepass': 'fa-dolly',
+                    'warehouse': 'fa-warehouse',
+                    'warehouse.stock': 'fa-cubes',
+                    'stock.transfer': 'fa-exchange-alt',
+                    'stock.adjust': 'fa-sliders-h',
+                    'web_orders': 'fa-globe',
+                    'web_products': 'fa-box-open',
+                    'coupons': 'fa-ticket-alt',
+                    'website-settings': 'fa-sliders'
                 };
+
+                var martExclusiveModules = [
+                    'inward.gatepass',
+                    'vendor.bilties',
+                    'warehouse',
+                    'warehouse.stock',
+                    'stock.transfer',
+                    'stock.adjust'
+                ];
 
                 allPermissions.forEach(function(p) {
                     // Group by everything before the last dot (the action)
@@ -1110,6 +1185,16 @@
                         var module = parts.join('.');
                     } else {
                         var module = 'General';
+                    }
+
+                    // Branch-type filtering:
+                    // If role belongs to a restaurant branch, skip mart-exclusive bulk modules
+                    if (branchType === 'restaurant' && martExclusiveModules.includes(module)) {
+                        return;
+                    }
+                    // If role belongs to a mart branch, skip restaurant-exclusive dining/tables modules
+                    if (branchType === 'mart' && module.startsWith('restaurant.')) {
+                        return;
                     }
 
                     if (!groups[module]) groups[module] = [];

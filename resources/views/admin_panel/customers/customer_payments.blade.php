@@ -12,7 +12,9 @@
                     <h6>Manage Customer Receivables</h6>
                 </div>
                 <div class="page-btn d-flex justify-content-end col-lg-6">
-                    <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#paymentModal" onclick="clearPaymentForm()">Add Payment</button>
+                    @canany(['customer.payments.create', 'customers.create'])
+                        <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#paymentModal" onclick="clearPaymentForm()">Add Payment</button>
+                    @endcanany
                 </div>
             </div>
 
@@ -44,13 +46,15 @@
                                 <td>{{ $p->payment_method }}</td>
                                 <td>{{ $p->note }}</td>
                                 <td>
-                                    <form action="{{ route('customer.payments.destroy', $p->id) }}" method="POST" style="display:inline-block;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure to delete this payment?')">
-                                            Delete
-                                        </button>
-                                    </form>
+                                    @canany(['customer.payments.delete', 'customers.delete'])
+                                        <form action="{{ route('customer.payments.destroy', $p->id) }}" method="POST" style="display:inline-block;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure to delete this payment?')">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    @endcanany
                                 </td>
                             </tr>
                             @endforeach

@@ -4,115 +4,76 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Branch;
+use App\Models\Role;
+use App\Helpers\BranchHelper;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
 class RoleController extends Controller
 {
      public function index()
     {
-        $roles = Role::orderBy('name',"ASC")->get();
-        
-        // Ensure purchase_pos.create & stock.adjust permissions exist automatically (so no live migration is needed)
-        Permission::firstOrCreate(['name' => 'purchase_pos.create']);
-        foreach (['stock.adjust.view', 'stock.adjust.create', 'stock.adjust.edit', 'stock.adjust.delete'] as $permName) {
-            Permission::firstOrCreate(['name' => $permName]);
+        $activeBranchId = BranchHelper::getActiveBranchId();
+        $rolesQuery = Role::with('branch')->orderBy('name', "ASC");
+
+        if (!BranchHelper::canSwitchBranch() && $activeBranchId) {
+            $rolesQuery->where(function ($q) use ($activeBranchId) {
+                $q->whereNull('branch_id')->orWhere('branch_id', $activeBranchId);
+            });
         }
-        foreach ([
-            'website-settings.view',
-            'website-settings.create',
-            'website-settings.edit',
-            'website-settings.delete',
-            'website-settings.update',
-            'website-settings.upload_manage',
-            
-            // Web Products permissions
-            'web_products.view', 'web_products.read',
-            'web_products.create', 'web_products.add',
-            'web_products.edit', 'web_products.delete',
-            
-            // Coupons permissions
-            'coupons.view', 'coupons.read',
-            'coupons.create', 'coupons.add',
-            'coupons.edit', 'coupons.delete',
-            
-            // Web Orders permissions
-            'web_orders.view', 'web_orders.read',
-            'web_orders.create', 'web_orders.add',
-            'web_orders.edit', 'web_orders.delete',
 
-            // General Settings permissions
-            'settings.view', 'settings.read',
-            'settings.create', 'settings.add',
-            'settings.edit', 'settings.delete', 'settings.update',
+        $roles = $rolesQuery->get();
+        $branches = Branch::where('status', 1)->get();
+        $allPermissions = Permission::orderBy('name', 'ASC')->get();
 
-            // Web Users permissions
-            'web_users.view', 'web_users.read',
-            'web_users.create', 'web_users.add',
-            'web_users.edit', 'web_users.delete',
-
-            // Dashboard & Sales View Own permissions
-            'dashboard.view', 'sales.view_own'
-        ] as $permName) {
-            Permission::firstOrCreate(['name' => $permName]);
-        }
-        
-        $allPermissions  = Permission::all();
-        return view('admin_panel.roles.role', compact(['roles', 'allPermissions']));
+        return view('admin_panel.roles.role', compact(['roles', 'allPermissions', 'branches']));
     }
 
     public function store(Request $request)
     {
         $editId = $request->edit_id ?? null;
-         $validator = Validator::make($request->all(), [
-            'name' => 'required|unique:roles,name,'.$request->edit_id,
+        $branchId = $request->filled('branch_id') ? (int) $request->branch_id : null;
+
+        $validator = Validator::make($request->all(), [
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('roles', 'name')->where(function ($query) use ($branchId) {
+                    return $branchId ? $query->where('branch_id', $branchId) : $query->whereNull('branch_id');
+                })->ignore($editId)
+            ],
+            'branch_id' => 'nullable|exists:branches,id',
+        ], [
+            'name.unique' => 'A role with this name already exists for the selected branch/global scope.'
         ]);
-
-        if ($validator->fails()) {
-            return ['errors' => $validator->errors()];
-        }
-
-
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()]);
         }
 
-        // Step 2: Check for user_id uniqueness (exclude self in edit)
-        // $userExists = Branch::where('user_id', $request->user_id)
-        //     ->when($editId, fn($q) => $q->where('id', '!=', $editId))
-        //     ->exists();
-
-        // if ($userExists) {
-        //     return response()->json([
-        //         'errors' => [
-        //             'user_id' => ['This user is already assigned to another branch.']
-        //         ]
-        //     ]);
-        // }
-
-        // Step 3: Save or update logic
         if (!empty($editId)) {
-            $role = role::find($editId);
+            $role = Role::findOrFail($editId);
             $msg = [
-                'success' => 'Roles Updated Successfully',
+                'success' => 'Role Updated Successfully',
                 'reload' => true
             ];
         } else {
-            $role = new role();
+            $role = new Role();
+            $role->guard_name = 'web';
             $msg = [
-                'success' => 'Roles Created Successfully',
+                'success' => 'Role Created Successfully',
                 'redirect' => route('roles.index')
             ];
         }
 
         $role->name = $request->name;
+        $role->branch_id = $branchId;
         $role->save();
 
         return response()->json($msg);
-
     }
 
     /**

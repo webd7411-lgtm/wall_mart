@@ -13,7 +13,9 @@
                     <h6>Manage Vendor Payment Records</h6>
                 </div>
                 <div class="page-btn d-flex justify-content-end col-lg-6">
-                    <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#paymentModal" onclick="clearPaymentForm()">Add Payment</button>
+                    @canany(['vendor.payments.create', 'vendors.create'])
+                        <button class="btn btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#paymentModal" onclick="clearPaymentForm()">Add Payment</button>
+                    @endcanany
                 </div>
             </div>
 

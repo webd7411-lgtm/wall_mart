@@ -27,6 +27,12 @@ class SetBranchContext
                 Session::put('active_branch_id', 'all');
             }
 
+            // Sync active branch with Spatie Permissions Team Context
+            $activeBranchId = BranchHelper::getActiveBranchId();
+            if (function_exists('setPermissionsTeamId')) {
+                setPermissionsTeamId($activeBranchId);
+            }
+
             // Share context variables with all Blade views
             View::share('current_branch_id', BranchHelper::getActiveBranchId());
             View::share('is_all_branches', BranchHelper::isAllBranches());

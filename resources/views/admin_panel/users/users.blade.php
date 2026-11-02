@@ -579,6 +579,8 @@
                         @forelse($users as $user)
                             <div class="user-card" data-user-id="{{ $user->id }}"
                                 data-name="{{ strtolower($user->name) }}" data-email="{{ strtolower($user->email) }}"
+                                data-branch-id="{{ $user->branch_id ?? '' }}"
+                                data-branch-name="{{ strtolower($user->branch?->name ?? 'All Branches') }}"
                                 data-roles="{{ json_encode($user->getRoleNames()) }}">
                                 <div class="user-card-header">
                                     <div class="d-flex align-items-center">
@@ -586,8 +588,18 @@
                                         <div class="user-info">
                                             <h4 class="user-name">{{ $user->name }}</h4>
                                             <div class="user-email">{{ $user->email }}</div>
-                                            <div class="user-meta">ID: {{ $user->id }} • Joined
-                                                {{ $user->created_at?->diffForHumans() ?? 'N/A' }}</div>
+                                            <div class="user-meta mt-1 d-flex align-items-center flex-wrap gap-2">
+                                                <span>ID: {{ $user->id }} • Joined {{ $user->created_at?->diffForHumans() ?? 'N/A' }}</span>
+                                                @if($user->branch)
+                                                    <span class="badge" style="background: #e0e7ff; color: #4338ca; font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 600;">
+                                                        <i class="fa fa-store me-1"></i>{{ $user->branch->name }}
+                                                    </span>
+                                                @else
+                                                    <span class="badge" style="background: #f1f5f9; color: #475569; font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 600;">
+                                                        <i class="fa fa-globe me-1"></i>All Branches
+                                                    </span>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="user-actions">
@@ -665,7 +677,7 @@
                                         placeholder="Enter email address" required>
                                 </div>
                             </div>
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="form-group-modern">
                                     <label class="form-label">
                                         <i class="fa fa-lock"></i> Password
@@ -678,6 +690,22 @@
                                             <i class="fa fa-eye"></i>
                                         </button>
                                     </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label class="form-label">
+                                        <i class="fa fa-store"></i> Assign Branch
+                                    </label>
+                                    <select name="branch_id" id="userBranchId" class="form-control" style="height: 48px;">
+                                        @if(\App\Helpers\BranchHelper::canSwitchBranch())
+                                            <option value="">All Branches (Global Access / Super Admin)</option>
+                                        @endif
+                                        @foreach($branches ?? [] as $b)
+                                            <option value="{{ $b->id }}">{{ $b->name }} ({{ ucfirst($b->type) }})</option>
+                                        @endforeach
+                                    </select>
+                                    <small class="text-muted" style="font-size: 11px;">Restricts user strictly to this branch</small>
                                 </div>
                             </div>
                             <div class="col-md-12">
@@ -788,6 +816,7 @@
                 $('#userName').val('');
                 $('#userEmail').val('');
                 $('#userPassword').val('');
+                $('#userBranchId').val('');
                 $('#userModalTitle').html('<i class="fa fa-user-plus"></i><span>Add New User</span>');
                 $('#userSaveText').text('Create User');
                 buildRolesCheckboxes('#rolesContainer', []);
@@ -801,12 +830,14 @@
                 var id = card.data('user-id');
                 var name = card.find('.user-name').text();
                 var email = card.find('.user-email').text();
+                var branchId = card.data('branch-id') !== undefined ? card.data('branch-id') : '';
                 var roles = card.data('roles') || [];
 
                 $('#userEditId').val(id);
                 $('#userName').val(name);
                 $('#userEmail').val(email);
                 $('#userPassword').val('');
+                $('#userBranchId').val(branchId);
                 $('#userModalTitle').html('<i class="fa fa-pen"></i><span>Edit User</span>');
                 $('#userSaveText').text('Save Changes');
                 buildRolesCheckboxes('#rolesContainer', roles);
@@ -858,8 +889,9 @@
                 $('.user-card').each(function() {
                     var name = $(this).data('name') || '';
                     var email = $(this).data('email') || '';
+                    var branch = $(this).data('branch-name') || '';
                     var roles = JSON.stringify($(this).data('roles') || []).toLowerCase();
-                    $(this).toggle(name.indexOf(q) !== -1 || email.indexOf(q) !== -1 || roles
+                    $(this).toggle(name.indexOf(q) !== -1 || email.indexOf(q) !== -1 || branch.indexOf(q) !== -1 || roles
                         .indexOf(q) !== -1);
                 });
                 var visible = $('.user-card:visible').length;

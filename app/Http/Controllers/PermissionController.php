@@ -11,9 +11,22 @@ class PermissionController extends Controller
 {
     public function index()
     {
-        foreach (['stock.adjust.view', 'stock.adjust.create', 'stock.adjust.edit', 'stock.adjust.delete'] as $permName) {
-            Permission::firstOrCreate(['name' => $permName]);
+        $essentialPerms = [
+            'stock.adjust.view', 'stock.adjust.create', 'stock.adjust.edit', 'stock.adjust.delete',
+            'customer.payments.view', 'customer.payments.create', 'customer.payments.edit', 'customer.payments.delete', 'customer.payments.reminder',
+            'vendor.payments.view', 'vendor.payments.create', 'vendor.payments.edit', 'vendor.payments.delete',
+            'payment.voucher.view', 'payment.voucher.create', 'payment.voucher.edit', 'payment.voucher.delete', 'payment.voucher.print',
+            'payments.pos_split', 'payments.refund',
+            'restaurant.tables.view', 'restaurant.tables.create', 'restaurant.tables.edit', 'restaurant.tables.delete',
+            'restaurant.riders.view', 'restaurant.riders.create', 'restaurant.riders.edit', 'restaurant.riders.delete',
+            'restaurant.deliveries.view', 'restaurant.deliveries.create', 'restaurant.deliveries.edit', 'restaurant.deliveries.delete', 'restaurant.deliveries.status_update',
+            'restaurant.kds.view', 'restaurant.pos.view'
+        ];
+
+        foreach ($essentialPerms as $permName) {
+            Permission::firstOrCreate(['name' => $permName, 'guard_name' => 'web']);
         }
+
         $permissions = Permission::orderBy('name',"ASC")->get();
         return view('admin_panel.permissions.permission', compact('permissions'));
     }

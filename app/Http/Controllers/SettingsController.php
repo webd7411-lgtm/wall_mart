@@ -33,7 +33,9 @@ class SettingsController extends Controller
         }
 
         // Determine branch to view/edit
-        if ($isRestaurant) {
+        if (!BranchHelper::canSwitchBranch($user)) {
+            $branchId = (int) $user->branch_id;
+        } elseif ($isRestaurant) {
             $branchId = BranchHelper::getActiveBranchId() ?? ($branches->where('type', 'restaurant')->first()?->id ?? 2);
         } else {
             $reqBranchId = $request->query('branch_id');
@@ -78,7 +80,9 @@ class SettingsController extends Controller
             ]);
 
             // Resolve target branch ID
-            if ($isRestaurant) {
+            if (!BranchHelper::canSwitchBranch(auth()->user())) {
+                $branchId = (int) auth()->user()->branch_id;
+            } elseif ($isRestaurant) {
                 $branchId = BranchHelper::getActiveBranchId() ?? 2;
             } else {
                 $branchId = !empty($validated['branch_id'])
@@ -175,8 +179,12 @@ class SettingsController extends Controller
             abort(403, 'Unauthorized action. You do not have permission to view Return Policy Settings.');
         }
 
-        $branches = Branch::where('status', 1)->get();
-        $branchId = (int) ($request->query('branch_id') ?: BranchHelper::getActiveBranchId() ?: 1);
+        $branches = BranchHelper::getAvailableBranches();
+        if (!BranchHelper::canSwitchBranch(auth()->user())) {
+            $branchId = (int) auth()->user()->branch_id;
+        } else {
+            $branchId = (int) ($request->query('branch_id') ?: BranchHelper::getActiveBranchId() ?: 1);
+        }
 
         $settings = SystemSetting::where('group', 'returns')
             ->where('branch_id', $branchId)
@@ -205,7 +213,11 @@ class SettingsController extends Controller
             'return_auto_approve_threshold' => 'nullable|numeric|min:0',
         ]);
 
-        $branchId = !empty($validated['branch_id']) ? (int) $validated['branch_id'] : (BranchHelper::getActiveBranchId() ?: 1);
+        if (!BranchHelper::canSwitchBranch(auth()->user())) {
+            $branchId = (int) auth()->user()->branch_id;
+        } else {
+            $branchId = !empty($validated['branch_id']) ? (int) $validated['branch_id'] : (BranchHelper::getActiveBranchId() ?: 1);
+        }
 
         foreach (['return_deadline_days', 'return_require_approval', 'return_auto_approve_threshold'] as $key) {
             if (isset($validated[$key])) {

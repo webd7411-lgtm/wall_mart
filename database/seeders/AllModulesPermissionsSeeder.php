@@ -35,14 +35,23 @@ class AllModulesPermissionsSeeder extends Seeder
             'purchases',
             'purchase.returns',
             'vendors',
+            'vendor.payments',
             'vendor.bilties',
             'inward.gatepass',
             'sales',
             'sales.returns',
             'customers',
+            'customer.payments',
             'customer.ledger',
             'bookings',
             'checkbook',
+
+            // Restaurant Modules
+            'restaurant.tables',
+            'restaurant.riders',
+            'restaurant.deliveries',
+            'restaurant.kds',
+            'restaurant.pos',
 
             'chart.of.accounts',
             'expense.voucher',

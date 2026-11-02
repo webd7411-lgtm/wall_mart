@@ -47,6 +47,14 @@ class User extends Authenticatable
     ];
 
     /**
+     * Get the branch this user is assigned to (null means all branches/global access)
+     */
+    public function branch()
+    {
+        return $this->belongsTo(\App\Models\Branch::class, 'branch_id');
+    }
+
+    /**
      * Get the employee profile associated with this user
      */
     public function employee()

@@ -16,6 +16,9 @@ class BranchController extends Controller
      */
     public function index()
     {
+        if (!\App\Helpers\BranchHelper::canSwitchBranch(auth()->user())) {
+            abort(403, 'Unauthorized. Branch-restricted users cannot view or manage other branches.');
+        }
         $branches = Branch::all();
         $users = User::all();
         return view('admin_panel.branch.branch', compact('branches', 'users')); 
@@ -23,6 +26,9 @@ class BranchController extends Controller
 
     public function store(Request $request)
     {
+        if (!\App\Helpers\BranchHelper::canSwitchBranch(auth()->user())) {
+            return response()->json(['error' => 'Unauthorized action. Branch-restricted users cannot manage branches.'], 403);
+        }
         $editId = $request->edit_id ?? null;
 
         $validator = Validator::make($request->all(), [
@@ -71,6 +77,9 @@ class BranchController extends Controller
      */
     public function delete(string $id)
     {
+        if (!\App\Helpers\BranchHelper::canSwitchBranch(auth()->user())) {
+            abort(403, 'Unauthorized action. Branch-restricted users cannot delete branches.');
+        }
         $branch = Branch::findOrFail($id);
         $branch->delete();
 

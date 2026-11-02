@@ -56,6 +56,10 @@ class BranchHelper
      */
     public static function getAvailableBranches()
     {
+        $user = Auth::user();
+        if ($user && !empty($user->branch_id)) {
+            return Branch::where('id', $user->branch_id)->where('status', 1)->get();
+        }
         return Branch::where('status', 1)->get();
     }
 
@@ -80,6 +84,62 @@ class BranchHelper
     {
         $branch = static::getActiveBranch();
         return $branch && strtolower(trim($branch->type ?? '')) === 'restaurant';
+    }
+
+    /**
+     * Determine if the currently active branch is of type 'mart'.
+     */
+    public static function isMartBranch(): bool
+    {
+        $branch = static::getActiveBranch();
+        return !$branch || strtolower(trim($branch->type ?? 'mart')) === 'mart';
+    }
+
+    /**
+     * Determine the compatible branch type for a permission or module.
+     * Returns 'restaurant', 'mart', or 'universal'
+     */
+    public static function getModuleCompatibility(string $module): string
+    {
+        $module = strtolower(trim($module));
+
+        if (str_starts_with($module, 'restaurant.') || str_starts_with($module, 'restaurant')) {
+            return 'restaurant';
+        }
+
+        $martOnly = [
+            'inward.gatepass',
+            'vendor.bilties',
+            'warehouse',
+            'warehouse.stock',
+            'stock.transfer',
+            'stock.adjust',
+        ];
+
+        if (in_array($module, $martOnly)) {
+            return 'mart';
+        }
+
+        return 'universal';
+    }
+
+    /**
+     * Check if a module is allowed for a given branch type.
+     */
+    public static function isModuleAllowedForBranchType(string $module, ?string $branchType): bool
+    {
+        if (empty($branchType) || $branchType === 'all') {
+            return true; // Global roles can have all modules
+        }
+
+        $branchType = strtolower(trim($branchType));
+        $compat = static::getModuleCompatibility($module);
+
+        if ($compat === 'universal') {
+            return true;
+        }
+
+        return $compat === $branchType;
     }
 }
 

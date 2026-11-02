@@ -1290,24 +1290,30 @@
                                     <span class="menu-title">POS Counter</span>
                                 </a>
                             </li>
+                            @can('restaurant.tables.view')
                             <li class="nav-item {{ request()->is('restaurant/tables*') ? 'active' : '' }}">
                                 <a href="{{ route('restaurant.tables.index') }}" class="nav-link">
                                     <i class="menu_icon fas fa-chair text-primary"></i>
                                     <span class="menu-title">Tables</span>
                                 </a>
                             </li>
+                            @endcan
+                            @can('restaurant.deliveries.view')
                             <li class="nav-item {{ request()->is('restaurant/deliveries*') ? 'active' : '' }}">
                                 <a href="{{ route('restaurant.deliveries.index') }}" class="nav-link">
                                     <i class="menu_icon fas fa-shipping-fast text-warning"></i>
                                     <span class="menu-title">Deliveries</span>
                                 </a>
                             </li>
+                            @endcan
+                            @can('restaurant.riders.view')
                             <li class="nav-item {{ request()->is('restaurant/riders*') ? 'active' : '' }}">
                                 <a href="{{ route('restaurant.riders.index') }}" class="nav-link">
                                     <i class="menu_icon fas fa-motorcycle text-info"></i>
                                     <span class="menu-title">Riders</span>
                                 </a>
                             </li>
+                            @endcan
                             <li class="nav-item {{ request()->is('product*') || request()->is('create*') ? 'active' : '' }}">
                                 <a href="{{ url('product-catalog') }}" class="nav-link">
                                     <i class="menu_icon fas fa-utensils text-success"></i>
@@ -1425,6 +1431,10 @@
                                                         <li><a href="{{ url('vendor') }}"><i class="fas fa-truck"></i> Vendor</a>
                                                         </li>
                                                     @endcan
+                                                    @canany(['vendor.payments.view', 'vendors.view'])
+                                                        <li><a href="{{ route('vendor.payments') }}"><i class="fas fa-hand-holding-usd"></i> Vendor Payments</a>
+                                                        </li>
+                                                    @endcanany
                                                     @can('purchases.view')
                                                         <li><a href="{{ route('Purchase.home') }}"><i
                                                                     class="fas fa-shopping-cart"></i> Purchase</a>
@@ -1475,17 +1485,29 @@
                                                     @can('sales.create')
                                                         <li><a href="{{ route('pos.index') }}"><i class="fas fa-cash-register"></i>
                                                                 POS System</a></li>
-                                                        <li><a href="{{ route('restaurant.tables.index') }}"><i class="fas fa-chair"></i>
-                                                                Restaurant Tables</a></li>
-                                                        <li><a href="{{ route('restaurant.deliveries.index') }}"><i class="fas fa-shipping-fast"></i>
-                                                                Deliveries & Dispatch</a></li>
-                                                        <li><a href="{{ route('restaurant.riders.index') }}"><i class="fas fa-motorcycle"></i>
-                                                                Riders Management</a></li>
                                                     @endcan
+                                                    @if(!empty($is_restaurant_branch) || !empty($is_all_branches))
+                                                        @can('restaurant.tables.view')
+                                                            <li><a href="{{ route('restaurant.tables.index') }}"><i class="fas fa-chair"></i>
+                                                                    Restaurant Tables</a></li>
+                                                        @endcan
+                                                        @can('restaurant.deliveries.view')
+                                                            <li><a href="{{ route('restaurant.deliveries.index') }}"><i class="fas fa-shipping-fast"></i>
+                                                                    Deliveries & Dispatch</a></li>
+                                                        @endcan
+                                                        @can('restaurant.riders.view')
+                                                            <li><a href="{{ route('restaurant.riders.index') }}"><i class="fas fa-motorcycle"></i>
+                                                                    Riders Management</a></li>
+                                                        @endcan
+                                                    @endif
                                                     @can('customers.view')
                                                         <li><a href="{{ url('customers') }}"><i class="fas fa-user"></i>
                                                                 Customer</a></li>
                                                     @endcan
+                                                    @canany(['customer.payments.view', 'customers.view'])
+                                                        <li><a href="{{ route('customer.payments') }}"><i class="fas fa-money-bill-wave"></i>
+                                                                Customer Payments</a></li>
+                                                    @endcanany
                                                     @can('zones.view')
                                                         <li><a href="{{ url('zone') }}"><i class="fas fa-map-marker-alt"></i>
                                                                 Zone</a></li>

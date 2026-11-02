@@ -211,21 +211,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/customers/inactive/{id}', [CustomerController::class, 'markInactive'])->name('customers.markInactive');
     Route::get('customers/toggle-status/{id}', [CustomerController::class, 'toggleStatus'])->name('customers.toggleStatus');
     Route::get('/customers/ledger', [CustomerController::class, 'customer_ledger'])->name('customers.ledger');
-    Route::get('/customer/payments', [CustomerController::class, 'customer_payments'])->name('customer.payments');
-    Route::post('/customer/payments', [CustomerController::class, 'store_customer_payment'])->name('customer.payments.store');
-    Route::post('/customers/snooze-reminder/{id}', [CustomerController::class, 'snoozeReminder'])->name('customers.snoozeReminder');
-    Route::get('/customers/payment-reminders', [CustomerController::class, 'getReminders'])->name('customers.reminders');
+    Route::get('/customer/payments', [CustomerController::class, 'customer_payments'])->middleware('permission:customer.payments.view|customers.view')->name('customer.payments');
+    Route::post('/customer/payments', [CustomerController::class, 'store_customer_payment'])->middleware('permission:customer.payments.create|customers.create')->name('customer.payments.store');
+    Route::post('/customers/snooze-reminder/{id}', [CustomerController::class, 'snoozeReminder'])->middleware('permission:customer.payments.reminder|customers.view')->name('customers.snoozeReminder');
+    Route::get('/customers/payment-reminders', [CustomerController::class, 'getReminders'])->middleware('permission:customer.payments.reminder|customers.view')->name('customers.reminders');
     // web.php
     Route::get('/customer/ledger/{id}', [CustomerController::class, 'getCustomerLedger']);
-    Route::delete('/customer-payments/{id}', [CustomerController::class, 'destroy_payment'])->name('customer.payments.destroy');
+    Route::delete('/customer-payments/{id}', [CustomerController::class, 'destroy_payment'])->middleware('permission:customer.payments.delete|customers.delete')->name('customer.payments.destroy');
 
     // Vendor Routes
     Route::get('/vendor', [VendorController::class,'index'])->middleware('permission:vendors.view')->name('vendors.index');
     Route::post('/vendor/store', [VendorController::class, 'store'])->name('vendors.store.ajax')->middleware('permission:vendors.create|vendors.edit');
     Route::get('/vendor/delete/{id}', [VendorController::class, 'delete'])->middleware('permission:vendors.delete');
     Route::get('/vendors-ledger', [VendorController::class, 'vendors_ledger'])->middleware('permission:vendors.view')->name('vendors-ledger');
-    Route::get('/vendor/payments', [VendorController::class, 'vendor_payments'])->middleware('permission:vendors.view')->name('vendor.payments');
-    Route::post('/vendor/payments', [VendorController::class, 'store_vendor_payment'])->middleware('permission:vendors.create')->name('vendor.payments.store');
+    Route::get('/vendor/payments', [VendorController::class, 'vendor_payments'])->middleware('permission:vendor.payments.view|vendors.view')->name('vendor.payments');
+    Route::post('/vendor/payments', [VendorController::class, 'store_vendor_payment'])->middleware('permission:vendor.payments.create|vendors.create')->name('vendor.payments.store');
     Route::get('/vendor/bilties', [VendorController::class, 'vendor_bilties'])->middleware('permission:vendors.view')->name('vendor.bilties');
     Route::post('/vendor/bilties', [VendorController::class, 'store_vendor_bilty'])->middleware('permission:vendors.create')->name('vendor.bilties.store');
     Route::get('/vendor/{vendor}/ledger', [VendorController::class, 'ledger'])->middleware('permission:vendors.view')->name('vendor.ledger');
@@ -364,33 +364,33 @@ Route::middleware('auth')->group(function () {
     Route::get('/sales/{id}/kot', [SaleController::class, 'kotReceipt'])->middleware('permission:sales.view|sales.view_own')->name('sales.kot');
 
     // Restaurant Operations
-    Route::get('/restaurant/pos', [\App\Http\Controllers\RestaurantController::class, 'pos'])->middleware('permission:sales.create')->name('restaurant.pos');
-    Route::get('/restaurant/active-orders', [\App\Http\Controllers\RestaurantController::class, 'activeOrders'])->middleware('permission:sales.view|sales.view_own')->name('restaurant.active_orders');
+    Route::get('/restaurant/pos', [\App\Http\Controllers\RestaurantController::class, 'pos'])->middleware('permission:restaurant.pos.view|sales.create')->name('restaurant.pos');
+    Route::get('/restaurant/active-orders', [\App\Http\Controllers\RestaurantController::class, 'activeOrders'])->middleware('permission:restaurant.kds.view|sales.view|sales.view_own')->name('restaurant.active_orders');
     Route::get('/restaurant/order/{id}', [\App\Http\Controllers\RestaurantController::class, 'getOrder'])->middleware('permission:sales.view|sales.view_own')->name('restaurant.get_order');
     Route::post('/restaurant/order/{id}/cancel', [\App\Http\Controllers\RestaurantController::class, 'cancelOrder'])->middleware('permission:sales.edit')->name('restaurant.cancel_order');
 
     // Restaurant Table Management
-    Route::get('/restaurant/tables', [\App\Http\Controllers\RestaurantTableController::class, 'index'])->name('restaurant.tables.index');
-    Route::post('/restaurant/tables/store', [\App\Http\Controllers\RestaurantTableController::class, 'store'])->name('restaurant.tables.store');
-    Route::post('/restaurant/tables/batch-create', [\App\Http\Controllers\RestaurantTableController::class, 'batchCreate'])->name('restaurant.tables.batch_create');
-    Route::get('/restaurant/tables/delete/{id}', [\App\Http\Controllers\RestaurantTableController::class, 'destroy'])->name('restaurant.tables.delete');
-    Route::post('/restaurant/tables/{id}/toggle-status', [\App\Http\Controllers\RestaurantTableController::class, 'toggleStatus'])->name('restaurant.tables.toggle_status');
+    Route::get('/restaurant/tables', [\App\Http\Controllers\RestaurantTableController::class, 'index'])->middleware('permission:restaurant.tables.view|sales.create')->name('restaurant.tables.index');
+    Route::post('/restaurant/tables/store', [\App\Http\Controllers\RestaurantTableController::class, 'store'])->middleware('permission:restaurant.tables.create|restaurant.tables.edit|sales.create')->name('restaurant.tables.store');
+    Route::post('/restaurant/tables/batch-create', [\App\Http\Controllers\RestaurantTableController::class, 'batchCreate'])->middleware('permission:restaurant.tables.create|sales.create')->name('restaurant.tables.batch_create');
+    Route::get('/restaurant/tables/delete/{id}', [\App\Http\Controllers\RestaurantTableController::class, 'destroy'])->middleware('permission:restaurant.tables.delete|sales.delete')->name('restaurant.tables.delete');
+    Route::post('/restaurant/tables/{id}/toggle-status', [\App\Http\Controllers\RestaurantTableController::class, 'toggleStatus'])->middleware('permission:restaurant.tables.edit|sales.edit')->name('restaurant.tables.toggle_status');
     Route::get('/restaurant/tables/api-list', [\App\Http\Controllers\RestaurantTableController::class, 'apiList'])->name('restaurant.tables.api_list');
 
     // Restaurant Rider Management
-    Route::get('/restaurant/riders', [\App\Http\Controllers\RiderController::class, 'index'])->name('restaurant.riders.index');
-    Route::post('/restaurant/riders/store', [\App\Http\Controllers\RiderController::class, 'store'])->name('restaurant.riders.store');
-    Route::get('/restaurant/riders/delete/{id}', [\App\Http\Controllers\RiderController::class, 'destroy'])->name('restaurant.riders.delete');
-    Route::post('/restaurant/riders/{id}/toggle-status', [\App\Http\Controllers\RiderController::class, 'toggleStatus'])->name('restaurant.riders.toggle_status');
-    Route::post('/restaurant/riders/{id}/settle-cash', [\App\Http\Controllers\RiderController::class, 'settleCash'])->name('restaurant.riders.settle_cash');
+    Route::get('/restaurant/riders', [\App\Http\Controllers\RiderController::class, 'index'])->middleware('permission:restaurant.riders.view|sales.create')->name('restaurant.riders.index');
+    Route::post('/restaurant/riders/store', [\App\Http\Controllers\RiderController::class, 'store'])->middleware('permission:restaurant.riders.create|restaurant.riders.edit|sales.create')->name('restaurant.riders.store');
+    Route::get('/restaurant/riders/delete/{id}', [\App\Http\Controllers\RiderController::class, 'destroy'])->middleware('permission:restaurant.riders.delete|sales.delete')->name('restaurant.riders.delete');
+    Route::post('/restaurant/riders/{id}/toggle-status', [\App\Http\Controllers\RiderController::class, 'toggleStatus'])->middleware('permission:restaurant.riders.edit|sales.edit')->name('restaurant.riders.toggle_status');
+    Route::post('/restaurant/riders/{id}/settle-cash', [\App\Http\Controllers\RiderController::class, 'settleCash'])->middleware('permission:restaurant.riders.edit|sales.edit')->name('restaurant.riders.settle_cash');
     Route::get('/restaurant/riders/api-list', [\App\Http\Controllers\RiderController::class, 'apiList'])->name('restaurant.riders.api_list');
 
     // Restaurant Delivery Dispatch Management
-    Route::get('/restaurant/deliveries', [\App\Http\Controllers\DeliveryOrderController::class, 'index'])->name('restaurant.deliveries.index');
-    Route::post('/restaurant/deliveries/{id}/assign-rider', [\App\Http\Controllers\DeliveryOrderController::class, 'assignRider'])->name('restaurant.deliveries.assign_rider');
-    Route::post('/restaurant/deliveries/{id}/mark-delivered', [\App\Http\Controllers\DeliveryOrderController::class, 'markDelivered'])->name('restaurant.deliveries.mark_delivered');
-    Route::post('/restaurant/deliveries/{id}/cancel', [\App\Http\Controllers\DeliveryOrderController::class, 'cancelDelivery'])->name('restaurant.deliveries.cancel');
-    Route::get('/restaurant/deliveries/{id}/slip', [\App\Http\Controllers\DeliveryOrderController::class, 'deliverySlip'])->name('restaurant.deliveries.slip');
+    Route::get('/restaurant/deliveries', [\App\Http\Controllers\DeliveryOrderController::class, 'index'])->middleware('permission:restaurant.deliveries.view|sales.create')->name('restaurant.deliveries.index');
+    Route::post('/restaurant/deliveries/{id}/assign-rider', [\App\Http\Controllers\DeliveryOrderController::class, 'assignRider'])->middleware('permission:restaurant.deliveries.edit|sales.edit')->name('restaurant.deliveries.assign_rider');
+    Route::post('/restaurant/deliveries/{id}/mark-delivered', [\App\Http\Controllers\DeliveryOrderController::class, 'markDelivered'])->middleware('permission:restaurant.deliveries.status_update|restaurant.deliveries.edit|sales.edit')->name('restaurant.deliveries.mark_delivered');
+    Route::post('/restaurant/deliveries/{id}/cancel', [\App\Http\Controllers\DeliveryOrderController::class, 'cancelDelivery'])->middleware('permission:restaurant.deliveries.delete|sales.delete')->name('restaurant.deliveries.cancel');
+    Route::get('/restaurant/deliveries/{id}/slip', [\App\Http\Controllers\DeliveryOrderController::class, 'deliverySlip'])->middleware('permission:restaurant.deliveries.view|sales.view')->name('restaurant.deliveries.slip');
 
     // booking system
 
@@ -453,10 +453,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/store_rec_vochers', [VoucherController::class, 'store_rec_vochers'])->name('store_rec_vochers');
     Route::get('/print/{id}', [VoucherController::class, 'print'])->name('print');
 
-    Route::get('/all_Payment_vochers', [VoucherController::class, 'all_Payment_vochers'])->name('all_Payment_vochers');
-    Route::get('/Payment_vochers', [VoucherController::class, 'Payment_vochers'])->name('Payment_vochers');
-    Route::post('/store_Pay_vochers', [VoucherController::class, 'store_Pay_vochers'])->name('store_Pay_vochers');
-    Route::get('/Paymentprint/{id}', [VoucherController::class, 'Paymentprint'])->name('Paymentprint');
+    Route::get('/all_Payment_vochers', [VoucherController::class, 'all_Payment_vochers'])->middleware('permission:payment.voucher.view')->name('all_Payment_vochers');
+    Route::get('/Payment_vochers', [VoucherController::class, 'Payment_vochers'])->middleware('permission:payment.voucher.create')->name('Payment_vochers');
+    Route::post('/store_Pay_vochers', [VoucherController::class, 'store_Pay_vochers'])->middleware('permission:payment.voucher.create')->name('store_Pay_vochers');
+    Route::get('/Paymentprint/{id}', [VoucherController::class, 'Paymentprint'])->middleware('permission:payment.voucher.print|payment.voucher.view')->name('Paymentprint');
 
     Route::get('/all_expense_vochers', [VoucherController::class, 'all_expense_vochers'])->name('all_expense_vochers');
     Route::get('/expense_vochers', [VoucherController::class, 'expense_vochers'])->name('expense_vochers');

@@ -74,24 +74,30 @@
                         <span class="m-nav-text font-weight-bold">Restaurant POS</span>
                     </a>
                 </li>
+                @can('restaurant.tables.view')
                 <li class="m-nav-item">
                     <a href="{{ route('restaurant.tables.index') }}" class="m-nav-link {{ request()->is('restaurant/tables*') ? 'active' : '' }}">
                         <i class="fas fa-chair m-nav-icon text-primary"></i>
                         <span class="m-nav-text">Tables</span>
                     </a>
                 </li>
+                @endcan
+                @can('restaurant.deliveries.view')
                 <li class="m-nav-item">
                     <a href="{{ route('restaurant.deliveries.index') }}" class="m-nav-link {{ request()->is('restaurant/deliveries*') ? 'active' : '' }}">
                         <i class="fas fa-shipping-fast m-nav-icon text-warning"></i>
                         <span class="m-nav-text">Deliveries</span>
                     </a>
                 </li>
+                @endcan
+                @can('restaurant.riders.view')
                 <li class="m-nav-item">
                     <a href="{{ route('restaurant.riders.index') }}" class="m-nav-link {{ request()->is('restaurant/riders*') ? 'active' : '' }}">
                         <i class="fas fa-motorcycle m-nav-icon text-info"></i>
                         <span class="m-nav-text">Riders</span>
                     </a>
                 </li>
+                @endcan
                 <li class="m-nav-item">
                     <a href="{{ url('product-catalog') }}" class="m-nav-link {{ request()->is('product*') || request()->is('create*') ? 'active' : '' }}">
                         <i class="fas fa-utensils m-nav-icon text-success"></i>
@@ -192,6 +198,9 @@
                         @can('vendors.view')
                             <li><a href="{{ url('vendor') }}"><i class="fas fa-truck"></i> Vendors</a></li>
                         @endcan
+                        @canany(['vendor.payments.view', 'vendors.view'])
+                            <li><a href="{{ route('vendor.payments') }}"><i class="fas fa-hand-holding-usd"></i> Vendor Payments</a></li>
+                        @endcanany
                         @can('purchases.view')
                             <li><a href="{{ route('Purchase.home') }}"><i class="fas fa-shopping-cart"></i> Purchases</a></li>
                         @endcan
@@ -235,6 +244,9 @@
                         @can('customers.view')
                             <li><a href="{{ url('customers') }}"><i class="fas fa-user-friends"></i> Customers</a></li>
                         @endcan
+                        @canany(['customer.payments.view', 'customers.view'])
+                            <li><a href="{{ route('customer.payments') }}"><i class="fas fa-money-bill-wave"></i> Customer Payments</a></li>
+                        @endcanany
                         @can('zones.view')
                             <li><a href="{{ url('zone') }}"><i class="fas fa-map-marker-alt"></i> Zones</a></li>
                         @endcan
