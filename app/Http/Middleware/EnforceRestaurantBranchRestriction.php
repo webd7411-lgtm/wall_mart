@@ -14,6 +14,12 @@ class EnforceRestaurantBranchRestriction
      * Whitelist of route names allowed in Restaurant POS mode.
      */
     protected array $allowedRoutePatterns = [
+        // Public Customer Website & Storefront
+        'website',
+        'website.*',
+        'software',
+        'software.*',
+
         // Dashboard
         'home',
         'dashboard',
@@ -104,6 +110,10 @@ class EnforceRestaurantBranchRestriction
      * Whitelist of exact or prefix URI paths allowed.
      */
     protected array $allowedUriPrefixes = [
+        '',
+        'menu',
+        'software',
+        'api/restaurant',
         'home',
         'dashboard',
         'pos',
@@ -161,13 +171,18 @@ class EnforceRestaurantBranchRestriction
             return $next($request);
         }
 
+        $routeName = $request->route() ? $request->route()->getName() : null;
+        $path = trim($request->path(), '/');
+
+        // Always allow public customer website, software login, and restaurant API routes, even if authenticated
+        if ($path === '' || $path === 'menu' || $path === 'software' || Str::is('website*', $routeName) || Str::is('software*', $routeName) || Str::startsWith($path, 'api/restaurant')) {
+            return $next($request);
+        }
+
         // Only enforce when the active branch is a Restaurant
         if (!BranchHelper::isRestaurantBranch()) {
             return $next($request);
         }
-
-        $routeName = $request->route() ? $request->route()->getName() : null;
-        $path = trim($request->path(), '/');
 
         // Check if route name matches any allowed pattern
         if ($routeName) {

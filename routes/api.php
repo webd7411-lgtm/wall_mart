@@ -39,3 +39,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [\App\Http\Controllers\Api\AuthApiController::class, 'user']);
     Route::get('/customer/orders', [\App\Http\Controllers\Api\CustomerDashboardController::class, 'getOrders']);
 });
+
+// Munch Fried Chicken Restaurant Website APIs
+Route::get('/restaurant/products', [\App\Http\Controllers\RestaurantWebsiteController::class, 'getProductsJson'])->name('website.api.products');
+Route::post('/restaurant/order', [\App\Http\Controllers\RestaurantWebsiteController::class, 'placeOrder'])->name('website.api.order');
+Route::post('/restaurant/track-order', [\App\Http\Controllers\RestaurantWebsiteController::class, 'trackOrderApi'])->name('website.api.track_order');
+Route::post('/restaurant/book-table', [\App\Http\Controllers\RestaurantWebsiteController::class, 'bookTable'])->name('website.api.book_table');

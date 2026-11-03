@@ -204,6 +204,248 @@
             }
         }
 
+        /* =========================================================
+           Executive Restaurant POS Horizontal Navigation Bar
+           ========================================================= */
+        .rt_nav_header.horizontal-layout .nav-bottom {
+            background: #ffffff !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05) !important;
+        }
+        .restaurant-page-nav {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 6px 0 !important;
+            margin: 0 auto !important;
+            gap: 4px !important;
+            position: relative !important;
+        }
+        .restaurant-page-nav > .nav-item {
+            display: inline-block !important;
+            flex-shrink: 0 !important;
+            margin: 0 !important;
+            border: none !important;
+            position: relative !important;
+        }
+        .restaurant-page-nav > .nav-item > .nav-link {
+            display: inline-flex !important;
+            align-items: center !important;
+            padding: 7px 12px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            color: #475569 !important;
+            border-radius: 8px !important;
+            line-height: 1.2 !important;
+            transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            text-decoration: none !important;
+            background: transparent !important;
+            gap: 6px !important;
+        }
+        .restaurant-page-nav > .nav-item > .nav-link .menu_icon {
+            font-size: 13.5px !important;
+            margin-right: 0 !important;
+            transition: transform 0.15s ease !important;
+        }
+        .restaurant-page-nav > .nav-item > .nav-link .menu-arrow {
+            font-size: 10px !important;
+            margin-left: 2px !important;
+            opacity: 0.65 !important;
+            transition: transform 0.2s ease !important;
+        }
+        .restaurant-page-nav > .nav-item:hover > .nav-link .menu-arrow {
+            transform: rotate(180deg) !important;
+        }
+        .restaurant-page-nav > .nav-item > .nav-link:hover {
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
+        }
+        .restaurant-page-nav > .nav-item > .nav-link:hover .menu_icon {
+            transform: translateY(-1px);
+        }
+        .restaurant-page-nav > .nav-item.active > .nav-link {
+            background: #eff6ff !important;
+            color: #1d4ed8 !important;
+            font-weight: 700 !important;
+            box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.22) !important;
+        }
+
+        /* ── Divider between navigation groups ── */
+        .restaurant-page-nav > .nav-item-divider {
+            display: inline-block !important;
+            width: 1px !important;
+            height: 20px !important;
+            background: #e2e8f0 !important;
+            margin: 0 4px !important;
+            flex-shrink: 0 !important;
+        }
+
+        /* ── Prominent Standout POS Counter Button ── */
+        .restaurant-page-nav > .nav-item.nav-item-pos > .nav-link {
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%) !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            border-radius: 8px !important;
+            padding: 7px 16px !important;
+            box-shadow: 0 3px 10px rgba(79, 70, 229, 0.3) !important;
+            margin: 0 4px !important;
+            letter-spacing: 0.2px !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 7px !important;
+        }
+        .restaurant-page-nav > .nav-item.nav-item-pos > .nav-link .menu-title,
+        .restaurant-page-nav > .nav-item.nav-item-pos.active > .nav-link .menu-title,
+        .restaurant-page-nav > .nav-item.nav-item-pos:hover > .nav-link .menu-title,
+        .restaurant-page-nav > .nav-item.nav-item-pos.active > .nav-link:hover .menu-title {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            font-size: 13px !important;
+            letter-spacing: 0.2px !important;
+            display: inline-block !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25) !important;
+        }
+        .restaurant-page-nav > .nav-item.nav-item-pos > .nav-link .menu_icon,
+        .restaurant-page-nav > .nav-item.nav-item-pos.active > .nav-link .menu_icon,
+        .restaurant-page-nav > .nav-item.nav-item-pos:hover > .nav-link .menu_icon,
+        .restaurant-page-nav > .nav-item.nav-item-pos.active > .nav-link:hover .menu_icon {
+            color: #ffffff !important;
+            font-size: 14px !important;
+            margin-right: 0 !important;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25)) !important;
+        }
+        .restaurant-page-nav > .nav-item.nav-item-pos > .nav-link:hover {
+            background: linear-gradient(135deg, #4338ca 0%, #312e81 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 5px 14px rgba(79, 70, 229, 0.45) !important;
+            transform: translateY(-1px);
+        }
+        .restaurant-page-nav > .nav-item.nav-item-pos.active > .nav-link {
+            background: linear-gradient(135deg, #3730a3 0%, #312e81 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(55, 48, 163, 0.45), inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.35) !important;
+        }
+
+        /* ── Premium Dropdown Submenus ── */
+        .restaurant-page-nav > .nav-item .submenu {
+            position: absolute !important;
+            top: calc(100% + 4px) !important;
+            left: 0 !important;
+            min-width: 215px !important;
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.15), 0 4px 10px -2px rgba(15, 23, 42, 0.06) !important;
+            padding: 6px !important;
+            z-index: 1060 !important;
+            display: none;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.18s ease, transform 0.18s ease;
+        }
+        .restaurant-page-nav > .nav-item:hover .submenu {
+            display: block !important;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .restaurant-page-nav > .nav-item:nth-last-child(-n+4) .submenu {
+            left: auto !important;
+            right: 0 !important;
+        }
+        .restaurant-page-nav > .nav-item .submenu-item {
+            list-style: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .restaurant-page-nav > .nav-item .submenu-item li {
+            margin: 2px 0 !important;
+            list-style: none !important;
+        }
+        .restaurant-page-nav > .nav-item .submenu-item li a {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            padding: 8px 12px !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            color: #334155 !important;
+            border-radius: 6px !important;
+            text-decoration: none !important;
+            transition: all 0.15s ease !important;
+        }
+        .restaurant-page-nav > .nav-item .submenu-item li a:hover {
+            background: #eff6ff !important;
+            color: #2563eb !important;
+            font-weight: 600 !important;
+            padding-left: 14px !important;
+        }
+        .restaurant-page-nav > .nav-item .submenu-item li a i {
+            font-size: 13px !important;
+            width: 16px !important;
+            text-align: center !important;
+        }
+
+        /* Hide mobile profile button from the horizontal desktop bar */
+        .restaurant-page-nav > .nav-item.d-lg-none {
+            display: none !important;
+        }
+
+        @media (max-width: 991.98px) {
+            .restaurant-page-nav > .nav-item > .nav-link {
+                padding: 6px 9px !important;
+                font-size: 12px !important;
+            }
+            .restaurant-page-nav > .nav-item.nav-item-pos > .nav-link {
+                padding: 6px 11px !important;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .restaurant-page-nav {
+                flex-direction: column !important;
+                flex-wrap: wrap !important;
+                align-items: stretch !important;
+                justify-content: flex-start !important;
+                padding: 0 !important;
+                gap: 0 !important;
+            }
+            .restaurant-page-nav > .nav-item {
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+                border-bottom: 1px solid #f1f5f9 !important;
+            }
+            .restaurant-page-nav > .nav-item > .nav-link {
+                display: flex !important;
+                width: 100% !important;
+                padding: 12px 14px !important;
+                border-radius: 0 !important;
+                font-size: 13.5px !important;
+                justify-content: space-between !important;
+            }
+            .restaurant-page-nav > .nav-item.nav-item-pos > .nav-link {
+                margin: 8px 12px !important;
+                border-radius: 8px !important;
+                width: calc(100% - 24px) !important;
+                justify-content: center !important;
+            }
+            .restaurant-page-nav > .nav-item-divider {
+                display: none !important;
+            }
+            .restaurant-page-nav > .nav-item .submenu {
+                position: static !important;
+                box-shadow: none !important;
+                border: none !important;
+                background: #f8fafc !important;
+                padding: 4px 12px !important;
+                transform: none !important;
+                opacity: 1 !important;
+            }
+        }
+
         /* ── Global DataTables Sorting Fix: Eliminate double empty square boxes (tofu glyphs) ── */
         table.dataTable thead .sorting:before,
         table.dataTable thead .sorting:after,
@@ -1271,33 +1513,41 @@
             </script>
             <div class="nav-bottom">
                 <div class="container-fluid" style="padding: 0 20px;">
-                    <ul class="nav page-navigation justify-content-center">
+                    <ul class="nav page-navigation {{ !empty($is_restaurant_branch) ? 'restaurant-page-nav' : 'justify-content-center' }}">
                         @if(!empty($is_restaurant_branch))
                             <!-- =========================================
-                                 RESTAURANT POS EXCLUSIVE NAVIGATION
+                                 EXECUTIVE RESTAURANT POS NAVIGATION
                                  ========================================= -->
+                            
+                            {{-- 1. Dashboard --}}
                             @canany(['dashboard.view', 'home.view'])
                             <li class="nav-item {{ request()->is('home*') || request()->is('dashboard*') ? 'active' : '' }}">
-                                <a href="{{ url('/home') }}" class="nav-link font-weight-bold">
+                                <a href="{{ url('/home') }}" class="nav-link">
                                     <i class="menu_icon fas fa-home text-primary"></i>
                                     <span class="menu-title">Dashboard</span>
                                 </a>
                             </li>
                             @endcanany
-                            <li class="nav-item {{ request()->is('pos*') ? 'active' : '' }}">
-                                <a href="{{ route('pos.index') }}" class="nav-link font-weight-bold" style="color: #4f46e5 !important;">
-                                    <i class="menu_icon fas fa-cash-register text-primary"></i>
-                                    <span class="menu-title">POS Counter</span>
+
+                            {{-- 2. POS Counter Action Button --}}
+                            <li class="nav-item nav-item-pos {{ request()->is('pos*') ? 'active' : '' }}">
+                                <a href="{{ route('pos.index') }}" class="nav-link font-weight-bold" style="color: #ffffff !important;">
+                                    <i class="menu_icon fas fa-cash-register" style="color: #ffffff !important;"></i>
+                                    <span class="menu-title" style="color: #ffffff !important; font-weight: 700 !important;">POS Counter</span>
                                 </a>
                             </li>
+
+                            {{-- 3. Dine-In Tables --}}
                             @can('restaurant.tables.view')
                             <li class="nav-item {{ request()->is('restaurant/tables*') ? 'active' : '' }}">
                                 <a href="{{ route('restaurant.tables.index') }}" class="nav-link">
-                                    <i class="menu_icon fas fa-chair text-primary"></i>
+                                    <i class="menu_icon fas fa-chair text-info"></i>
                                     <span class="menu-title">Tables</span>
                                 </a>
                             </li>
                             @endcan
+
+                            {{-- 4. Deliveries Dispatch --}}
                             @can('restaurant.deliveries.view')
                             <li class="nav-item {{ request()->is('restaurant/deliveries*') ? 'active' : '' }}">
                                 <a href="{{ route('restaurant.deliveries.index') }}" class="nav-link">
@@ -1306,54 +1556,121 @@
                                 </a>
                             </li>
                             @endcan
+
+                            {{-- 5. Riders Fleet --}}
                             @can('restaurant.riders.view')
                             <li class="nav-item {{ request()->is('restaurant/riders*') ? 'active' : '' }}">
                                 <a href="{{ route('restaurant.riders.index') }}" class="nav-link">
-                                    <i class="menu_icon fas fa-motorcycle text-info"></i>
+                                    <i class="menu_icon fas fa-motorcycle text-success"></i>
                                     <span class="menu-title">Riders</span>
                                 </a>
                             </li>
                             @endcan
-                            <li class="nav-item {{ request()->is('product*') || request()->is('create*') ? 'active' : '' }}">
+
+                            {{-- 5.1 Online Orders (Website) --}}
+                            @php
+                                $livePendingCount = \App\Models\EcommerceOrder::where('order_status', 'pending')->count();
+                            @endphp
+                            <li class="nav-item {{ request()->is('restaurant/online-orders*') ? 'active' : '' }}">
+                                <a href="{{ route('restaurant.online_orders') }}" class="nav-link font-weight-bold" style="{{ $livePendingCount > 0 ? 'background: #fef3c7 !important; color: #92400e !important; border: 1px solid #f59e0b !important;' : '' }}">
+                                    <i class="menu_icon fas fa-globe text-primary"></i>
+                                    <span class="menu-title font-weight-bold">Online Orders</span>
+                                    @if($livePendingCount > 0)
+                                        <span class="badge badge-danger ml-1" style="background: #ef4444; color: #fff; font-size: 11px; padding: 2px 7px; border-radius: 10px;">{{ $livePendingCount }}</span>
+                                    @endif
+                                </a>
+                            </li>
+
+                            <li class="nav-item-divider d-none d-md-block"></li>
+
+                            {{-- 6. Menu & Catalog Dropdown --}}
+                            <li class="nav-item {{ request()->is('product*') || request()->is('create*') || request()->is('category*') || request()->is('discount*') ? 'active' : '' }}">
                                 <a href="{{ url('product-catalog') }}" class="nav-link">
                                     <i class="menu_icon fas fa-utensils text-success"></i>
-                                    <span class="menu-title">Products / Menu</span>
+                                    <span class="menu-title">Menu</span>
+                                    <i class="menu-arrow fas fa-chevron-down"></i>
                                 </a>
+                                <div class="submenu">
+                                    <ul class="submenu-item">
+                                        <li>
+                                            <a href="{{ url('product-catalog') }}">
+                                                <i class="fas fa-boxes text-success"></i> Products / Menu Items
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('Category.home') }}">
+                                                <i class="fas fa-tags text-info"></i> Food Categories
+                                            </a>
+                                        </li>
+                                        @can('discount.products.view')
+                                        <li>
+                                            <a href="{{ route('discount.index') }}">
+                                                <i class="fas fa-percent text-warning"></i> Discount Deals
+                                            </a>
+                                        </li>
+                                        @endcan
+                                    </ul>
+                                </div>
                             </li>
-                            <li class="nav-item {{ request()->is('sale*') ? 'active' : '' }}">
+
+                            {{-- 7. Orders & Reports Dropdown --}}
+                            <li class="nav-item {{ request()->is('sale*') || request()->is('report/sale*') ? 'active' : '' }}">
                                 <a href="{{ url('sale') }}" class="nav-link">
                                     <i class="menu_icon fas fa-receipt text-warning"></i>
-                                    <span class="menu-title">Sales / Orders</span>
+                                    <span class="menu-title">Orders &amp; Reports</span>
+                                    <i class="menu-arrow fas fa-chevron-down"></i>
                                 </a>
+                                <div class="submenu">
+                                    <ul class="submenu-item">
+                                        <li>
+                                            <a href="{{ route('restaurant.online_orders') }}">
+                                                <i class="fas fa-globe text-primary"></i> Website Online Orders
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ url('sale') }}">
+                                                <i class="fas fa-receipt text-warning"></i> Sales / Orders History
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('report.sale') }}">
+                                                <i class="fas fa-chart-line text-info"></i> Sale Report &amp; Analytics
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </li>
-                            <li class="nav-item {{ request()->is('category*') ? 'active' : '' }}">
-                                <a href="{{ route('Category.home') }}" class="nav-link">
-                                    <i class="menu_icon fas fa-tags text-info"></i>
-                                    <span class="menu-title">Categories</span>
-                                </a>
-                            </li>
-                            <li class="nav-item {{ request()->is('*expense*') ? 'active' : '' }}">
+
+                            {{-- 8. Finance Dropdown --}}
+                            <li class="nav-item {{ request()->is('*expense*') || request()->is('view_all*') || request()->is('accounts*') ? 'active' : '' }}">
                                 <a href="{{ route('all_expense_vochers') }}" class="nav-link">
-                                    <i class="menu_icon fas fa-file-invoice-dollar text-danger"></i>
-                                    <span class="menu-title">Expenses</span>
+                                    <i class="menu_icon fas fa-wallet text-danger"></i>
+                                    <span class="menu-title">Finance</span>
+                                    <i class="menu-arrow fas fa-chevron-down"></i>
                                 </a>
+                                <div class="submenu">
+                                    <ul class="submenu-item">
+                                        <li>
+                                            <a href="{{ route('all_expense_vochers') }}">
+                                                <i class="fas fa-file-invoice-dollar text-danger"></i> Expense Vouchers
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('view_all') }}">
+                                                <i class="fas fa-university text-primary"></i> Accounts / Ledger
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </li>
-                            <li class="nav-item {{ request()->is('view_all*') || request()->is('accounts*') ? 'active' : '' }}">
-                                <a href="{{ route('view_all') }}" class="nav-link">
-                                    <i class="menu_icon fas fa-university text-primary"></i>
-                                    <span class="menu-title">Accounts</span>
-                                </a>
-                            </li>
-                            <li class="nav-item {{ request()->is('report/sale*') ? 'active' : '' }}">
-                                <a href="{{ route('report.sale') }}" class="nav-link">
-                                    <i class="menu_icon fas fa-chart-line text-warning"></i>
-                                    <span class="menu-title">Sale Report</span>
-                                </a>
-                            </li>
+
+                            <li class="nav-item-divider d-none d-md-block"></li>
+
+                            {{-- 9. POS Settings --}}
                             <li class="nav-item {{ request()->is('settings*') ? 'active' : '' }}">
                                 <a href="{{ route('settings.index') }}" class="nav-link">
                                     <i class="menu_icon fas fa-sliders-h text-secondary"></i>
-                                    <span class="menu-title">POS Settings</span>
+                                    <span class="menu-title">Settings</span>
                                 </a>
                             </li>
                         @else

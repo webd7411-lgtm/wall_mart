@@ -539,6 +539,10 @@
 
         <form id="productForm" action="{{ route('store-product') }}" method="POST" enctype="multipart/form-data">
             @csrf
+            @php
+                $activeBranchId = \App\Helpers\BranchHelper::getActiveBranchId() ?? (auth()->user()->branch_id ?? 2);
+            @endphp
+            <input type="hidden" name="branch_id" value="{{ $activeBranchId }}">
 
             <div class="row g-3">
 
@@ -720,6 +724,7 @@
                         </div>
                         <div class="modal-body">
                             <input type="hidden" name="page" value="product_page">
+                            <input type="hidden" name="branch_id" value="{{ $activeBranchId }}">
                             <div class="mb-3">
                                 <label class="form-label-pro">Category Name</label>
                                 <input type="text" name="name" class="form-control-pro" required placeholder="e.g. Ceramics">
@@ -742,6 +747,7 @@
                         </div>
                         <div class="modal-body">
                             <input type="hidden" name="page" value="product_page">
+                            <input type="hidden" name="branch_id" value="{{ $activeBranchId }}">
                             <div class="mb-3">
                                 <label class="form-label-pro">Parent Category</label>
                                 <select name="category_id" class="form-select form-control-pro">
@@ -773,6 +779,7 @@
                         </div>
                         <div class="modal-body">
                             <input type="hidden" name="page" value="product_page">
+                            <input type="hidden" name="branch_id" value="{{ $activeBranchId }}">
                             <div class="mb-3">
                                 <label class="form-label-pro">Brand Name</label>
                                 <input type="text" name="name" class="form-control-pro" required placeholder="e.g. Johnson">

@@ -979,7 +979,12 @@ class ProductController extends Controller
             }
 
             // Create product
+            $productBranchId = $request->filled('branch_id') 
+                ? (int)$request->branch_id 
+                : (\App\Helpers\BranchHelper::getActiveBranchId() ?: (\Illuminate\Support\Facades\Auth::user()->branch_id ?? 2));
+
             $product = Product::create([
+                'branch_id' => $productBranchId,
                 'creater_id' => $userId,
                 'category_id' => $request->category_id,
                 'sub_category_id' => $request->sub_category_id,
@@ -1022,7 +1027,7 @@ class ProductController extends Controller
 
                 'is_part' => 0,
                 'is_assembled' => 0,
-                'is_web_visible' => $request->has('is_web_visible') ? 1 : 0,
+                'is_web_visible' => $request->has('is_web_visible') ? ($request->is_web_visible ? 1 : 0) : 1,
                 'show_on_homepage' => $request->has('show_on_homepage') ? 1 : 0,
                 'auto_hide_out_of_stock' => $request->has('auto_hide_out_of_stock') ? 1 : 0,
                 'promo_tag' => $request->promo_tag,
@@ -1438,7 +1443,7 @@ class ProductController extends Controller
 
                 'is_part' => 0,
                 'is_assembled' => 0,
-                'is_web_visible' => $request->has('is_web_visible') ? 1 : 0,
+                'is_web_visible' => $request->has('is_web_visible') ? ($request->is_web_visible ? 1 : 0) : 1,
                 'show_on_homepage' => $request->has('show_on_homepage') ? 1 : 0,
                 'auto_hide_out_of_stock' => $request->has('auto_hide_out_of_stock') ? 1 : 0,
                 'promo_tag' => $request->promo_tag,
