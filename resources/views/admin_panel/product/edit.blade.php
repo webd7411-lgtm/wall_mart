@@ -278,8 +278,9 @@
                                 <div class="col-md-3">
                                     <label class="form-label-pro">Product Image</label>
                                     <input type="file" id="imageInput" name="image" class="d-none" accept="image/*">
-                                    <div class="img-uploader" style="height: 110px;" onclick="document.getElementById('imageInput').click()">
-                                        <button type="button" id="clearImageBtn" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 {{ $product->image ? '' : 'd-none' }} rounded-circle" style="width:20px;height:20px;padding:0;z-index:10; font-size:12px; line-height:1;">&times;</button>
+                                    <input type="hidden" name="remove_image" id="removeImage" value="0">
+                                    <div class="img-uploader" id="imageUploaderBox" style="height: 110px;">
+                                        <button type="button" id="clearImageBtn" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 {{ $product->image ? '' : 'd-none' }} rounded-circle" style="width:22px;height:22px;padding:0;z-index:10; font-size:14px; line-height:1; display:flex; align-items:center; justify-content:center;" title="Remove Image">&times;</button>
                                         @if($product->image)
                                             <img id="preview" src="{{ asset('uploads/products/' . $product->image) }}" style="max-height: 100px;">
                                             <div id="uploadPlaceholder" class="text-center p-2 d-none">
@@ -685,6 +686,15 @@
             const preview = document.getElementById('preview');
             const ph = document.getElementById('uploadPlaceholder');
             const clr = document.getElementById('clearImageBtn');
+            const uploaderBox = document.getElementById('imageUploaderBox');
+            const removeImgInput = document.getElementById('removeImage');
+
+            if (uploaderBox) {
+                uploaderBox.addEventListener('click', function(e) {
+                    if (e.target.closest('#clearImageBtn')) return;
+                    imgInput.click();
+                });
+            }
 
             imgInput.addEventListener('change', function() {
                 if (this.files && this.files[0]) {
@@ -692,26 +702,23 @@
                     r.onload = (e) => {
                         preview.src = e.target.result;
                         preview.classList.remove('d-none');
-                        if(ph) ph.classList.add('d-none');
+                        if (ph) ph.classList.add('d-none');
                         clr.classList.remove('d-none');
+                        if (removeImgInput) removeImgInput.value = '0';
                     };
                     r.readAsDataURL(this.files[0]);
                 }
             });
 
             clr.addEventListener('click', (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 imgInput.value = '';
-                
-                @if($product->image)
-                    preview.src = "{{ asset('uploads/products/' . $product->image) }}";
-                    preview.classList.remove('d-none');
-                    if(ph) ph.classList.add('d-none');
-                @else
-                    preview.classList.add('d-none');
-                    if(ph) ph.classList.remove('d-none');
-                    clr.classList.add('d-none');
-                @endif
+                preview.src = '';
+                preview.classList.add('d-none');
+                if (ph) ph.classList.remove('d-none');
+                clr.classList.add('d-none');
+                if (removeImgInput) removeImgInput.value = '1';
             });
 
             // AJAX Submission

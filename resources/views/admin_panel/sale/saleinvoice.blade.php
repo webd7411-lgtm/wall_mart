@@ -204,9 +204,9 @@
                 box-shadow: none !important;
                 border: none !important;
                 margin: 0 auto !important;
-                padding: 3mm 2mm 5mm 2mm !important;
-                width: 76mm !important;
-                max-width: 76mm !important;
+                padding: 2mm 3mm 4mm 3mm !important;
+                width: 70mm !important;
+                max-width: 70mm !important;
                 background: #fff !important;
                 color: #000 !important;
                 font-size: 11px !important;
@@ -839,8 +839,6 @@
             @endif
         </div>
         @endif
-
-        <div class="policy-banner">No Return, Only Exchange in 3 days</div>
 
         <div class="divider"></div>
 

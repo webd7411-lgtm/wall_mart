@@ -1212,7 +1212,15 @@ class ProductController extends Controller
 
         // image handle
         $imagePath = Product::where('id', $id)->value('image');
-        if ($request->hasFile('image')) {
+        if ($request->input('remove_image') == '1') {
+            if ($imagePath && file_exists(public_path('uploads/products/'.$imagePath))) {
+                @unlink(public_path('uploads/products/'.$imagePath));
+            }
+            $imagePath = null;
+        } elseif ($request->hasFile('image')) {
+            if ($imagePath && file_exists(public_path('uploads/products/'.$imagePath))) {
+                @unlink(public_path('uploads/products/'.$imagePath));
+            }
             $imageName = time().'.'.$request->image->extension();
             $request->image->move(public_path('uploads/products'), $imageName);
             $imagePath = $imageName;

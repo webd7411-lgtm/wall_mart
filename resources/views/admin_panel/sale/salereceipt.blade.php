@@ -8,7 +8,8 @@
     <style>
         @media print {
             @page {
-                margin: 2mm 3mm 2mm 2mm !important;
+                margin: 0 !important;
+                size: auto;
             }
             body {
                 width: 100% !important;
@@ -23,10 +24,10 @@
             .receipt-container {
                 box-shadow: none !important;
                 border: none !important;
-                margin: 0 !important;
-                padding: 0 4px 0 0 !important;
-                width: 96% !important;
-                max-width: 96% !important;
+                margin: 0 auto !important;
+                padding: 1mm 3mm !important;
+                width: 100% !important;
+                max-width: 70mm !important;
             }
         }
 
@@ -48,10 +49,10 @@
 
         .receipt-container {
             width: 100%;
-            max-width: 76mm;
+            max-width: 70mm;
             margin: 0 auto;
             background: #fff;
-            padding: 6px;
+            padding: 6px 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             position: relative;
             overflow: hidden;
@@ -141,16 +142,17 @@
 
         /* Items Table */
         .items-table {
-            width: 98%;
+            width: 100%;
             border-collapse: collapse;
             font-size: 11px;
             color: #000;
             margin: 3px 0;
+            table-layout: fixed;
         }
 
         .items-table th {
             border-bottom: 1px dashed #000;
-            padding: 4px 0;
+            padding: 4px 1px;
             text-align: left;
             font-weight: 600;
             font-size: 10px;
@@ -158,7 +160,7 @@
         }
 
         .items-table td {
-            padding: 4px 0;
+            padding: 4px 1px;
             vertical-align: top;
             border-bottom: 1px dashed #ccc;
         }
@@ -251,7 +253,8 @@
 
         /* Controls */
         .print-controls {
-            width: 76mm;
+            width: 70mm;
+            max-width: 100%;
             margin: 0 auto 15px auto;
             display: flex;
             gap: 10px;
@@ -279,7 +282,7 @@
         $fromPos = request()->query('from') === 'pos' || empty(request()->query('from'));
     @endphp
 
-    <div class="print-controls no-print" style="width: 76mm; margin: 10px auto 14px auto; display: flex; flex-direction: column; gap: 8px;">
+    <div class="print-controls no-print" style="max-width: 70mm; width: 100%; margin: 10px auto 14px auto; display: flex; flex-direction: column; gap: 8px;">
         @if($fromPos)
         <div id="countdownBanner" style="background: #0f172a; color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 11.5px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.12);">
             <div style="display: flex; align-items: center; gap: 6px;">
@@ -328,8 +331,6 @@
             @endif
         </div>
         @endif
-
-        <div class="policy-banner">No Return, Only Exchange in 3 days</div>
 
         <div class="divider"></div>
 
@@ -384,10 +385,10 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th style="width: 6%;">S.</th>
-                    <th style="width: 53%;">Description</th>
-                    <th style="width: 10%;" class="text-center">Qty</th>
-                    <th style="width: 13%;" class="text-end">Rate</th>
+                    <th style="width: 7%;">S.</th>
+                    <th style="width: 50%;">Description</th>
+                    <th style="width: 11%;" class="text-center">Qty</th>
+                    <th style="width: 14%;" class="text-end">Rate</th>
                     <th style="width: 18%;" class="text-end">Total</th>
                 </tr>
             </thead>
@@ -444,15 +445,15 @@
                         $variantStr = implode(' | ', array_filter([$sizeStr, $colorStr]));
                     @endphp
                     <tr>
-                        <td style="width: 6%;">{{ $loop->iteration }}</td>
-                        <td style="width: 53%;">
+                        <td style="width: 7%;">{{ $loop->iteration }}</td>
+                        <td style="width: 50%;">
                             <span class="item-name">{{ $item['item_name'] }}</span>
                             @if($variantStr && $variantStr !== '{' && trim($variantStr) !== '')
                                 <span class="item-variant">{{ $variantStr }}</span>
                             @endif
                         </td>
-                        <td style="width: 10%;" class="text-center">{{ $qtyDisplay }}</td>
-                        <td style="width: 13%;" class="text-end">{{ number_format($item['price'], 0) }}</td>
+                        <td style="width: 11%;" class="text-center">{{ $qtyDisplay }}</td>
+                        <td style="width: 14%;" class="text-end">{{ number_format($item['price'], 0) }}</td>
                         <td style="width: 18%;" class="text-end">{{ number_format($item['total'], 0) }}</td>
                     </tr>
                 @endforeach
@@ -474,8 +475,8 @@
             <tbody>
                 @foreach ($exchangeReturn->items as $retItem)
                     <tr>
-                        <td style="width: 6%;">{{ $loop->iteration }}</td>
-                        <td style="width: 53%;">
+                        <td style="width: 7%;">{{ $loop->iteration }}</td>
+                        <td style="width: 50%;">
                             @if($retItem->is_manual || empty($retItem->product_id))
                                 <span class="item-name">{{ $retItem->product_name }} (Manual)</span>
                                 @if(!empty($retItem->color) && $retItem->color !== '-' && $retItem->color !== '{')
@@ -507,8 +508,8 @@
                                 @endif
                             @endif
                         </td>
-                        <td style="width: 10%;" class="text-center">{{ (float)$retItem->qty }}</td>
-                        <td style="width: 13%;" class="text-end">{{ number_format($retItem->price, 0) }}</td>
+                        <td style="width: 11%;" class="text-center">{{ (float)$retItem->qty }}</td>
+                        <td style="width: 14%;" class="text-end">{{ number_format($retItem->price, 0) }}</td>
                         <td style="width: 18%;" class="text-end">-{{ number_format($retItem->line_total, 0) }}</td>
                     </tr>
                 @endforeach
