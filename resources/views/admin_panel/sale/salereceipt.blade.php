@@ -11,7 +11,7 @@
                 margin: 0 !important;
                 size: auto;
             }
-            body {
+            html, body {
                 width: 100% !important;
                 margin: 0 !important;
                 padding: 0 !important;
@@ -24,10 +24,10 @@
             .receipt-container {
                 box-shadow: none !important;
                 border: none !important;
-                margin: 0 auto !important;
-                padding: 1mm 3mm !important;
+                margin: 0 !important;
+                padding: 0 2mm 0 0 !important;
                 width: 100% !important;
-                max-width: 70mm !important;
+                max-width: 68mm !important;
             }
         }
 
@@ -49,10 +49,10 @@
 
         .receipt-container {
             width: 100%;
-            max-width: 70mm;
+            max-width: 68mm;
             margin: 0 auto;
             background: #fff;
-            padding: 6px 8px;
+            padding: 6px 4px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             position: relative;
             overflow: hidden;
@@ -180,8 +180,16 @@
             display: block;
         }
 
-        .text-end { text-align: right !important; }
-        .text-center { text-align: center !important; }
+        .text-end { 
+            text-align: right !important; 
+            white-space: nowrap !important;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.3px;
+        }
+        .text-center { 
+            text-align: center !important; 
+            white-space: nowrap !important;
+        }
 
         /* Totals */
         .totals-section {
@@ -193,11 +201,22 @@
         .tot-row {
             display: flex;
             justify-content: space-between;
+            align-items: baseline;
             padding: 2px 0;
         }
 
-        .tot-row span:first-child { font-weight: 400; color: #000; }
-        .tot-row span:last-child { font-weight: 400; }
+        .tot-row span:first-child { 
+            font-weight: 400; 
+            color: #000; 
+            flex-shrink: 0;
+        }
+        .tot-row span:last-child { 
+            font-weight: 400; 
+            white-space: nowrap !important;
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+            margin-left: 6px;
+        }
 
         .tot-row.grand-total {
             font-size: 13px;
@@ -209,8 +228,17 @@
             color: #000;
         }
 
-        .tot-row.grand-total span:first-child { font-weight: 700; }
-        .tot-row.grand-total span:last-child { font-weight: 700; }
+        .tot-row.grand-total span:first-child { 
+            font-weight: 700; 
+            flex-shrink: 0;
+        }
+        .tot-row.grand-total span:last-child { 
+            font-weight: 700; 
+            white-space: nowrap !important;
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+            margin-left: 6px;
+        }
 
         /* Balances */
         .balance-section {
@@ -228,8 +256,14 @@
             margin-top: 2px;
         }
 
-        .balance-section .tot-row.closing-bal span:first-child { font-weight: 600; }
-        .balance-section .tot-row.closing-bal span:last-child { font-weight: 600; }
+        .balance-section .tot-row.closing-bal span:first-child { font-weight: 600; flex-shrink: 0; }
+        .balance-section .tot-row.closing-bal span:last-child { 
+            font-weight: 600; 
+            white-space: nowrap !important;
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+            margin-left: 6px;
+        }
 
         /* Footer */
         .footer {
@@ -253,7 +287,7 @@
 
         /* Controls */
         .print-controls {
-            width: 70mm;
+            width: 68mm;
             max-width: 100%;
             margin: 0 auto 15px auto;
             display: flex;
@@ -282,7 +316,7 @@
         $fromPos = request()->query('from') === 'pos' || empty(request()->query('from'));
     @endphp
 
-    <div class="print-controls no-print" style="max-width: 70mm; width: 100%; margin: 10px auto 14px auto; display: flex; flex-direction: column; gap: 8px;">
+    <div class="print-controls no-print" style="max-width: 68mm; width: 100%; margin: 10px auto 14px auto; display: flex; flex-direction: column; gap: 8px;">
         @if($fromPos)
         <div id="countdownBanner" style="background: #0f172a; color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 11.5px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.12);">
             <div style="display: flex; align-items: center; gap: 6px;">
@@ -385,11 +419,11 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th style="width: 7%;">S.</th>
-                    <th style="width: 50%;">Description</th>
-                    <th style="width: 11%;" class="text-center">Qty</th>
-                    <th style="width: 14%;" class="text-end">Rate</th>
-                    <th style="width: 18%;" class="text-end">Total</th>
+                    <th style="width: 6%;">S.</th>
+                    <th style="width: 38%;">Description</th>
+                    <th style="width: 13%;" class="text-center">Qty</th>
+                    <th style="width: 20%;" class="text-end">Rate</th>
+                    <th style="width: 23%;" class="text-end">Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -445,16 +479,16 @@
                         $variantStr = implode(' | ', array_filter([$sizeStr, $colorStr]));
                     @endphp
                     <tr>
-                        <td style="width: 7%;">{{ $loop->iteration }}</td>
-                        <td style="width: 50%;">
+                        <td style="width: 6%;">{{ $loop->iteration }}</td>
+                        <td style="width: 38%;">
                             <span class="item-name">{{ $item['item_name'] }}</span>
                             @if($variantStr && $variantStr !== '{' && trim($variantStr) !== '')
                                 <span class="item-variant">{{ $variantStr }}</span>
                             @endif
                         </td>
-                        <td style="width: 11%;" class="text-center">{{ $qtyDisplay }}</td>
-                        <td style="width: 14%;" class="text-end">{{ number_format($item['price'], 0) }}</td>
-                        <td style="width: 18%;" class="text-end">{{ number_format($item['total'], 0) }}</td>
+                        <td style="width: 13%;" class="text-center">{{ $qtyDisplay }}</td>
+                        <td style="width: 20%;" class="text-end">{{ number_format($item['price'], 0) }}</td>
+                        <td style="width: 23%;" class="text-end">{{ number_format($item['total'], 0) }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -475,8 +509,8 @@
             <tbody>
                 @foreach ($exchangeReturn->items as $retItem)
                     <tr>
-                        <td style="width: 7%;">{{ $loop->iteration }}</td>
-                        <td style="width: 50%;">
+                        <td style="width: 6%;">{{ $loop->iteration }}</td>
+                        <td style="width: 38%;">
                             @if($retItem->is_manual || empty($retItem->product_id))
                                 <span class="item-name">{{ $retItem->product_name }} (Manual)</span>
                                 @if(!empty($retItem->color) && $retItem->color !== '-' && $retItem->color !== '{')
@@ -508,9 +542,9 @@
                                 @endif
                             @endif
                         </td>
-                        <td style="width: 11%;" class="text-center">{{ (float)$retItem->qty }}</td>
-                        <td style="width: 14%;" class="text-end">{{ number_format($retItem->price, 0) }}</td>
-                        <td style="width: 18%;" class="text-end">-{{ number_format($retItem->line_total, 0) }}</td>
+                        <td style="width: 13%;" class="text-center">{{ (float)$retItem->qty }}</td>
+                        <td style="width: 20%;" class="text-end">{{ number_format($retItem->price, 0) }}</td>
+                        <td style="width: 23%;" class="text-end">-{{ number_format($retItem->line_total, 0) }}</td>
                     </tr>
                 @endforeach
             </tbody>
