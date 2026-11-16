@@ -9,35 +9,52 @@
             size: 80mm auto;
             margin: 0;
         }
+        * {
+            box-sizing: border-box;
+        }
         body {
-            font-family: 'Courier New', Courier, monospace, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             font-size: 13px;
-            color: #000;
+            font-weight: 700;
+            color: #000000;
             background: #fff;
             margin: 0;
-            padding: 10px 14px;
+            padding: 8px 10px;
             width: 80mm;
             box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            -webkit-font-smoothing: antialiased;
         }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        .fw-bold { font-weight: bold; }
-        .fs-5 { font-size: 16px; }
-        .fs-6 { font-size: 14px; }
-        .border-top { border-top: 1px dashed #000; }
-        .border-bottom { border-bottom: 1px dashed #000; }
-        .my-1 { margin-top: 4px; margin-bottom: 4px; }
-        .py-1 { padding-top: 4px; padding-bottom: 4px; }
+        .fw-bold { font-weight: 900; }
+        .fs-5 { font-size: 17px; }
+        .fs-6 { font-size: 14.5px; }
+        .border-top { border-top: 1.5px solid #000; }
+        .border-bottom { border-bottom: 1.5px solid #000; }
+        .my-1 { margin-top: 5px; margin-bottom: 5px; }
+        .py-1 { padding-top: 5px; padding-bottom: 5px; }
         .d-flex { display: flex; justify-content: space-between; }
-        .table-items { width: 100%; border-collapse: collapse; margin-top: 6px; }
-        .table-items th, .table-items td { padding: 4px 0; font-size: 12px; }
+        .table-items { width: 100%; border-collapse: collapse; margin-top: 6px; font-weight: 700; }
+        .table-items th { padding: 4px 0; font-size: 12.5px; font-weight: 900; border-bottom: 1.5px solid #000; color: #000; }
+        .table-items td { padding: 5px 0; font-size: 13px; font-weight: 700; border-bottom: 1px solid #000; color: #000; }
         .cod-box {
-            border: 2px solid #000;
+            border: 2.5px solid #000;
             padding: 6px 8px;
             margin: 8px 0;
             text-align: center;
+            font-weight: 800;
         }
         @media print {
+            * {
+                color: #000000 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            body {
+                font-weight: 700 !important;
+                -webkit-text-stroke: 0.12px #000;
+            }
             .no-print { display: none !important; }
         }
     </style>
@@ -79,8 +96,8 @@
         <div style="font-style: italic; margin-top: 2px;">Note: {{ $order->order_notes }}</div>
         @endif
         @if(!empty($order->rider_name))
-        <div style="margin-top: 4px; padding-top: 4px; border-top: 1px dotted #666;">
-            🛵 Assigned Rider: <strong>{{ $order->rider_name }}</strong>
+        <div style="margin-top: 4px; padding-top: 4px; border-top: 1.5px dashed #000; font-weight: 800;">
+            Assigned Rider: <strong>{{ $order->rider_name }}</strong>
             @if(!empty($order->rider_phone)) ({{ $order->rider_phone }}) @endif
         </div>
         @endif

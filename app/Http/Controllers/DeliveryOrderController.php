@@ -183,13 +183,10 @@ class DeliveryOrderController extends Controller
     }
 
     /**
-     * Print Delivery Challan / Slip.
+     * Print Delivery Order Receipt (Standard Sales Bill with customer & delivery details).
      */
     public function deliverySlip($id)
     {
-        $sale = Sale::with(['items.product', 'rider', 'customer_relation'])->findOrFail($id);
-        $branch = Branch::find($sale->branch_id);
-
-        return view('admin_panel.sale.delivery_slip', compact('sale', 'branch'));
+        return redirect()->route('sales.receipt', $id);
     }
 }

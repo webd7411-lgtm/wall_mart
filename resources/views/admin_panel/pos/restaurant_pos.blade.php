@@ -46,6 +46,323 @@
     }
 
     /* =========================================================
+       OFFCANVAS RUNNING ORDERS SIDEBAR DRAWER
+       ========================================================= */
+    /* =========================================================
+       RUNNING ORDERS SIDEBAR (DOCKED 3-COLUMN DESKTOP + MOBILE OFFCANVAS)
+       ========================================================= */
+    .ro-live-dot {
+        width: 8px;
+        height: 8px;
+        background: #ef4444;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        animation: ro-pulse 1.8s infinite;
+    }
+    @keyframes ro-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    /* Desktop (>= 992px): Docked Left Panel inside .rest-main-split */
+    @media (min-width: 992px) {
+        .running-orders-backdrop {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        .running-orders-drawer {
+            position: relative !important;
+            top: auto !important;
+            bottom: auto !important;
+            left: auto !important;
+            right: auto !important;
+            transform: none !important;
+            width: 320px !important;
+            min-width: 290px !important;
+            max-width: 340px !important;
+            height: 100% !important;
+            background: #ffffff !important;
+            border-radius: 10px !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+            z-index: 10 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+            flex-shrink: 0 !important;
+            transition: width 0.24s cubic-bezier(0.16, 1, 0.3, 1), 
+                        min-width 0.24s cubic-bezier(0.16, 1, 0.3, 1), 
+                        max-width 0.24s cubic-bezier(0.16, 1, 0.3, 1), 
+                        opacity 0.2s ease, 
+                        margin 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        .running-orders-drawer.ro-collapsed {
+            width: 0 !important;
+            min-width: 0 !important;
+            max-width: 0 !important;
+            opacity: 0 !important;
+            margin: 0 !important;
+            border: none !important;
+            padding: 0 !important;
+            pointer-events: none !important;
+            overflow: hidden !important;
+        }
+    }
+
+    /* Mobile & Tablet (< 992px): Offcanvas Drawer */
+    @media (max-width: 991px) {
+        .running-orders-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(2px);
+            z-index: 1050;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .running-orders-backdrop.active {
+            display: block !important;
+            opacity: 1 !important;
+        }
+
+        .running-orders-drawer {
+            position: fixed !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: auto !important;
+            width: 420px !important;
+            max-width: 92vw !important;
+            height: 100vh !important;
+            background: #ffffff !important;
+            box-shadow: 6px 0 28px rgba(0,0,0,0.25) !important;
+            z-index: 999999 !important;
+            transform: translateX(-100%) !important;
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        .running-orders-drawer.active {
+            transform: translateX(0) !important;
+        }
+    }
+
+    /* Common Beautiful Theme for Running Orders Panel */
+    .ro-drawer-header {
+        padding: 9px 12px;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #ffffff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        flex-shrink: 0;
+    }
+    .ro-header-btn {
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.2);
+        color: #ffffff;
+        border-radius: 6px;
+        padding: 3px 8px;
+        font-size: 0.74rem;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .ro-header-btn:hover {
+        background: rgba(255,255,255,0.25);
+        color: #ffffff;
+    }
+
+    .ro-filter-bar {
+        padding: 6px 8px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        gap: 5px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        flex-shrink: 0;
+    }
+    .ro-filter-bar::-webkit-scrollbar {
+        display: none;
+    }
+    .ro-filter-pill {
+        padding: 4px 9px;
+        border-radius: 16px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+        user-select: none;
+    }
+    .ro-filter-pill:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+        border-color: #cbd5e1;
+    }
+    .ro-filter-pill.active[data-filter="all"] {
+        background: #0f172a;
+        color: #ffffff;
+        border-color: #0f172a;
+        box-shadow: 0 1px 3px rgba(15,23,42,0.2);
+    }
+    .ro-filter-pill.active[data-filter="dine_in"] {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #2563eb;
+        box-shadow: 0 1px 3px rgba(37,99,235,0.25);
+    }
+    .ro-filter-pill.active[data-filter="takeaway"] {
+        background: #d97706;
+        color: #ffffff;
+        border-color: #d97706;
+        box-shadow: 0 1px 3px rgba(217,119,6,0.25);
+    }
+    .ro-filter-pill.active[data-filter="delivery"] {
+        background: #059669;
+        color: #ffffff;
+        border-color: #059669;
+        box-shadow: 0 1px 3px rgba(5,150,105,0.25);
+    }
+
+    .ro-search-box {
+        padding: 6px 8px;
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        flex-shrink: 0;
+    }
+    .ro-search-box .input-group-text {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+    }
+    .ro-search-box .form-control {
+        border-color: #cbd5e1;
+    }
+    .ro-search-box .form-control:focus {
+        border-color: #3b82f6;
+        box-shadow: none;
+    }
+
+    .ro-drawer-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px;
+        background: #f1f5f9;
+    }
+    .ro-drawer-body::-webkit-scrollbar {
+        width: 5px;
+    }
+    .ro-drawer-body::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+
+    .ro-drawer-footer {
+        padding: 7px 12px;
+        background: #ffffff;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .ro-drawer-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 9px;
+        padding: 9px 11px;
+        margin-bottom: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        transition: all 0.15s ease-in-out;
+    }
+    .ro-drawer-card:hover {
+        border-color: #94a3b8;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        transform: translateY(-1px);
+    }
+    .ro-card-dine_in {
+        border-left: 4px solid #3b82f6 !important;
+    }
+    .ro-card-takeaway {
+        border-left: 4px solid #f59e0b !important;
+    }
+    .ro-card-delivery {
+        border-left: 4px solid #10b981 !important;
+    }
+
+    .ro-card-btn {
+        padding: 3px 7px;
+        border-radius: 5px;
+        font-size: 0.70rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #334155;
+        cursor: pointer;
+        transition: all 0.12s;
+        text-decoration: none;
+    }
+    .ro-card-btn:hover {
+        background: #f8fafc;
+        color: #0f172a;
+        border-color: #94a3b8;
+    }
+    .ro-card-btn-complete {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        color: #ffffff !important;
+        border: 1px solid #059669 !important;
+        box-shadow: 0 1px 3px rgba(16,185,129,0.25) !important;
+    }
+    .ro-card-btn-complete:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        color: #ffffff !important;
+    }
+    .ro-card-btn-serve {
+        background: #0284c7 !important;
+        color: #ffffff !important;
+        border-color: #0284c7 !important;
+    }
+    .ro-card-btn-serve:hover {
+        background: #0369a1 !important;
+        color: #ffffff !important;
+    }
+    .ro-card-btn-dispatch {
+        background: #8b5cf6 !important;
+        color: #ffffff !important;
+        border-color: #8b5cf6 !important;
+    }
+    .ro-card-btn-dispatch:hover {
+        background: #7c3aed !important;
+        color: #ffffff !important;
+    }
+    .ro-card-btn-cancel {
+        color: #ef4444 !important;
+        border-color: #fecaca !important;
+        background: #fff5f5 !important;
+    }
+    .ro-card-btn-cancel:hover {
+        background: #ef4444 !important;
+        color: #ffffff !important;
+    }
+
+    /* =========================================================
        TOP CONTROL BAR (DESKTOP)
        ========================================================= */
     .rest-topbar {
@@ -434,9 +751,10 @@
 
     /* CART ITEMS LIST */
     .rest-cart-items {
-        flex: 1;
+        flex: 1 1 0;
+        min-height: 45px;
         overflow-y: auto;
-        padding: 8px 10px;
+        padding: 6px 8px;
         background: #f8fafc;
     }
     .rest-cart-items::-webkit-scrollbar {
@@ -544,6 +862,32 @@
         text-align: center;
     }
 
+    .cart-stepper-input {
+        width: 44px;
+        height: 24px;
+        padding: 0 2px;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 4px;
+        background: #ffffff;
+        color: #0f172a;
+        font-weight: 800;
+        font-size: 0.88rem;
+        text-align: center;
+        outline: none;
+        transition: all 0.15s ease;
+        -moz-appearance: textfield;
+    }
+    .cart-stepper-input::-webkit-outer-spin-button,
+    .cart-stepper-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    .cart-stepper-input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+        background: #eff6ff;
+    }
+
     .cart-row-trash-btn {
         color: #ef4444;
         cursor: pointer;
@@ -562,31 +906,55 @@
     .rest-cart-footer {
         background: #ffffff;
         border-top: 1.5px dashed #cbd5e1;
-        padding: 8px 12px;
+        padding: 6px 10px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        max-height: calc(100% - 85px);
+        overflow: hidden;
+    }
+
+    .cart-footer-config {
+        overflow-y: auto;
+        max-height: 220px;
+        padding-right: 2px;
+        margin-bottom: 4px;
+    }
+    .cart-footer-config::-webkit-scrollbar {
+        width: 3px;
+    }
+    .cart-footer-config::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+
+    .cart-footer-pinned {
+        flex-shrink: 0;
+        margin-top: auto;
     }
 
     .cart-total-bill-row {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
 
     .cart-total-lbl {
-        font-size: 1.15rem;
+        font-size: 1.1rem;
         font-weight: 800;
         color: #0f172a;
     }
 
     .cart-total-val {
-        font-size: 1.4rem;
+        font-size: 1.35rem;
         font-weight: 900;
         color: #2563eb;
     }
 
     .cart-action-btn-row {
         display: flex;
-        gap: 8px;
+        gap: 6px;
     }
 
     .btn-kot-red {
@@ -594,14 +962,14 @@
         background: #ef4444;
         color: #ffffff;
         font-weight: 800;
-        font-size: 0.88rem;
+        font-size: 0.84rem;
         border: none;
-        padding: 10px 8px;
+        padding: 8px 6px;
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        gap: 5px;
         cursor: pointer;
         transition: background 0.15s;
     }
@@ -610,25 +978,69 @@
         color: #ffffff;
     }
 
+    .btn-bill-blue {
+        flex: 0.9;
+        background: #0284c7;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 0.82rem;
+        border: none;
+        padding: 8px 6px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .btn-bill-blue:hover {
+        background: #0369a1;
+        color: #ffffff;
+    }
+
     .btn-pay-green {
         flex: 1.2;
         background: #10b981;
         color: #ffffff;
         font-weight: 800;
-        font-size: 0.88rem;
+        font-size: 0.84rem;
         border: none;
-        padding: 10px 8px;
+        padding: 8px 6px;
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        gap: 5px;
         cursor: pointer;
         transition: background 0.15s;
     }
     .btn-pay-green:hover {
         background: #059669;
         color: #ffffff;
+    }
+
+    .btn-delivery-dispatch {
+        flex: 1.4;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 0.82rem;
+        border: none;
+        padding: 8px 6px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+        transition: all 0.15s ease;
+    }
+    .btn-delivery-dispatch:hover {
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        color: #ffffff;
+        transform: translateY(-1px);
     }
 
     /* =========================================================
@@ -980,7 +1392,7 @@
             <button type="button" class="btn btn-xs btn-outline-primary fw-bold py-1 px-2 d-flex align-items-center gap-1" onclick="openQuickRiderModal()" style="font-size: 0.72rem; border-radius: 6px;">
                 <i class="fas fa-motorcycle"></i> + Rider
             </button>
-            <button type="button" class="btn btn-xs btn-outline-danger fw-bold py-1 px-2 d-flex align-items-center gap-1" onclick="openRunningOrdersModal()" style="font-size: 0.72rem; border-radius: 6px;">
+            <button type="button" class="btn btn-xs btn-outline-danger fw-bold py-1 px-2 d-flex align-items-center gap-1" onclick="toggleRunningOrdersSidebar()" style="font-size: 0.72rem; border-radius: 6px;">
                 <i class="fas fa-clock"></i> <span id="mHeaderActiveCount">{{ count($runningOrders) }}</span>
             </button>
         </div>
@@ -1004,7 +1416,7 @@
 
     <!-- DESKTOP TOP CONTROL BAR (>= 992px) -->
     <div class="rest-topbar desktop-topbar">
-        <!-- Left: Brand Name + RMS POS badge + Quick Rider Button -->
+        <!-- Left: Brand Name + RMS POS badge + Quick Rider Button + Running Orders Button -->
         <div class="d-flex align-items-center gap-2 flex-wrap">
             <div class="rest-brand-badge">
                 <span class="fw-bold text-dark fs-6 d-flex align-items-center gap-1">
@@ -1019,6 +1431,13 @@
                 <span style="font-size: 0.78rem;">+ Rider</span>
             </button>
 
+            <!-- Running Orders Toggle Button (Left Side) -->
+            <button type="button" class="btn btn-sm btn-outline-danger fw-bold position-relative d-flex align-items-center gap-2 py-1 px-3 shadow-sm" onclick="toggleRunningOrdersSidebar()" style="font-size: 0.82rem; border-radius: 8px; border-width: 1.5px; background: #fff5f5;" title="Toggle Active Running Orders Sidebar">
+                <i class="fas fa-clock text-danger"></i>
+                <span class="fw-bold text-danger">Running Orders</span>
+                <span class="badge bg-danger rounded-pill px-2 py-1" id="badgeRunningCount" style="font-size: 0.75rem;">{{ count($runningOrders) }}</span>
+            </button>
+
             @php
                 $initialTable = isset($tables) && $tables->isNotEmpty() ? $tables->first() : null;
                 $initialTableNo = $initialTable ? $initialTable->table_no : 'T-1';
@@ -1028,8 +1447,8 @@
             <input type="hidden" id="orderTargetInput" value="{{ $initialTableNo }}">
         </div>
 
-        <!-- Center / Right: Order Mode Switcher (Dine-In, Takeaway, Delivery) -->
-        <div class="d-flex align-items-center gap-2 flex-wrap">
+        <!-- Right Side: Order Mode Switcher (Dine-In, Takeaway, Delivery) -->
+        <div class="d-flex align-items-center ms-auto">
             <div class="rest-mode-pill">
                 <button type="button" class="rest-mode-btn active" id="btnModeDineIn" onclick="setOrderMode('dine_in')" title="Shortcut: F1 or Alt+1">
                     <i class="fas fa-chair"></i> Dine-In <kbd class="mode-kbd">F1</kbd>
@@ -1041,19 +1460,81 @@
                     <i class="fas fa-motorcycle"></i> Delivery <kbd class="mode-kbd">F6</kbd>
                 </button>
             </div>
-
-            <!-- Active Running Tables Badge -->
-            <button type="button" class="btn btn-sm btn-outline-danger fw-bold position-relative d-flex align-items-center gap-1 py-1 px-2" onclick="openRunningOrdersModal()" style="font-size: 0.78rem;" title="View Active Running Orders">
-                <i class="fas fa-clock"></i> Active Tables
-                <span class="badge bg-danger rounded-pill" id="badgeRunningCount">{{ count($runningOrders) }}</span>
-            </button>
         </div>
     </div>
 
     <!-- MAIN BODY SPLIT -->
     <div class="rest-main-split">
 
-        <!-- LEFT PANEL: MENU & PRODUCTS -->
+        <!-- OFFCANVAS BACKDROP FOR MOBILE (< 992px) -->
+        <div class="running-orders-backdrop" id="runningOrdersBackdrop" onclick="closeRunningOrdersDrawer()"></div>
+
+        <!-- 1. LEFT COLUMN: RUNNING ORDERS SIDEBAR (DOCKED PERMANENTLY ON DESKTOP) -->
+        <div class="running-orders-drawer" id="runningOrdersDrawer">
+            <!-- Header -->
+            <div class="ro-drawer-header">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="ro-live-dot" title="Live Running Orders"></span>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-bold text-white fs-6">Running Orders</span>
+                            <span class="badge bg-danger rounded-pill px-2 py-0.5" id="drawerActiveSubtitle" style="font-size: 0.68rem;">{{ count($runningOrders) }} Active</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                    <button type="button" class="btn btn-xs ro-header-btn" onclick="refreshActiveOrders(this)" title="Refresh Active Orders">
+                        <i class="fas fa-sync-alt" id="roSyncIcon"></i>
+                    </button>
+                    <button type="button" class="btn btn-xs ro-header-btn" onclick="toggleRunningOrdersSidebar()" title="Toggle Sidebar">
+                        <i class="fas fa-chevron-left d-none d-lg-inline"></i>
+                        <span class="d-inline d-lg-none fs-5" style="line-height: 1;">&times;</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Filter Bar -->
+            <div class="ro-filter-bar">
+                <button type="button" class="ro-filter-pill active" data-filter="all" onclick="filterDrawerOrders('all')">All</button>
+                <button type="button" class="ro-filter-pill" data-filter="dine_in" onclick="filterDrawerOrders('dine_in')">🍽️ Tables</button>
+                <button type="button" class="ro-filter-pill" data-filter="takeaway" onclick="filterDrawerOrders('takeaway')">🥡 Tokens</button>
+                <button type="button" class="ro-filter-pill" data-filter="delivery" onclick="filterDrawerOrders('delivery')">🛵 Deliveries</button>
+            </div>
+
+            <!-- Instant Search Input Box -->
+            <div class="ro-search-box">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text py-1 px-2 text-muted" style="font-size: 0.72rem;">
+                        <i class="fas fa-search text-secondary"></i>
+                    </span>
+                    <input type="text" class="form-control form-control-sm border-start-0 ps-1 fw-semibold" id="roSearchInput" placeholder="Search Invoice, Customer, Phone, Table..." style="font-size: 0.74rem; height: 30px;" oninput="onDrawerSearchInput(this.value)" autocomplete="off">
+                    <button type="button" class="btn btn-sm btn-light border border-start-0 text-muted px-2 d-none" id="roSearchClearBtn" onclick="clearDrawerSearch()" style="font-size: 0.72rem; height: 30px;" title="Clear Search">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Drawer Body / Order Cards List -->
+            <div class="ro-drawer-body" id="runningOrdersListContainer">
+                <div class="text-center py-5 text-muted">
+                    <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+                    <p class="mt-2 small mb-0">Loading active orders...</p>
+                </div>
+            </div>
+
+            <!-- Drawer Footer -->
+            <div class="ro-drawer-footer">
+                <div class="d-flex align-items-center gap-1">
+                    <span class="text-muted" style="font-size: 0.72rem;">Total:</span>
+                    <span class="fw-bold text-dark fs-6" id="drawerFooterTotal">Rs. {{ number_format($runningOrders->sum('total_bill_amount')) }}</span>
+                </div>
+                <a href="{{ route('restaurant.running_orders') }}" class="btn btn-xs btn-outline-dark fw-bold px-2 py-1 text-decoration-none" style="font-size: 0.72rem; border-radius: 6px;">
+                    <i class="fas fa-external-link-alt me-1"></i> Full Page &raquo;
+                </a>
+            </div>
+        </div>
+
+        <!-- 2. CENTER COLUMN: MENU & PRODUCTS -->
         <div class="rest-menu-panel" id="menuPanelContainer">
             <!-- Fast Keyboard Shortcuts Bar -->
             <div class="rest-shortcuts-hint-bar d-none d-md-flex">
@@ -1194,57 +1675,168 @@
 
             <!-- CART FOOTER & ACTIONS -->
             <div class="rest-cart-footer">
-                <!-- Delivery Specific Fields (Shown only in Delivery mode) -->
-                <div id="deliveryDetailsBox" class="p-2 mb-2 rounded border bg-light d-none" style="font-size: 0.78rem;">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="fw-bold text-primary"><i class="fas fa-motorcycle me-1"></i> Rider & Delivery Info</span>
-                        <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none fw-bold text-primary" style="font-size: 0.72rem;" onclick="openQuickRiderModal()">
-                            + Add Rider
-                        </button>
-                    </div>
-                    <div class="mb-1">
-                        <select class="form-select form-select-sm" id="posRiderSelect" style="font-size: 0.78rem;" onchange="onRiderSelectChange()">
-                            <option value="">-- Assign Rider (Optional / Can assign later) --</option>
-                            @foreach($riders as $rd)
-                                <option value="{{ $rd->id }}" data-name="{{ $rd->name }}" data-phone="{{ $rd->phone }}">
-                                    {{ $rd->name }} ({{ $rd->vehicle_no ?: 'Bike' }}) &mdash; {{ ucfirst(str_replace('_', ' ', $rd->duty_status)) }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="row g-1 mb-1">
-                        <div class="col-7">
-                            <input type="text" class="form-control form-control-sm" id="posCustomerPhone" placeholder="Customer Phone (03xx...)" style="font-size: 0.78rem;">
-                        </div>
-                        <div class="col-5">
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text px-1" style="font-size: 0.7rem;">Del Rs</span>
-                                <input type="number" class="form-control form-control-sm px-1 text-center" id="posDeliveryCharges" value="0" placeholder="0" style="font-size: 0.78rem;" oninput="renderCart()">
+                <div class="cart-footer-config">
+                    <!-- Delivery Specific Fields (Shown only in Delivery mode - SINGLE COMPACT CARD) -->
+                    <div id="deliveryDetailsBox" class="p-1 px-2 mb-1 rounded border bg-light d-none" style="font-size: 0.75rem;">
+                        <!-- Row 1: Rider (with +Add Rider) + Delivery Charges -->
+                        <div class="row g-1 mb-1 align-items-center">
+                            <div class="col-8">
+                                <select class="form-select form-select-sm" id="posRiderSelect" style="font-size: 0.74rem; height: 27px; padding: 2px 6px;" onchange="onRiderSelectChange()">
+                                    <option value="">🛵 Choose Rider (Optional)</option>
+                                    @foreach($riders as $rd)
+                                        <option value="{{ $rd->id }}" data-name="{{ $rd->name }}" data-phone="{{ $rd->phone }}">
+                                            {{ $rd->name }} ({{ ucfirst(str_replace('_', ' ', $rd->duty_status)) }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text px-1" style="font-size: 0.68rem; padding: 2px 4px;">Del Rs</span>
+                                    <input type="number" class="form-control form-control-sm px-1 text-center fw-bold text-success" id="posDeliveryCharges" value="0" placeholder="0" style="font-size: 0.76rem; height: 27px; padding: 2px 4px;" oninput="renderCart()">
+                                </div>
                             </div>
                         </div>
+
+                        <!-- Row 2: Customer Name + Phone Number -->
+                        <div class="row g-1 mb-1">
+                            <div class="col-6">
+                                <input type="text" class="form-control form-control-sm" id="posDeliveryCustomerName" placeholder="Customer Name *" style="font-size: 0.75rem; height: 27px; padding: 2px 6px;" oninput="$('#customerWalkinName').val(this.value)">
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control form-control-sm" id="posCustomerPhone" placeholder="Phone (03xx...)" style="font-size: 0.75rem; height: 27px; padding: 2px 6px;">
+                            </div>
+                        </div>
+
+                        <!-- Row 3: Delivery Address -->
+                        <div class="mb-1">
+                            <input type="text" class="form-control form-control-sm" id="posDeliveryAddress" placeholder="Delivery Address / House / Street..." style="font-size: 0.75rem; height: 27px; padding: 2px 6px;">
+                        </div>
+
+                        <!-- Row 4: Optional Delivery Note -->
+                        <div>
+                            <input type="text" class="form-control form-control-sm" id="posDeliveryRemarks" placeholder="Note (e.g. deliver hot, call on arrival)" style="font-size: 0.74rem; height: 25px; padding: 2px 6px;" oninput="$('#orderRemarksInput').val(this.value)">
+                        </div>
                     </div>
-                    <input type="text" class="form-control form-control-sm" id="posDeliveryAddress" placeholder="Delivery Address / House / Street..." style="font-size: 0.78rem;">
+
+                    <!-- Customer Selection (Shown in Dine-In & Takeaway modes) -->
+                    <div class="pos-customer-box mb-1 p-1 rounded border bg-white shadow-sm" id="posCustomerBox" style="font-size: 0.76rem;">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <div class="btn-group btn-group-sm w-100" role="group">
+                                <button type="button" class="btn btn-sm btn-primary py-0 fw-bold" id="btnCustomerWalkin" onclick="setCustomerMode('walkin')" style="font-size: 0.7rem; height: 24px;">
+                                    <i class="fas fa-walking me-1"></i> Walk-in
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-primary py-0 fw-bold" id="btnCustomerRegistered" onclick="setCustomerMode('registered')" style="font-size: 0.7rem; height: 24px;">
+                                    <i class="fas fa-user-check me-1"></i> Registered / Credit
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Walk-in Input -->
+                        <div id="walkinCustomerDiv">
+                            <input type="text" class="form-control form-control-sm" id="customerWalkinName" value="Walk-in Customer" placeholder="Customer Name (Optional)" style="font-size: 0.75rem; height: 26px; padding: 2px 6px;">
+                        </div>
+
+                        <!-- Registered Customer Dropdown & Quick Add -->
+                        <div id="registeredCustomerDiv" style="display: none;">
+                            <div class="d-flex gap-1 align-items-center">
+                                <select class="form-select form-select-sm" id="posCustomerSelect" style="font-size: 0.75rem; width: 100%; height: 28px;" onchange="onCustomerSelectChange()">
+                                    <option value="">-- Choose Customer --</option>
+                                    @foreach($customers as $c)
+                                        @php
+                                            $cBal = (float)($c->previous_balance ?? 0);
+                                        @endphp
+                                        <option value="{{ $c->id }}" data-name="{{ $c->customer_name }}" data-phone="{{ $c->mobile }}" data-address="{{ $c->address }}" data-balance="{{ $cBal }}">
+                                            {{ $c->customer_name }} {{ $c->mobile ? '('.$c->mobile.')' : '' }} &mdash; Bal: Rs {{ number_format(abs($cBal), 0) }} {{ $cBal >= 0 ? 'Dr' : 'Cr' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <button type="button" class="btn btn-sm btn-outline-success px-2 py-0" title="Add New Customer" onclick="openQuickCustomerModal()" style="height: 28px; font-size: 0.75rem;">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+
+                            <!-- Customer Info / Balance Badge -->
+                            <div id="selectedCustomerBadge" class="mt-1 p-1 px-2 rounded bg-light border d-flex justify-content-between align-items-center" style="display: none; font-size: 0.7rem;">
+                                <span class="text-truncate fw-bold text-dark" id="badgeCustomerName">-</span>
+                                <span class="badge bg-primary" id="badgeCustomerBalance">Bal: Rs 0</span>
+                            </div>
+                        </div>
+
+                        <input type="text" class="form-control form-control-sm mt-1" id="orderRemarksInput" placeholder="Special Note (e.g. Less spicy, Table request)" style="font-size: 0.74rem; height: 25px; padding: 2px 6px;">
+                    </div>
+
+                    <!-- Subtotal & Discount Section -->
+                    <div class="cart-summary-section mb-1 p-1 px-2 bg-light rounded border" style="font-size: 0.76rem;">
+                        <!-- Subtotal Row -->
+                        <div class="d-flex justify-content-between align-items-center mb-1 text-muted">
+                            <span>Subtotal:</span>
+                            <span class="fw-bold text-dark" id="cartSubtotalDisplay">Rs. 0</span>
+                        </div>
+
+                        <!-- Discount Controls Row -->
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div class="d-flex align-items-center gap-1">
+                                <span class="fw-bold text-danger"><i class="fas fa-tag me-1"></i>Discount:</span>
+                                <div class="btn-group btn-group-sm" role="group" style="scale: 0.8; transform-origin: left center;">
+                                    <button type="button" class="btn btn-outline-danger py-0 px-2 fw-bold active" id="btnDiscTypeFlat" onclick="setDiscountType('flat')">Rs</button>
+                                    <button type="button" class="btn btn-outline-danger py-0 px-2 fw-bold" id="btnDiscTypePercent" onclick="setDiscountType('percent')">%</button>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-1">
+                                <input type="number" step="any" min="0" id="orderDiscountInput" class="form-control form-control-sm text-end fw-bold text-danger" placeholder="0" value="0" oninput="onDiscountInputChanged()" style="width: 65px; height: 24px; padding: 1px 4px; font-size: 0.8rem; border: 1.5px solid #fca5a5; border-radius: 5px;">
+                                <span class="fw-bold text-danger small" id="cartDiscountAmountDisplay" style="min-width: 55px; text-align: right; font-size: 0.75rem;">- Rs. 0</span>
+                            </div>
+                        </div>
+
+                        <!-- Quick Discount Buttons -->
+                        <div class="d-flex gap-1 justify-content-end align-items-center pt-1 border-top" style="border-color: #e2e8f0 !important;">
+                            <span class="text-muted" style="font-size: 9px;">Quick:</span>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size: 9px; border-radius: 3px;" onclick="applyQuickPercent(5)">5%</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size: 9px; border-radius: 3px;" onclick="applyQuickPercent(10)">10%</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size: 9px; border-radius: 3px;" onclick="applyQuickPercent(15)">15%</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size: 9px; border-radius: 3px;" onclick="applyQuickPercent(20)">20%</button>
+                            <button type="button" class="btn btn-xs btn-outline-danger py-0 px-1" style="font-size: 9px; border-radius: 3px;" onclick="clearDiscount()" title="Clear Discount"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mb-2">
-                    <input type="text" class="form-control form-control-sm mb-1" id="customerWalkinName" value="Walk-in Customer" placeholder="Customer Name (Optional)">
-                    <input type="text" class="form-control form-control-sm" id="orderRemarksInput" placeholder="Special Note (e.g. Less spicy, Table request)">
-                </div>
+                <!-- PINNED BOTTOM: TOTAL BILL & ACTIONS (ALWAYS VISIBLE & NEVER HIDDEN) -->
+                <div class="cart-footer-pinned">
+                    <!-- Total Bill Row -->
+                    <div class="cart-total-bill-row">
+                        <span class="cart-total-lbl">Total Bill:</span>
+                        <span class="cart-total-val" id="cartTotalDisplay">Rs. 0</span>
+                    </div>
 
-                <!-- Total Bill Row matching screenshot -->
-                <div class="cart-total-bill-row">
-                    <span class="cart-total-lbl">Total Bill:</span>
-                    <span class="cart-total-val" id="cartTotalDisplay">Rs. 0</span>
-                </div>
+                    <!-- Action Buttons Row -->
+                    <div class="cart-action-btn-row">
+                        <!-- Standard Dine-In / Takeaway Buttons -->
+                        <div id="btnGroupStandard" class="d-flex gap-1 w-100">
+                            <button type="button" class="btn-kot-red" id="btnSendKOT" onclick="submitOrder('kot')" title="Book Order & Print Kitchen KOT - Shortcut: F8">
+                                <i class="fas fa-utensils"></i> KOT <kbd class="mode-kbd" style="background:rgba(0,0,0,0.3); font-size:9px;">F8</kbd>
+                            </button>
+                            <button type="button" class="btn-bill-blue" id="btnPrintGuestBill" onclick="submitOrder('print_bill')" title="Print Guest Bill (Provisional / Without Payment)">
+                                <i class="fas fa-file-invoice"></i> Bill Slip
+                            </button>
+                            <button type="button" class="btn-pay-green" id="btnPayClose" onclick="openPaymentModal()" title="Direct Payment & Complete - Shortcut: Enter or F4">
+                                <i class="fas fa-cash-register"></i> Pay &amp; Settle <kbd class="mode-kbd" style="background:rgba(0,0,0,0.3); font-size:9px;">Enter</kbd>
+                            </button>
+                        </div>
 
-                <!-- Action Buttons: KOT (Red) & Pay & Settle (Green) matching screenshot -->
-                <div class="cart-action-btn-row">
-                    <button type="button" class="btn-kot-red" id="btnSendKOT" onclick="submitOrder('kot')" title="Shortcut: Shift+Enter or F8">
-                        <i class="fas fa-print"></i> KOT (Kitchen) <kbd class="mode-kbd" style="background:rgba(0,0,0,0.3); font-size:10px;">F8</kbd>
-                    </button>
-                    <button type="button" class="btn-pay-green" id="btnPayClose" onclick="openPaymentModal()" title="Shortcut: Enter or F4">
-                        <i class="fas fa-cash-register"></i> Pay & Settle <kbd class="mode-kbd" style="background:rgba(0,0,0,0.3); font-size:10px;">Enter</kbd>
-                    </button>
+                        <!-- Delivery Specific Buttons: Direct Dispatch & Print COD Bill -->
+                        <div id="btnGroupDelivery" class="d-none gap-1 w-100">
+                            <button type="button" class="btn-delivery-dispatch" id="btnDeliveryDispatch" onclick="submitOrder('delivery_dispatch')" title="Dispatch Order & Print Bill for Rider (Cash on Delivery - No cash required upfront)">
+                                <i class="fas fa-motorcycle"></i> <span>Dispatch &amp; Print Bill (COD)</span>
+                            </button>
+                            <button type="button" class="btn-kot-red py-1 px-2" id="btnSendKOTDelivery" onclick="submitOrder('kot')" title="Kitchen KOT Only" style="flex: 0 0 65px; font-size: 0.74rem;">
+                                <i class="fas fa-utensils"></i> KOT
+                            </button>
+                            <button type="button" class="btn-pay-green py-1 px-2" id="btnPayDelivery" onclick="openPaymentModal()" title="Paid in Advance (Card / Online / Cash)" style="flex: 0 0 65px; font-size: 0.74rem;">
+                                <i class="fas fa-check"></i> Paid
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1272,12 +1864,12 @@
         <i class="fas fa-utensils"></i>
         <span>Dishes Menu</span>
     </button>
-    <button type="button" class="m-bar-tab" id="mTabTables" onclick="openRunningOrdersModal()">
+    <button type="button" class="m-bar-tab" id="mTabTables" onclick="toggleRunningOrdersSidebar()">
         <div class="position-relative d-inline-block">
             <i class="fas fa-chair"></i>
             <span class="m-bar-badge" id="mBottomBadgeTables">{{ count($runningOrders) }}</span>
         </div>
-        <span>Active Tables</span>
+        <span>Running Orders</span>
     </button>
     <button type="button" class="m-bar-tab" id="mTabCart" onclick="switchMobileView('cart')">
         <div class="position-relative d-inline-block">
@@ -1340,49 +1932,173 @@
     </div>
 </div>
 
-<!-- RUNNING ORDERS MODAL -->
-<div class="modal fade" id="runningOrdersModal" tabindex="-1" aria-labelledby="runningOrdersModalLabel" aria-hidden="true">
+
+<!-- =========================================================
+     ORDER DETAILS MODAL (FOR POS SCREEN)
+     ========================================================= -->
+<div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-hidden="true" style="z-index: 1065;">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white py-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-receipt fs-5 text-warning"></i>
+                    <h6 class="modal-title fw-bold mb-0" id="odModalTitle">Order Details</h6>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="$('#orderDetailsModal').modal('hide')" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" id="odModalBody">
+                <div class="text-center py-5 text-muted">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 mb-0">Loading order details...</p>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2 px-3 d-flex justify-content-between">
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-dark fw-bold" id="btnOdPrintKot">
+                        <i class="fas fa-utensils me-1"></i> Kitchen KOT
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary fw-bold" id="btnOdPrintBill">
+                        <i class="fas fa-print me-1"></i> Provisional Slip
+                    </button>
+                </div>
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal" onclick="$('#orderDetailsModal').modal('hide')">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================
+     ASSIGN RIDER MODAL (FOR POS SCREEN - DIRECT RIDERS LIST)
+     ========================================================= -->
+<div class="modal fade" id="assignRiderModal" tabindex="-1" aria-hidden="true" style="z-index: 1065;">
     <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden;">
-            <div class="modal-header bg-dark text-white py-2 px-3">
-                <h6 class="modal-title fw-bold text-white mb-0" id="runningOrdersModalLabel">
-                    <i class="fas fa-clock text-warning me-2"></i>Active Running Orders
-                </h6>
-                <button type="button" class="close text-white" data-dismiss="modal" data-bs-dismiss="modal" onclick="$('#runningOrdersModal').modal('hide')" aria-label="Close" style="border:none; background:transparent; font-size:24px; line-height:1; opacity:0.8;">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+            <div class="modal-header bg-primary text-white py-2 px-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-motorcycle fs-5"></i>
+                    <div>
+                        <h6 class="modal-title fw-bold mb-0 text-white">Select Delivery Rider</h6>
+                        <small class="text-white-50" id="arOrderInvoice">Order #</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="$('#assignRiderModal').modal('hide')" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-3" id="runningOrdersListContainer" style="max-height: 70vh; overflow-y: auto; background: #f8fafc;">
-                @forelse($runningOrders as $ro)
-                    <div class="running-order-item" onclick="loadRunningOrder({{ $ro->id }})" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:8px; cursor:pointer; transition: all 0.15s;">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="fw-bold text-dark fs-6">
-                                @if($ro->order_type === 'dine_in')
-                                    🍽️ Table: {{ $ro->table_no }}
-                                @elseif($ro->order_type === 'takeaway')
-                                    🥡 Token: {{ $ro->token_no }}
+            <div class="modal-body p-3 bg-light" style="max-height: 65vh; overflow-y: auto;">
+                <input type="hidden" id="arOrderId">
+                <p class="small text-muted mb-2 fw-semibold">Click any rider below to assign & dispatch order immediately:</p>
+                <div class="d-flex flex-column gap-2" id="arRidersListContainer">
+                    @forelse($riders as $r)
+                        @php
+                            $isAvail = strtolower($r->duty_status ?? 'available') === 'available';
+                        @endphp
+                        <div class="p-2 px-3 rounded-3 bg-white border d-flex justify-content-between align-items-center shadow-sm rider-item-card" 
+                             style="cursor: pointer; transition: all 0.15s; border-color: {{ $isAvail ? '#86efac' : '#fed7aa' }} !important;"
+                             onclick="submitDirectRiderAssign({{ $r->id }}, '{{ addslashes($r->name) }}')">
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width: 38px; height: 38px; border-radius: 50%; background: {{ $isAvail ? '#dcfce7' : '#ffedd5' }}; color: {{ $isAvail ? '#16a34a' : '#c2410c' }}; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+                                    <i class="fas fa-motorcycle"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark" style="font-size: 0.92rem;">{{ $r->name }}</div>
+                                    <small class="text-muted"><i class="fas fa-phone-alt" style="font-size: 10px;"></i> {{ $r->phone ?: 'No phone' }}</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                @if($isAvail)
+                                    <span class="badge bg-success" style="font-size: 0.72rem;"><i class="fas fa-check-circle me-1"></i> Available</span>
                                 @else
-                                    🛵 {{ $ro->walkin_name }}
+                                    <span class="badge bg-warning text-dark" style="font-size: 0.72rem;"><i class="fas fa-clock me-1"></i> On Delivery</span>
                                 @endif
-                            </span>
-                            <span class="badge bg-success fs-6">Rs. {{ number_format($ro->total_bill_amount, 0) }}</span>
+                                <button type="button" class="btn btn-sm btn-primary fw-bold py-1 px-3" style="font-size: 0.75rem; border-radius: 6px;">
+                                    <i class="fas fa-paper-plane me-1"></i> Dispatch
+                                </button>
+                            </div>
                         </div>
-                        <div class="small text-muted mb-1 text-truncate">
-                            {{ $ro->items->map(function($i){ return ($i->qty ?: $i->total_pieces).'x '.$i->product_name; })->implode(', ') }}
+                    @empty
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-motorcycle fs-2 text-secondary mb-2"></i>
+                            <p class="mb-0 fw-bold">No Riders Found</p>
+                            <small>Please create riders in Rider Management.</small>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center text-secondary small">
-                            <span><i class="far fa-clock me-1"></i>{{ $ro->created_at ? $ro->created_at->diffForHumans(null, true) : 'just now' }}</span>
-                            <span class="text-primary fw-bold">Click to Open &raquo;</span>
-                        </div>
-                    </div>
-                @empty
-                    <div class="text-center py-5 text-muted">
-                        <i class="fas fa-check-circle fs-1 text-success mb-2"></i>
-                        <p class="mb-0 fw-bold">No active running orders.</p>
-                        <small>All tables are currently clear!</small>
-                    </div>
-                @endforelse
+                    @endforelse
+                </div>
             </div>
+            <div class="modal-footer bg-white py-2 px-3">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal" onclick="$('#assignRiderModal').modal('hide')">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================
+     UNIFIED COMPLETE & SETTLE MODAL (FOR POS SCREEN)
+     ========================================================= -->
+<div class="modal fade" id="completeSettleModal" tabindex="-1" aria-hidden="true" style="z-index: 1065;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white py-3 px-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-check-circle fs-5"></i>
+                    <div>
+                        <h6 class="modal-title fw-bold mb-0">Complete & Settle Order</h6>
+                        <small style="opacity: 0.9;" id="csModalSubtitle">Invoice: #</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="$('#completeSettleModal').modal('hide')" aria-label="Close"></button>
+            </div>
+            <form id="formCompleteSettle" onsubmit="submitCompleteSettle(event)">
+                <div class="modal-body p-4">
+                    <input type="hidden" id="csOrderId">
+
+                    <!-- Total Amount Display Banner -->
+                    <div class="p-3 rounded-3 bg-light border text-center mb-3">
+                        <span class="text-muted small text-uppercase fw-bold">Total Payable Amount</span>
+                        <div class="fs-2 fw-black text-success mt-1" id="csTotalPayable">Rs. 0</div>
+                    </div>
+
+                    <!-- PROMINENT ACCOUNT SELECTION CONTAINER -->
+                    <div class="p-3 rounded-3 mb-3" style="background: #eff6ff; border: 2px solid #3b82f6;">
+                        <label class="form-label fw-bold text-dark d-flex align-items-center justify-content-between mb-2">
+                            <span class="fs-6"><i class="fas fa-wallet text-primary me-2"></i>Payment Receiving Account</span>
+                            <span class="badge bg-primary text-white" style="font-size: 0.72rem;">Active Mode</span>
+                        </label>
+                        <select class="form-select form-select-lg fw-bold shadow-sm" id="csAccountSelect" required style="border: 2px solid #2563eb; background-color: #ffffff; color: #1e3a8a; font-size: 1rem; height: 48px; border-radius: 8px;">
+                            @foreach($accounts as $acc)
+                                <option value="{{ $acc->id }}" {{ str_contains(strtolower($acc->title), 'cash') ? 'selected' : '' }}>
+                                    💵 {{ $acc->title }} ({{ $acc->account_number ?: 'General Account' }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted d-block mt-1" style="font-size: 0.76rem;">
+                            <i class="fas fa-info-circle text-primary me-1"></i>Select which Cash Drawer or Bank Account receives this payment.
+                        </small>
+                    </div>
+
+                    <!-- Cash Given & Change Calculation -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-dark">Cash Received (Rs.)</label>
+                            <input type="number" step="any" min="0" class="form-control form-control-lg fw-bold text-primary" id="csCashReceived" placeholder="0" oninput="calculateCsChange()" style="font-size: 1.1rem;">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-dark">Change Return (Rs.)</label>
+                            <input type="text" class="form-control form-control-lg fw-bold bg-white text-danger" id="csChangeReturn" value="0.00" readonly style="font-size: 1.1rem;">
+                        </div>
+                    </div>
+
+                    <!-- Optional Extra Discount -->
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold text-muted">Extra Discount (if any)</label>
+                        <input type="number" step="any" min="0" class="form-control" id="csDiscount" placeholder="0.00" oninput="calculateCsChange()">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2 px-3 d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" onclick="$('#completeSettleModal').modal('hide')">Cancel</button>
+                    <button type="submit" class="btn btn-success fw-bold px-4 py-2" id="btnSubmitCs">
+                        <i class="fas fa-check-double me-1"></i> Confirm & Print Receipt
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -1559,9 +2275,42 @@
                 </button>
             </div>
             <div class="modal-body p-3">
-                <div class="text-center mb-3">
-                    <div class="text-muted small">Total Payable Amount</div>
-                    <div class="fs-2 fw-bold text-dark" id="modalPayableAmount">Rs. 0</div>
+                <!-- Customer Summary Header in Settlement Modal -->
+                <div class="p-2 mb-3 rounded bg-light border" id="modalCustomerSummaryBox">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small">Customer: </span>
+                            <strong id="modalCustName">Walk-in Customer</strong>
+                        </div>
+                        <div id="modalCustBalWrapper" style="display: none;">
+                            <span class="text-muted small">Prev Bal: </span>
+                            <span class="badge bg-secondary" id="modalCustBal">Rs. 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-light p-3 rounded border mb-3">
+                    <div class="d-flex justify-content-between align-items-center text-muted small mb-1">
+                        <span>Order Subtotal:</span>
+                        <span class="fw-bold text-dark" id="modalSubtotalAmount">Rs. 0</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center small text-danger mb-2">
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="fw-bold"><i class="fas fa-tag me-1"></i>Discount:</span>
+                            <div class="btn-group btn-group-sm" role="group" style="scale: 0.8; transform-origin: left center;">
+                                <button type="button" class="btn btn-outline-danger py-0 px-2 fw-bold active" id="modalBtnDiscTypeFlat" onclick="setDiscountType('flat')">Rs</button>
+                                <button type="button" class="btn btn-outline-danger py-0 px-2 fw-bold" id="modalBtnDiscTypePercent" onclick="setDiscountType('percent')">%</button>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                            <input type="number" step="any" min="0" id="modalDiscountInput" class="form-control form-control-sm text-end fw-bold text-danger" placeholder="0" value="0" oninput="syncModalDiscount()" style="width: 80px; height: 26px; padding: 2px 6px; font-size: 0.85rem; border: 1.5px solid #fca5a5; border-radius: 6px;">
+                            <span class="fw-bold text-danger" id="modalDiscountDisplay">- Rs. 0</span>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <span class="fw-bold text-dark fs-6">Total Payable:</span>
+                        <span class="fs-3 fw-bold text-primary" id="modalPayableAmount">Rs. 0</span>
+                    </div>
                 </div>
 
                 <!-- Payment Method -->
@@ -1592,13 +2341,27 @@
                         <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" onclick="setCashPreset(2000)">Rs. 2000</button>
                         <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" onclick="setCashPreset(5000)">Rs. 5000</button>
                         <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 fw-bold" onclick="setExactCash()">Exact Cash</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2 fw-bold" id="btnPresetCredit" onclick="setFullCredit()" style="display: none;">
+                            <i class="fas fa-hand-holding-usd me-1"></i> Full Credit (Udhar)
+                        </button>
                     </div>
                 </div>
 
-                <!-- Change Due -->
-                <div class="p-2 rounded bg-light border text-center mb-2">
-                    <span class="text-muted small">Change to Return: </span>
-                    <span class="fw-bold fs-5 text-danger" id="modalChangeDue">Rs. 0</span>
+                <!-- Payment Status Box (Change Due OR Credit / Udhar Due) -->
+                <div class="p-2 rounded bg-light border text-center mb-2" id="modalStatusBox">
+                    <div id="statusChangeRow">
+                        <span class="text-muted small">Change to Return: </span>
+                        <span class="fw-bold fs-5 text-success" id="modalChangeDue">Rs. 0</span>
+                    </div>
+                    <div id="statusCreditRow" style="display: none;">
+                        <div class="text-danger fw-bold small mb-1">
+                            <i class="fas fa-hand-holding-usd me-1"></i> Remaining Credit (Udhar): <span class="fs-5" id="modalCreditDue">Rs. 0</span>
+                        </div>
+                        <div class="text-muted small" id="modalNewBalanceText">New Customer Balance: Rs. 0</div>
+                    </div>
+                    <div id="statusWalkinWarningRow" style="display: none;">
+                        <span class="text-danger fw-bold small"><i class="fas fa-exclamation-triangle me-1"></i> Cash cannot be less than total bill for Walk-in customer. Select a Registered Customer for Credit (Udhar).</span>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer bg-light py-2 px-3">
@@ -1611,6 +2374,44 @@
     </div>
 </div>
 
+<!-- QUICK ADD CUSTOMER MODAL -->
+<div class="modal fade" id="quickCustomerModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white py-2 px-3">
+                <h6 class="modal-title fs-6 fw-bold mb-0"><i class="fas fa-user-plus me-1"></i> Add New Customer</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close" onclick="$('#quickCustomerModal').modal('hide')"></button>
+            </div>
+            <form id="quickCustomerForm" onsubmit="saveQuickCustomer(event)" autocomplete="off">
+                <div class="modal-body p-3">
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold mb-1">Customer Name <span class="text-danger">*</span></label>
+                        <input type="text" name="customer_name" id="qc_name" class="form-control form-control-sm" required placeholder="Full Name">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold mb-1">Mobile Number <span class="text-danger">*</span></label>
+                        <input type="text" name="mobile" id="qc_mobile" class="form-control form-control-sm" required placeholder="03xx-xxxxxxx">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold mb-1">Address (Optional)</label>
+                        <input type="text" name="address" id="qc_address" class="form-control form-control-sm" placeholder="Street / House #">
+                    </div>
+                    <div class="mb-1">
+                        <label class="form-label small fw-bold mb-1">Opening Balance (Optional)</label>
+                        <input type="number" name="opening_balance" id="qc_balance" class="form-control form-control-sm" value="0" placeholder="0">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2 px-3">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" data-dismiss="modal" onclick="$('#quickCustomerModal').modal('hide')">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm fw-bold px-3" id="btnSaveQuickCustomer">
+                        <i class="fas fa-save me-1"></i> Save Customer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('js')
@@ -1619,6 +2420,8 @@
     let cart = [];
     let currentOrderMode = 'dine_in';
     let activeSaleId = null;
+    let orderDiscountType = 'flat'; // 'flat' or 'percent'
+    let orderDiscountValue = 0;
     let nextToken = {{ $nextTokenNo ?? 1 }};
     const menuItems = @json($menuItems->keyBy('id'));
     let currentModalProduct = null;
@@ -1663,7 +2466,10 @@
             $('#cartHeaderTakeawayControl').removeClass('d-flex').addClass('d-none');
             $('#cartHeaderDeliveryControl').removeClass('d-flex').addClass('d-none');
             $('#deliveryDetailsBox').addClass('d-none');
+            $('#posCustomerBox').removeClass('d-none');
             $('#cartHeaderOrderModeBadge').text('Dine-In');
+            $('#btnGroupStandard').removeClass('d-none').addClass('d-flex');
+            $('#btnGroupDelivery').removeClass('d-flex').addClass('d-none');
             
             let curTbl = $('#currentTableBadge').text().trim() || 'T-1';
             $('#orderTargetInput').val(curTbl);
@@ -1673,7 +2479,10 @@
             $('#cartHeaderTakeawayControl').removeClass('d-none').addClass('d-flex');
             $('#cartHeaderDeliveryControl').removeClass('d-flex').addClass('d-none');
             $('#deliveryDetailsBox').addClass('d-none');
+            $('#posCustomerBox').removeClass('d-none');
             $('#cartHeaderOrderModeBadge').text('Takeaway');
+            $('#btnGroupStandard').removeClass('d-none').addClass('d-flex');
+            $('#btnGroupDelivery').removeClass('d-flex').addClass('d-none');
             
             $('#cartTokenBadge').text(nextToken);
             $('#orderTargetInput').val(nextToken);
@@ -1683,7 +2492,10 @@
             $('#cartHeaderTakeawayControl').removeClass('d-flex').addClass('d-none');
             $('#cartHeaderDeliveryControl').removeClass('d-none').addClass('d-flex');
             $('#deliveryDetailsBox').removeClass('d-none');
+            $('#posCustomerBox').addClass('d-none');
             $('#cartHeaderOrderModeBadge').text('Delivery');
+            $('#btnGroupStandard').removeClass('d-flex').addClass('d-none');
+            $('#btnGroupDelivery').removeClass('d-none').addClass('d-flex');
             
             onRiderSelectChange();
         }
@@ -2214,8 +3026,14 @@
 
         $('#variantsModal').modal('show');
         setTimeout(() => {
-            $('#variantSearchInput').focus();
             highlightSelectedVariantRow();
+            let $firstQty = $('#variantsModalList tr.selected-variant-row .modal-qty-val');
+            if (!$firstQty.length) {
+                $firstQty = $('#variantsModalList .modal-qty-val').first();
+            }
+            if ($firstQty.length) {
+                $firstQty.focus().select();
+            }
         }, 150);
     }
 
@@ -2227,6 +3045,10 @@
             if (selectedVariantRowIdx < 0) selectedVariantRowIdx = $rows.length - 1;
             let $target = $rows.eq(selectedVariantRowIdx).addClass('selected-variant-row');
             $target[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            let $qty = $target.find('.modal-qty-val');
+            if ($qty.length) {
+                $qty.focus().select();
+            }
         }
     }
 
@@ -2247,10 +3069,15 @@
 
     // Variant modal key navigation
     $('#variantsModal').on('keydown', function(e) {
+        // If user is inside the quantity input, do not duplicate Enter or Arrow keys
+        if ($(e.target).is('.modal-qty-val')) {
+            return;
+        }
+
         let $rows = $('#variantsModalList tr:visible');
 
         // Number keys 1-9: Instant pick variant by number
-        if (!$(e.target).is('input[type="number"]') && e.key >= '1' && e.key <= '9') {
+        if (!$(e.target).is('input') && e.key >= '1' && e.key <= '9') {
             let num = parseInt(e.key) - 1;
             if ($rows.length > num) {
                 e.preventDefault();
@@ -2286,20 +3113,37 @@
         }
     });
 
-    // Click on row selects and adds it
-    $(document).on('click', '.variant-item-row', function() {
+    // Click on row selects and adds it (only if not clicking on buttons or inputs)
+    $(document).on('click', '.variant-item-row', function(e) {
+        if ($(e.target).closest('.modal-qty-minus, .modal-qty-plus, .modal-qty-val, .variant-add-btn').length) {
+            return;
+        }
         let idx = $(this).data('idx');
         addVariantToCart(idx, $(this).find('.variant-add-btn'));
     });
 
-    // Pressing Enter in Variant Qty automatically adds to cart
+    // Pressing Enter in Variant Qty automatically adds to cart ONCE
     $(document).on('keydown', '.modal-qty-val', function(e) {
         if (e.key === 'Enter' || e.keyCode === 13) {
             e.preventDefault();
-            let $addBtn = $(this).closest('tr').find('.variant-add-btn');
-            if ($addBtn.length) {
-                $addBtn.click();
-            }
+            e.stopPropagation();
+            let $row = $(this).closest('tr');
+            let idx = $row.data('idx');
+            addVariantToCart(idx, $row.find('.variant-add-btn'));
+        }
+    });
+
+    $(document).on('focus', '.modal-qty-val', function() {
+        this.select();
+    });
+
+    $('#variantsModal').on('shown.bs.modal', function () {
+        let $firstQty = $('#variantsModalList tr.selected-variant-row .modal-qty-val');
+        if (!$firstQty.length) {
+            $firstQty = $('#variantsModalList .modal-qty-val').first();
+        }
+        if ($firstQty.length) {
+            $firstQty.focus().select();
         }
     });
 
@@ -2315,8 +3159,13 @@
         if (cur > 1) $inp.val(cur - 1);
     });
 
-    // Add Variant to Cart
+    // Add Variant to Cart with single-execution lock
+    let isAddingVariant = false;
     function addVariantToCart(idx, btn) {
+        if (isAddingVariant) return;
+        isAddingVariant = true;
+        setTimeout(() => { isAddingVariant = false; }, 300);
+
         if (!currentModalProduct || !currentModalProduct.variants || !currentModalProduct.variants[idx]) {
             return;
         }
@@ -2326,6 +3175,12 @@
             let $row = $(btn).closest('tr');
             let q = parseInt($row.find('.modal-qty-val').val());
             if (q && q > 0) qty = q;
+        } else {
+            let $row = $(`#variant-row-${idx}`);
+            if ($row.length) {
+                let q = parseInt($row.find('.modal-qty-val').val());
+                if (q && q > 0) qty = q;
+            }
         }
 
         let cartKey = v.id + '_' + (v.variant_data || v.name);
@@ -2348,7 +3203,6 @@
         renderCart();
         $('#variantsModal').modal('hide');
 
-        $('#menuSearchInput').val('').focus();
         $('.product-food-card').show();
         highlightedIndex = 0;
         highlightFirstVisible();
@@ -2421,7 +3275,7 @@
                         <span class="cart-row-item-title" title="${item.name}">${item.name}</span>
                         <div class="cart-stepper">
                             <button type="button" class="btn-cart-stepper" onclick="updateQty(${index}, -1)">&minus;</button>
-                            <span class="cart-stepper-val">${item.qty}</span>
+                            <input type="number" class="cart-stepper-input cart-qty-val" id="cart-qty-${index}" data-index="${index}" value="${item.qty}" min="1" onchange="setDirectQty(${index}, this.value)" onfocus="this.select()" onkeydown="handleQtyKeydown(event, ${index})">
                             <button type="button" class="btn-cart-stepper" onclick="updateQty(${index}, 1)">&plus;</button>
                         </div>
                     </div>
@@ -2435,10 +3289,14 @@
 
         // Add delivery charges if in delivery mode
         let deliveryCharges = currentOrderMode === 'delivery' ? (parseFloat($('#posDeliveryCharges').val()) || 0) : 0;
-        let grandTotal = total + deliveryCharges;
+        let subtotal = total + deliveryCharges;
+        let discount = getDiscountAmount();
+        let grandTotal = Math.max(0, subtotal - discount);
 
         $list.html(html);
         $('#cartItemBadge').text(count + ' Items');
+        $('#cartSubtotalDisplay').text('Rs. ' + subtotal.toLocaleString());
+        $('#cartDiscountAmountDisplay').text('- Rs. ' + discount.toLocaleString());
         $('#cartTotalDisplay').text('Rs. ' + grandTotal.toLocaleString());
         $('#mobFloatCount').text(count);
         $('#mobFloatTotal').text('Rs. ' + grandTotal.toLocaleString());
@@ -2458,8 +3316,43 @@
         cart[index].qty += delta;
         if (cart[index].qty <= 0) {
             cart.splice(index, 1);
+            renderCart();
+        } else {
+            renderCart();
+            focusCartItemQty(index);
         }
-        renderCart();
+    }
+
+    function setDirectQty(index, val) {
+        if (!cart[index]) return;
+        let q = parseInt(val) || 1;
+        if (q <= 0) {
+            cart.splice(index, 1);
+            renderCart();
+        } else {
+            cart[index].qty = q;
+            renderCart();
+            focusCartItemQty(index);
+        }
+    }
+
+    function focusCartItemQty(index) {
+        setTimeout(() => {
+            let $inp = $(`#cart-qty-${index}`);
+            if ($inp.length) {
+                $inp[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                $inp.focus();
+                $inp.select();
+            }
+        }, 50);
+    }
+
+    function handleQtyKeydown(e, index) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            e.preventDefault();
+            setDirectQty(index, e.target.value);
+            $('#menuSearchInput').val('').focus();
+        }
     }
 
     function updateNote(index, val) {
@@ -2472,18 +3365,216 @@
         renderCart();
     }
 
-    function resetCart() {
-        cart = [];
-        activeSaleId = null;
-        $('#orderRemarksInput').val('');
-        $('#customerWalkinName').val('Walk-in Customer');
+    // Customer Selection Management
+    let selectedCustomerMode = 'walkin'; // 'walkin' or 'registered'
+
+    function setCustomerMode(mode) {
+        selectedCustomerMode = mode;
+        if (mode === 'walkin') {
+            $('#btnCustomerWalkin').removeClass('btn-outline-primary').addClass('btn-primary');
+            $('#btnCustomerRegistered').removeClass('btn-primary').addClass('btn-outline-primary');
+            $('#walkinCustomerDiv').show();
+            $('#registeredCustomerDiv').hide();
+        } else {
+            $('#btnCustomerRegistered').removeClass('btn-outline-primary').addClass('btn-primary');
+            $('#btnCustomerWalkin').removeClass('btn-primary').addClass('btn-outline-primary');
+            $('#walkinCustomerDiv').hide();
+            $('#registeredCustomerDiv').show();
+            if ($.fn.select2 && !$('#posCustomerSelect').hasClass('select2-hidden-accessible')) {
+                $('#posCustomerSelect').select2({ width: '100%', placeholder: '-- Choose Customer --' });
+            }
+        }
+    }
+
+    function onCustomerSelectChange() {
+        let opt = $('#posCustomerSelect option:selected');
+        let cid = opt.val();
+        if (cid) {
+            let name = opt.data('name') || opt.text();
+            let phone = opt.data('phone') || '';
+            let address = opt.data('address') || '';
+            let balance = parseFloat(opt.data('balance')) || 0;
+
+            $('#badgeCustomerName').text(name + (phone ? ' (' + phone + ')' : ''));
+            let balLabel = 'Bal: Rs ' + Math.abs(balance).toLocaleString() + (balance >= 0 ? ' (Dr)' : ' (Cr)');
+            $('#badgeCustomerBalance').text(balLabel).removeClass('bg-success bg-danger bg-primary').addClass(balance > 0 ? 'bg-danger' : 'bg-success');
+            $('#selectedCustomerBadge').show();
+
+            // Pre-fill delivery info if empty or in delivery mode
+            if (currentOrderMode === 'delivery') {
+                if (phone && !$('#posCustomerPhone').val()) {
+                    $('#posCustomerPhone').val(phone);
+                }
+                if (address && !$('#posDeliveryAddress').val()) {
+                    $('#posDeliveryAddress').val(address);
+                }
+            }
+        } else {
+            $('#selectedCustomerBadge').hide();
+        }
+    }
+
+    function openQuickCustomerModal() {
+        $('#quickCustomerForm')[0].reset();
+        $('#quickCustomerModal').modal('show');
+        setTimeout(() => $('#qc_name').focus(), 300);
+    }
+
+    function saveQuickCustomer(e) {
+        e.preventDefault();
+        let btn = $('#btnSaveQuickCustomer');
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Saving...');
+
+        $.ajax({
+            url: "{{ route('customers.store') }}",
+            type: "POST",
+            data: {
+                _token: '{{ csrf_token() }}',
+                customer_name: $('#qc_name').val(),
+                mobile: $('#qc_mobile').val(),
+                address: $('#qc_address').val() || null,
+                opening_balance: $('#qc_balance').val() || 0
+            },
+            success: function(resp) {
+                btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Save Customer');
+                let cust = resp.data || resp.customer || resp;
+                if (cust && cust.id) {
+                    $('#quickCustomerModal').modal('hide');
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Customer added successfully', showConfirmButton: false, timer: 1500 });
+                    
+                    let bal = parseFloat(cust.opening_balance) || 0;
+                    let optText = cust.customer_name + (cust.mobile ? ' (' + cust.mobile + ')' : '') + ' — Bal: Rs ' + Math.abs(bal).toLocaleString() + (bal >= 0 ? ' Dr' : ' Cr');
+                    let newOption = $('<option>', {
+                        value: cust.id,
+                        text: optText,
+                        'data-name': cust.customer_name,
+                        'data-phone': cust.mobile || '',
+                        'data-address': cust.address || '',
+                        'data-balance': bal,
+                        selected: true
+                    });
+                    $('#posCustomerSelect').append(newOption);
+                    if ($.fn.select2 && $('#posCustomerSelect').hasClass('select2-hidden-accessible')) {
+                        $('#posCustomerSelect').trigger('change');
+                    }
+                    setCustomerMode('registered');
+                    onCustomerSelectChange();
+                } else {
+                    Swal.fire('Error', 'Failed to create customer.', 'error');
+                }
+            },
+            error: function(xhr) {
+                btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Save Customer');
+                let msg = 'Failed to create customer.';
+                if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    msg = Object.values(xhr.responseJSON.errors).flat().join('<br>');
+                }
+                Swal.fire('Error', msg, 'error');
+            }
+        });
+    }
+
+    function setDiscountType(type) {
+        orderDiscountType = type;
+        if (type === 'flat') {
+            $('#btnDiscTypeFlat, #modalBtnDiscTypeFlat').addClass('active');
+            $('#btnDiscTypePercent, #modalBtnDiscTypePercent').removeClass('active');
+            $('#orderDiscountInput, #modalDiscountInput').attr('placeholder', 'Rs');
+        } else {
+            $('#btnDiscTypePercent, #modalBtnDiscTypePercent').addClass('active');
+            $('#btnDiscTypeFlat, #modalBtnDiscTypeFlat').removeClass('active');
+            $('#orderDiscountInput, #modalDiscountInput').attr('placeholder', '%');
+        }
         renderCart();
     }
 
-    function getTotalBill() {
+    function onDiscountInputChanged() {
+        let val = parseFloat($('#orderDiscountInput').val());
+        orderDiscountValue = isNaN(val) ? 0 : Math.max(0, val);
+        $('#modalDiscountInput').val(orderDiscountValue);
+        renderCart();
+    }
+
+    function syncModalDiscount() {
+        let val = parseFloat($('#modalDiscountInput').val());
+        orderDiscountValue = isNaN(val) ? 0 : Math.max(0, val);
+        $('#orderDiscountInput').val(orderDiscountValue);
+        renderCart();
+
+        let subtotal = getSubtotal();
+        let disc = getDiscountAmount();
+        let total = getTotalBill();
+        $('#modalSubtotalAmount').text('Rs. ' + subtotal.toLocaleString());
+        $('#modalDiscountDisplay').text('- Rs. ' + disc.toLocaleString());
+        $('#modalPayableAmount').text('Rs. ' + total.toLocaleString());
+        $('#cashReceivedInput').val(total);
+        calculateChange();
+    }
+
+    function applyQuickPercent(pct) {
+        orderDiscountType = 'percent';
+        orderDiscountValue = pct;
+        $('#btnDiscTypePercent, #modalBtnDiscTypePercent').addClass('active');
+        $('#btnDiscTypeFlat, #modalBtnDiscTypeFlat').removeClass('active');
+        $('#orderDiscountInput, #modalDiscountInput').val(pct);
+        renderCart();
+    }
+
+    function clearDiscount() {
+        orderDiscountValue = 0;
+        $('#orderDiscountInput, #modalDiscountInput').val(0);
+        renderCart();
+    }
+
+    function getSubtotal() {
         let itemsTotal = cart.reduce((sum, item) => sum + (item.qty * item.price), 0);
         let deliveryCharges = currentOrderMode === 'delivery' ? (parseFloat($('#posDeliveryCharges').val()) || 0) : 0;
         return itemsTotal + deliveryCharges;
+    }
+
+    function getDiscountAmount() {
+        let subtotal = getSubtotal();
+        if (subtotal <= 0 || orderDiscountValue <= 0) return 0;
+
+        let disc = 0;
+        if (orderDiscountType === 'percent') {
+            disc = (subtotal * orderDiscountValue) / 100;
+        } else {
+            disc = orderDiscountValue;
+        }
+        return Math.min(subtotal, Math.round(disc * 100) / 100);
+    }
+
+    function getTotalBill() {
+        let subtotal = getSubtotal();
+        let disc = getDiscountAmount();
+        return Math.max(0, subtotal - disc);
+    }
+
+    function resetCart() {
+        cart = [];
+        activeSaleId = null;
+        orderDiscountValue = 0;
+        orderDiscountType = 'flat';
+        $('#orderDiscountInput, #modalDiscountInput').val(0);
+        $('#btnDiscTypeFlat, #modalBtnDiscTypeFlat').addClass('active');
+        $('#btnDiscTypePercent, #modalBtnDiscTypePercent').removeClass('active');
+        $('#orderRemarksInput').val('');
+        $('#customerWalkinName').val('Walk-in Customer');
+        $('#posDeliveryCustomerName').val('');
+        $('#posCustomerPhone').val('');
+        $('#posDeliveryAddress').val('');
+        $('#posDeliveryCharges').val(0);
+        $('#posDeliveryRemarks').val('');
+        $('#posRiderSelect').val('');
+        $('#posCustomerSelect').val('');
+        if ($.fn.select2 && $('#posCustomerSelect').hasClass('select2-hidden-accessible')) {
+            $('#posCustomerSelect').trigger('change');
+        }
+        setCustomerMode('walkin');
+        $('#selectedCustomerBadge').hide();
+        renderCart();
     }
 
     // Payment Settlement Modal
@@ -2492,8 +3583,39 @@
             Swal.fire('Empty Order', 'Please add items to the order first.', 'warning');
             return;
         }
+        let subtotal = getSubtotal();
+        let disc = getDiscountAmount();
         let total = getTotalBill();
+
+        $('#modalSubtotalAmount').text('Rs. ' + subtotal.toLocaleString());
+        $('#modalDiscountInput').val(orderDiscountValue);
+        $('#modalDiscountDisplay').text('- Rs. ' + disc.toLocaleString());
         $('#modalPayableAmount').text('Rs. ' + total.toLocaleString());
+
+        if (orderDiscountType === 'flat') {
+            $('#modalBtnDiscTypeFlat').addClass('active');
+            $('#modalBtnDiscTypePercent').removeClass('active');
+        } else {
+            $('#modalBtnDiscTypePercent').addClass('active');
+            $('#modalBtnDiscTypeFlat').removeClass('active');
+        }
+
+        let isRegistered = selectedCustomerMode === 'registered' && $('#posCustomerSelect').val();
+        if (isRegistered) {
+            let opt = $('#posCustomerSelect option:selected');
+            $('#modalCustName').text(opt.data('name') || opt.text());
+            let bal = parseFloat(opt.data('balance')) || 0;
+            let balLabel = 'Rs ' + Math.abs(bal).toLocaleString() + (bal >= 0 ? ' (Dr)' : ' (Cr)');
+            $('#modalCustBal').text(balLabel).removeClass('bg-success bg-danger bg-secondary').addClass(bal > 0 ? 'bg-danger' : 'bg-success');
+            $('#modalCustBalWrapper').show();
+            $('#btnPresetCredit').show();
+        } else {
+            let walkin = $('#customerWalkinName').val() || 'Walk-in Customer';
+            $('#modalCustName').text(walkin);
+            $('#modalCustBalWrapper').hide();
+            $('#btnPresetCredit').hide();
+        }
+
         $('#cashReceivedInput').val(total);
         calculateChange();
         $('#settlementModal').modal('show');
@@ -2523,11 +3645,53 @@
         $('#cashReceivedInput').focus();
     }
 
+    function setFullCredit() {
+        $('#cashReceivedInput').val(0);
+        calculateChange();
+        $('#cashReceivedInput').focus();
+    }
+
     function calculateChange() {
         let total = getTotalBill();
-        let received = parseFloat($('#cashReceivedInput').val()) || 0;
-        let change = Math.max(0, received - total);
-        $('#modalChangeDue').text('Rs. ' + change.toLocaleString());
+        let received = parseFloat($('#cashReceivedInput').val());
+        if (isNaN(received)) received = 0;
+
+        let isRegistered = selectedCustomerMode === 'registered' && $('#posCustomerSelect').val();
+
+        if (received >= total) {
+            let change = received - total;
+            $('#statusChangeRow').show();
+            $('#statusCreditRow').hide();
+            $('#statusWalkinWarningRow').hide();
+            $('#modalChangeDue').text('Rs. ' + change.toLocaleString());
+            $('#btnConfirmPayment').prop('disabled', false).html('<i class="fas fa-print me-1"></i> Complete & Print Receipt [Enter]');
+        } else {
+            // Received < Total (Partial or Full Credit)
+            let creditAmount = total - received;
+            if (isRegistered) {
+                $('#statusChangeRow').hide();
+                $('#statusCreditRow').show();
+                $('#statusWalkinWarningRow').hide();
+                $('#modalCreditDue').text('Rs. ' + creditAmount.toLocaleString());
+
+                let opt = $('#posCustomerSelect option:selected');
+                let prevBal = parseFloat(opt.data('balance')) || 0;
+                let newBal = prevBal + creditAmount;
+                let newBalText = 'New Customer Balance: Rs. ' + Math.abs(newBal).toLocaleString() + (newBal >= 0 ? ' (Dr)' : ' (Cr)');
+                $('#modalNewBalanceText').text(newBalText);
+
+                if (received === 0) {
+                    $('#btnConfirmPayment').prop('disabled', false).html('<i class="fas fa-hand-holding-usd me-1"></i> Complete as Credit Sale (Udhar) [Enter]');
+                } else {
+                    $('#btnConfirmPayment').prop('disabled', false).html('<i class="fas fa-print me-1"></i> Partial Pay & Credit Settle [Enter]');
+                }
+            } else {
+                $('#statusChangeRow').hide();
+                $('#statusCreditRow').hide();
+                $('#statusWalkinWarningRow').show();
+                $('#btnConfirmPayment').prop('disabled', true).html('<i class="fas fa-ban me-1"></i> Cannot Settle (Credit not allowed for Walk-in)');
+            }
+        }
     }
 
     // Direct Thermal Print
@@ -2588,19 +3752,102 @@
             return;
         }
 
+        // Validation for Delivery Mode
+        if (currentOrderMode === 'delivery' || actionType === 'delivery_dispatch') {
+            let dName = ($('#posDeliveryCustomerName').val() || '').trim();
+            let dPhone = ($('#posCustomerPhone').val() || '').trim();
+            let dAddress = ($('#posDeliveryAddress').val() || '').trim();
+
+            if (!dName || dName.toLowerCase() === 'walk-in customer' || dName.toLowerCase() === 'delivery customer') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Customer Name Lazmi He!',
+                    text: 'Delivery order ke lie Customer ka Name likhna lazmi he.',
+                    confirmButtonText: 'Theek He',
+                    confirmButtonColor: '#2563eb'
+                });
+                $('#posDeliveryCustomerName').focus();
+                return;
+            }
+
+            if (!dPhone) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Phone Number Lazmi He!',
+                    text: 'Delivery order ke lie Customer ka Phone number likhna lazmi he taake rider rabta kar sake.',
+                    confirmButtonText: 'Theek He',
+                    confirmButtonColor: '#2563eb'
+                });
+                $('#posCustomerPhone').focus();
+                return;
+            }
+
+            if (!dAddress) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Delivery Address Lazmi He!',
+                    text: 'Delivery order ke lie Customer ka Address likhna lazmi he taake rider deliver kar sake.',
+                    confirmButtonText: 'Theek He',
+                    confirmButtonColor: '#2563eb'
+                });
+                $('#posDeliveryAddress').focus();
+                return;
+            }
+
+            // Rider selection mandatory for Dispatch
+            if (actionType === 'delivery_dispatch') {
+                let rId = $('#posRiderSelect').val();
+                if (!rId) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Rider Select Karein!',
+                        text: 'Delivery dispatch karne ke lie Rider select karna lazmi he. Meharbani farma kar Rider select karein.',
+                        confirmButtonText: 'Theek He',
+                        confirmButtonColor: '#2563eb'
+                    });
+                    $('#posRiderSelect').focus();
+                    return;
+                }
+            }
+        }
+
+        let isRegistered = (currentOrderMode !== 'delivery') && (selectedCustomerMode === 'registered' && $('#posCustomerSelect').val());
+        let customerId = isRegistered ? $('#posCustomerSelect').val() : null;
+        let walkin = (currentOrderMode === 'delivery')
+            ? ($('#posDeliveryCustomerName').val().trim() || 'Delivery Customer')
+            : (isRegistered ? null : ($('#customerWalkinName').val().trim() || 'Walk-in Customer'));
+
         let target = $('#orderTargetInput').val() || '';
-        let walkin = $('#customerWalkinName').val() || 'Walk-in Customer';
-        let remarks = $('#orderRemarksInput').val() || '';
+        let remarks = (currentOrderMode === 'delivery' && $('#posDeliveryRemarks').val())
+            ? $('#posDeliveryRemarks').val()
+            : ($('#orderRemarksInput').val() || '');
         let total = getTotalBill();
-        let cash = actionType === 'post' ? (parseFloat($('#cashReceivedInput').val()) || total) : 0;
-        let selectedAccountId = $('#paymentAccountSelect').val() || 9;
+
+        let rawCash = parseFloat($('#cashReceivedInput').val());
+        let cash = actionType === 'post' ? (isNaN(rawCash) ? total : rawCash) : 0;
+
+        if (actionType === 'post' && !isRegistered && cash < total) {
+            Swal.fire('Credit Not Allowed', 'Cash received cannot be less than Total Bill for Walk-in Customer. Please switch to Registered Customer for Credit (Udhar) sales.', 'warning');
+            return;
+        }
+
+        let selectedAccountId = $('#paymentAccountSelect').val() || 1;
 
         let riderId = $('#posRiderSelect').val() || null;
         let selectedRiderOpt = $('#posRiderSelect option:selected');
-        let riderName = selectedRiderOpt.data('name') || ($('#orderTargetInput').val() || null);
-        let riderPhone = $('#posCustomerPhone').val() || selectedRiderOpt.data('phone') || null;
-        let deliveryAddress = $('#posDeliveryAddress').val() || null;
+        let riderName = selectedRiderOpt.data('name') || null;
+        let customerPhone = $('#posCustomerPhone').val().trim() || null;
+        let deliveryAddress = $('#posDeliveryAddress').val().trim() || null;
         let deliveryCharges = parseFloat($('#posDeliveryCharges').val()) || 0;
+
+        let receiptAmount = [];
+        let receiptAccountId = [];
+        if (actionType === 'post' && cash > 0) {
+            receiptAccountId = [selectedAccountId];
+            receiptAmount = [Math.min(cash, total)];
+        }
+
+        let discount = getDiscountAmount();
 
         let formData = {
             _token: '{{ csrf_token() }}',
@@ -2610,17 +3857,20 @@
             token_no: currentOrderMode === 'takeaway' ? target : null,
             rider_id: currentOrderMode === 'delivery' ? riderId : null,
             rider_name: currentOrderMode === 'delivery' ? riderName : null,
-            rider_phone: currentOrderMode === 'delivery' ? riderPhone : null,
+            rider_phone: currentOrderMode === 'delivery' ? customerPhone : null,
             delivery_address: currentOrderMode === 'delivery' ? deliveryAddress : null,
             delivery_charges: currentOrderMode === 'delivery' ? deliveryCharges : 0,
+            delivery_status: (actionType === 'delivery_dispatch' || riderId) ? 'dispatched' : 'pending',
             walkin_name: walkin,
-            is_walkin: '1',
+            customer: customerId,
+            is_walkin: isRegistered ? '0' : '1',
             reference: remarks,
             order_notes: remarks,
+            total_extra_cost: discount,
             cash: cash,
             change: actionType === 'post' ? Math.max(0, cash - total) : 0,
-            receipt_account_id: actionType === 'post' ? [selectedAccountId] : [],
-            receipt_amount: actionType === 'post' ? [total] : [],
+            receipt_account_id: receiptAccountId,
+            receipt_amount: receiptAmount,
             product_id: cart.map(x => x.id),
             qty: cart.map(x => x.qty),
             price_per_piece: cart.map(x => x.price),
@@ -2634,7 +3884,12 @@
             formData._method = 'PUT';
         }
 
-        let loadingTitle = actionType === 'post' ? 'Processing Bill...' : 'Sending to Kitchen...';
+        let loadingTitle = 'Processing...';
+        if (actionType === 'post') loadingTitle = 'Processing Bill...';
+        else if (actionType === 'kot') loadingTitle = 'Sending to Kitchen...';
+        else if (actionType === 'delivery_dispatch') loadingTitle = 'Dispatching Delivery & Printing Bill...';
+        else if (actionType === 'print_bill') loadingTitle = 'Printing Guest Bill...';
+
         Swal.fire({
             title: loadingTitle,
             text: 'Please wait...',
@@ -2651,34 +3906,72 @@
                 $('#settlementModal').modal('hide');
 
                 if (res.ok || res.success) {
+                    let saleId = res.booking_id || res.sale_id;
+
                     if (actionType === 'kot') {
-                        let kotUrl = res.kot_url || `{{ url('sales') }}/${res.booking_id || res.sale_id}/kot`;
+                        let kotUrl = res.kot_url || `{{ url('sales') }}/${saleId}/kot`;
                         printThermalDirect(kotUrl);
 
                         Swal.fire({
                             icon: 'success',
                             title: 'Sent to Kitchen!',
                             html: `
-                                <div class="text-muted small mb-2">KOT ticket printed. Table is active.</div>
+                                <div class="text-muted small mb-2">KOT ticket printed. Order is active.</div>
                                 <button type="button" class="btn btn-sm btn-outline-secondary mt-1" onclick="openCenteredPrintWindow('${kotUrl}', 520, 750)">
                                     <i class="fas fa-print me-1"></i> Re-print KOT
                                 </button>
                             `,
-                            timer: 1000,
+                            timer: 1200,
+                            showConfirmButton: false
+                        });
+                        resetCart();
+                        refreshActiveOrders();
+                    } else if (actionType === 'delivery_dispatch') {
+                        let billUrl = res.receipt_url || res.invoice_url || `{{ url('sales') }}/${saleId}/recepit?from=pos&provisional=1`;
+                        if (!billUrl.includes('provisional=1')) {
+                            billUrl += (billUrl.includes('?') ? '&' : '?') + 'provisional=1';
+                        }
+                        printThermalDirect(billUrl);
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Delivery Dispatched & Bill Printed!',
+                            html: `
+                                <div class="text-muted small mb-2">Delivery bill printed for rider. Order is active in <b>Running Orders</b>.</div>
+                                <div class="p-2 mb-2 rounded bg-light border">
+                                    <span class="text-muted small">Rider collects cash:</span>
+                                    <div class="fs-5 fw-bold text-success">Rs. ${total.toLocaleString()} (COD)</div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="openCenteredPrintWindow('${billUrl}', 520, 750)">
+                                    <i class="fas fa-print me-1"></i> Re-print Rider Bill
+                                </button>
+                            `,
+                            timer: 2500,
+                            showConfirmButton: false
+                        });
+                        resetCart();
+                        refreshActiveOrders();
+                    } else if (actionType === 'print_bill') {
+                        let billUrl = `{{ url('restaurant/orders') }}/${saleId}/bill-slip`;
+                        printThermalDirect(billUrl);
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Guest Bill Printed!',
+                            html: `
+                                <div class="text-muted small mb-2">Provisional bill printed. Order is active in Running Orders.</div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="openCenteredPrintWindow('${billUrl}', 520, 750)">
+                                    <i class="fas fa-print me-1"></i> Re-print Bill
+                                </button>
+                            `,
+                            timer: 1500,
                             showConfirmButton: false
                         });
                         resetCart();
                         refreshActiveOrders();
                     } else {
-                        let receiptUrl = res.receipt_url || res.invoice_url || `{{ url('sales') }}/${res.booking_id || res.sale_id}/recepit`;
+                        let receiptUrl = res.receipt_url || res.invoice_url || `{{ url('sales') }}/${saleId}/recepit`;
                         printThermalDirect(receiptUrl);
-
-                        if (currentOrderMode === 'delivery') {
-                            setTimeout(() => {
-                                let slipUrl = `{{ url('restaurant/deliveries') }}/${res.booking_id || res.sale_id}/slip`;
-                                printThermalDirect(slipUrl);
-                            }, 1200);
-                        }
 
                         Swal.fire({
                             icon: 'success',
@@ -2689,7 +3982,7 @@
                                     <i class="fas fa-print me-1"></i> Re-print Receipt
                                 </button>
                             `,
-                            timer: 1000,
+                            timer: 1200,
                             showConfirmButton: false
                         });
                         resetCart();
@@ -2719,49 +4012,585 @@
         });
     }
 
-    // Open Active Running Orders Modal
-    function openRunningOrdersModal() {
-        $('#runningOrdersModal').modal('show');
+    let drawerOrdersCache = [];
+    let currentDrawerFilter = 'all';
+    let drawerSearchQuery = '';
+
+    // Instant Search in Running Orders Sidebar
+    function onDrawerSearchInput(val) {
+        drawerSearchQuery = (val || '').toLowerCase().trim();
+        if (drawerSearchQuery.length > 0) {
+            $('#roSearchClearBtn').removeClass('d-none');
+        } else {
+            $('#roSearchClearBtn').addClass('d-none');
+        }
+        renderDrawerCards();
     }
 
-    // Refresh Active Running Orders
-    function refreshActiveOrders() {
+    function clearDrawerSearch() {
+        $('#roSearchInput').val('');
+        drawerSearchQuery = '';
+        $('#roSearchClearBtn').addClass('d-none');
+        renderDrawerCards();
+    }
+
+    // Toggle Active Running Orders Sidebar (Desktop collapse/expand or Mobile offcanvas)
+    function toggleRunningOrdersSidebar() {
+        if ($(window).width() >= 992) {
+            $('#runningOrdersDrawer').toggleClass('ro-collapsed');
+            if (!$('#runningOrdersDrawer').hasClass('ro-collapsed')) {
+                refreshActiveOrders();
+            }
+        } else {
+            if ($('#runningOrdersDrawer').hasClass('active')) {
+                closeRunningOrdersDrawer();
+            } else {
+                openRunningOrdersModal();
+            }
+        }
+    }
+
+    // Open Active Running Orders (Desktop expands docked panel, Mobile slides in drawer)
+    function openRunningOrdersModal() {
+        refreshActiveOrders();
+        if ($(window).width() >= 992) {
+            $('#runningOrdersDrawer').removeClass('ro-collapsed');
+        } else {
+            $('#runningOrdersBackdrop').addClass('active');
+            $('#runningOrdersDrawer').addClass('active');
+        }
+    }
+
+    // Close Active Running Orders
+    function closeRunningOrdersDrawer() {
+        if ($(window).width() >= 992) {
+            $('#runningOrdersDrawer').addClass('ro-collapsed');
+        } else {
+            $('#runningOrdersBackdrop').removeClass('active');
+            $('#runningOrdersDrawer').removeClass('active');
+        }
+    }
+
+    // Filter cards inside drawer
+    function filterDrawerOrders(type) {
+        currentDrawerFilter = type;
+        $('.ro-filter-pill').removeClass('active');
+        $(`.ro-filter-pill[data-filter="${type}"]`).addClass('active');
+        renderDrawerCards();
+    }
+
+    // Refresh Active Running Orders via AJAX
+    function refreshActiveOrders(btn) {
+        let $icon = btn ? $(btn).find('i') : $('#roSyncIcon');
+        $icon.addClass('fa-spin');
         $.get('{{ route("restaurant.active_orders") }}', function(res) {
+            $icon.removeClass('fa-spin');
             if (res.success) {
+                drawerOrdersCache = res.orders || [];
                 $('#badgeRunningCount, #mHeaderActiveCount, #mBottomBadgeTables').text(res.count);
-                let html = '';
-                if (res.orders.length === 0) {
-                    html = `
-                        <div class="text-center py-5 text-muted">
-                            <i class="fas fa-check-circle fs-1 text-success mb-2"></i>
-                            <p class="mb-0 fw-bold">No active running orders.</p>
-                            <small>All tables are currently clear!</small>
+                $('#drawerActiveSubtitle').text(`${res.count} Active`);
+
+                let totalAmt = drawerOrdersCache.reduce((sum, o) => sum + (parseFloat(o.total_bill) || 0), 0);
+                $('#drawerFooterTotal').text(`Rs. ${totalAmt.toLocaleString()}`);
+
+                renderDrawerCards();
+            }
+        }).fail(function() {
+            $icon.removeClass('fa-spin');
+        });
+    }
+
+    // Render cards into the slide-in drawer
+    function renderDrawerCards() {
+        let filtered = drawerOrdersCache;
+
+        // 1. Filter by category pill (All / Dine-in / Takeaway / Delivery)
+        if (currentDrawerFilter !== 'all') {
+            filtered = filtered.filter(o => o.order_type === currentDrawerFilter);
+        }
+
+        // 2. Filter by search query (Invoice, Customer, Phone, Table, Token, Rider, Items, Amount)
+        if (drawerSearchQuery) {
+            filtered = filtered.filter(o => {
+                let inv = (o.invoice_no || '').toLowerCase();
+                let cust = (o.customer_name || '').toLowerCase();
+                let ph = (o.customer_phone || '').toLowerCase();
+                let tbl = (o.table_no || '').toLowerCase();
+                let tok = (o.token_no ? String(o.token_no) : '').toLowerCase();
+                let rdr = (o.rider_name || '').toLowerCase();
+                let itms = (o.items_summary || '').toLowerCase();
+                let tot = (o.total_bill ? String(o.total_bill) : '').toLowerCase();
+
+                return inv.includes(drawerSearchQuery) ||
+                       cust.includes(drawerSearchQuery) ||
+                       ph.includes(drawerSearchQuery) ||
+                       tbl.includes(drawerSearchQuery) ||
+                       tok.includes(drawerSearchQuery) ||
+                       rdr.includes(drawerSearchQuery) ||
+                       itms.includes(drawerSearchQuery) ||
+                       tot.includes(drawerSearchQuery);
+            });
+        }
+
+        let container = $('#runningOrdersListContainer');
+
+        if (filtered.length === 0) {
+            if (drawerSearchQuery) {
+                container.html(`
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-search fs-2 text-secondary mb-2"></i>
+                        <p class="mb-1 fw-bold text-dark">No orders found</p>
+                        <small class="d-block mb-3">No active order matches "<b>${$('<div>').text(drawerSearchQuery).html()}</b>"</small>
+                        <button type="button" class="btn btn-xs btn-outline-primary fw-bold px-3 py-1" onclick="clearDrawerSearch()">
+                            <i class="fas fa-times me-1"></i> Clear Search
+                        </button>
+                    </div>
+                `);
+            } else {
+                container.html(`
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-check-circle fs-1 text-success mb-2"></i>
+                        <p class="mb-0 fw-bold">No active running orders in this filter.</p>
+                        <small>All tables/orders are clear!</small>
+                    </div>
+                `);
+            }
+            return;
+        }
+
+        let html = '';
+        filtered.forEach(o => {
+            let typeBadge = '';
+            let cardTypeClass = `ro-card-${o.order_type}`;
+            if (o.order_type === 'dine_in') {
+                typeBadge = `<span class="badge" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:0.68rem;"><i class="fas fa-chair"></i> Table ${o.table_no || 'T-1'}</span>`;
+            } else if (o.order_type === 'takeaway') {
+                typeBadge = `<span class="badge" style="background:#fffbeb; color:#b45309; border:1px solid #fde68a; font-size:0.68rem;"><i class="fas fa-shopping-bag"></i> Token #${o.token_no || '1'}</span>`;
+            } else {
+                typeBadge = `<span class="badge" style="background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; font-size:0.68rem;"><i class="fas fa-motorcycle"></i> Delivery</span>`;
+            }
+
+            let statusBadge = '';
+            if (o.order_status === 'served') {
+                statusBadge = `<span class="badge" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; font-size: 0.68rem;"><i class="fas fa-concierge-bell"></i> Served</span>`;
+            } else if (o.order_status === 'on_delivery') {
+                statusBadge = `<span class="badge" style="background:#f3e8ff; color:#6b21a8; border:1px solid #e9d5ff; font-size: 0.68rem;"><i class="fas fa-motorcycle"></i> On Delivery</span>`;
+            } else {
+                statusBadge = `<span class="badge" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a; font-size: 0.68rem;"><i class="fas fa-fire"></i> Cooking</span>`;
+            }
+
+            let paymentBadge = o.payment_status === 'paid' ? 
+                `<span class="badge" style="background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; font-size: 0.68rem;"><i class="fas fa-check"></i> Paid</span>` : 
+                `<span class="badge" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; font-size: 0.68rem;"><i class="fas fa-clock"></i> Unpaid</span>`;
+
+            let riderBadge = o.rider_name ? `<span class="badge bg-light text-dark border" style="font-size:0.68rem;"><i class="fas fa-user-tag text-primary"></i> ${o.rider_name}</span>` : '';
+
+            html += `
+                <div class="ro-drawer-card ${cardTypeClass}">
+                    <!-- Card Top Row -->
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <div class="d-flex align-items-center gap-1 flex-wrap">
+                            <span class="fw-bold text-dark" style="font-size: 0.85rem;">#${o.invoice_no}</span>
+                            ${typeBadge}
                         </div>
+                        <div class="text-end">
+                            <span class="fw-bold text-dark" style="font-size: 0.92rem;">Rs. ${parseFloat(o.total_bill).toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <!-- Customer & Items Row -->
+                    <div class="small text-muted mb-1 d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-dark text-truncate" style="max-width: 170px;" title="${o.customer_name}">
+                            <i class="fas fa-user-circle text-secondary"></i> ${o.customer_name} ${o.customer_phone ? `(${o.customer_phone})` : ''}
+                        </span>
+                        <span class="badge bg-light text-muted border px-1.5 py-0.5" style="font-size: 0.66rem;">
+                            <i class="far fa-clock text-danger me-1"></i>${o.elapsed_time}
+                        </span>
+                    </div>
+
+                    <div class="small mb-1.5 text-truncate px-2 py-1 rounded" style="font-size: 0.72rem; background: #f8fafc; border: 1px dashed #cbd5e1; color: #334155; font-weight: 600;">
+                        <i class="fas fa-utensils me-1 text-primary"></i> ${o.items_summary}
+                    </div>
+
+                    <!-- Status Badges Row -->
+                    <div class="d-flex justify-content-between align-items-center mb-1.5">
+                        <div class="d-flex gap-1 align-items-center flex-wrap">
+                            ${statusBadge}
+                            ${paymentBadge}
+                            ${riderBadge}
+                        </div>
+                    </div>
+
+                    <!-- Multi-Action Buttons Grid -->
+                    <div class="pt-1.5 border-top d-flex gap-1 flex-wrap align-items-center justify-content-between">
+                        <div class="d-flex gap-1 flex-wrap">
+                            <!-- View Details -->
+                            <button type="button" class="ro-card-btn" onclick="viewOrderDetails(${o.id})" title="View Items & Details">
+                                <i class="fas fa-eye text-primary"></i> Details
+                            </button>
+
+                            <!-- Edit / Recall into POS -->
+                            <button type="button" class="ro-card-btn" onclick="loadRunningOrder(${o.id})" title="Edit Order in POS">
+                                <i class="fas fa-edit text-info"></i> Edit
+                            </button>
+
+                            <!-- Kitchen Slip KOT -->
+                            <button type="button" class="ro-card-btn" onclick="openCenteredPrintWindow('{{ url("sales") }}/${o.id}/kot', 520, 750)" title="Re-print Kitchen KOT">
+                                <i class="fas fa-utensils text-warning"></i> KOT
+                            </button>
+
+                            <!-- Bill Slip (Pre-payment) -->
+                            <button type="button" class="ro-card-btn" onclick="openCenteredPrintWindow('{{ url("restaurant/orders") }}/${o.id}/bill-slip', 520, 750)" title="Print Bill Slip">
+                                <i class="fas fa-file-invoice text-secondary"></i> Bill
+                            </button>
+
+                            <!-- Serve (Dine-in only, if not served) -->
+                            ${o.order_type === 'dine_in' && o.order_status !== 'served' ? `
+                                <button type="button" class="ro-card-btn ro-card-btn-serve" onclick="markOrderServed(${o.id})" title="Mark Served to Table">
+                                    <i class="fas fa-check"></i> Serve
+                                </button>
+                            ` : ''}
+
+                            <!-- Deliver (Delivery only, if not on_delivery) -->
+                            ${o.order_type === 'delivery' && o.order_status !== 'on_delivery' ? `
+                                <button type="button" class="ro-card-btn ro-card-btn-dispatch" onclick="openAssignRiderModal(${o.id}, '${o.invoice_no}', '${o.rider_id || ''}')" title="Assign Rider & Dispatch">
+                                    <i class="fas fa-motorcycle"></i> Deliver
+                                </button>
+                            ` : ''}
+                        </div>
+
+                        <div class="d-flex gap-1">
+                            <!-- Unified Complete & Settle -->
+                            <button type="button" class="ro-card-btn ro-card-btn-complete" onclick="openCompleteSettleModal(${o.id}, '${o.invoice_no}', ${o.total_bill})" title="Receive Payment & Close Order">
+                                <i class="fas fa-check-double"></i> Complete
+                            </button>
+
+                            <!-- Cancel -->
+                            <button type="button" class="ro-card-btn ro-card-btn-cancel" onclick="cancelOrderAction(${o.id}, '${o.invoice_no}')" title="Cancel Order">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.html(html);
+    }
+
+    // 1. ORDER DETAILS MODAL
+    function viewOrderDetails(id) {
+        $('#odModalTitle').text(`Loading Order #${id}...`);
+        $('#odModalBody').html(`
+            <div class="text-center py-5 text-muted">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 mb-0">Loading order details...</p>
+            </div>
+        `);
+        $('#orderDetailsModal').modal('show');
+
+        $.get(`{{ url('restaurant/orders') }}/${id}/details`, function(res) {
+            if (res.success && res.order) {
+                let o = res.order;
+                $('#odModalTitle').text(`Order Details - #${o.invoice_no}`);
+
+                $('#btnOdPrintKot').attr('onclick', `openCenteredPrintWindow('{{ url("sales") }}/${o.id}/kot', 520, 750)`);
+                $('#btnOdPrintBill').attr('onclick', `openCenteredPrintWindow('{{ url("restaurant/orders") }}/${o.id}/bill-slip', 520, 750)`);
+
+                let itemsHtml = '';
+                o.items.forEach((it, idx) => {
+                    itemsHtml += `
+                        <tr>
+                            <td>${idx + 1}</td>
+                            <td>
+                                <div class="fw-bold">${it.name}</div>
+                                ${it.variant ? `<small class="text-muted">Size/Var: ${it.variant}</small>` : ''}
+                                ${it.notes ? `<div class="small text-danger fst-italic">Note: ${it.notes}</div>` : ''}
+                            </td>
+                            <td class="text-center fw-bold">${it.qty}</td>
+                            <td class="text-end">Rs. ${parseFloat(it.price).toFixed(2)}</td>
+                            <td class="text-end fw-bold">Rs. ${parseFloat(it.total).toFixed(2)}</td>
+                        </tr>
                     `;
-                } else {
-                    res.orders.forEach(o => {
-                        let icon = o.order_type === 'dine_in' ? '🍽️ Table: ' + (o.table_no || '-') : (o.order_type === 'takeaway' ? '🥡 Token: ' + (o.token_no || '-') : '🛵 ' + (o.walkin_name || 'Delivery'));
-                        html += `
-                            <div class="running-order-item" onclick="loadRunningOrder(${o.id})" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:8px; cursor:pointer;">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="fw-bold text-dark fs-6">${icon}</span>
-                                    <span class="badge bg-success fs-6">Rs. ${o.total_bill.toLocaleString()}</span>
-                                </div>
-                                <div class="small text-muted mb-1 text-truncate">${o.items_summary}</div>
-                                <div class="d-flex justify-content-between align-items-center text-secondary small">
-                                    <span><i class="far fa-clock me-1"></i>${o.elapsed_time}</span>
-                                    <span class="text-primary fw-bold">Click to Open &raquo;</span>
-                                </div>
+                });
+
+                let paymentBadge = o.payment_status === 'paid' ? 
+                    `<span class="badge bg-success"><i class="fas fa-check"></i> PAID</span>` : 
+                    `<span class="badge bg-danger"><i class="fas fa-clock"></i> UNPAID</span>`;
+
+                let orderTypeDisplay = o.order_type === 'dine_in' ? `Dine-In (Table: ${o.table_no || '-'})` :
+                    (o.order_type === 'takeaway' ? `Takeaway (Token: ${o.token_no || '-'})` : `Home Delivery`);
+
+                let html = `
+                    <div class="row g-3 mb-3 pb-3 border-bottom">
+                        <div class="col-md-6">
+                            <div class="small text-muted">Order Type & Target</div>
+                            <div class="fw-bold fs-6 text-primary">${orderTypeDisplay}</div>
+                            <div class="small text-muted mt-2">Customer Name & Phone</div>
+                            <div class="fw-bold text-dark">${o.customer_name} ${o.customer_phone ? `(${o.customer_phone})` : ''}</div>
+                            ${o.delivery_address ? `<div class="small text-muted mt-1"><i class="fas fa-map-marker-alt text-danger"></i> ${o.delivery_address}</div>` : ''}
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <div class="mb-1">${paymentBadge} <span class="badge bg-secondary text-uppercase">${o.order_status}</span></div>
+                            <div class="small text-muted mt-1">Order Time: ${o.created_at} (${o.elapsed})</div>
+                            ${o.rider_name ? `<div class="small text-info mt-1"><i class="fas fa-motorcycle"></i> Rider: <b>${o.rider_name}</b></div>` : ''}
+                            ${o.order_notes ? `<div class="p-2 bg-light rounded text-start small mt-2"><b>Instructions:</b> ${o.order_notes}</div>` : ''}
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-2">Ordered Items (${o.items.length})</h6>
+                    <div class="table-responsive mb-3 border rounded">
+                        <table class="table table-sm mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Item</th>
+                                    <th class="text-center">Qty</th>
+                                    <th class="text-end">Rate</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row justify-content-end">
+                        <div class="col-md-5">
+                            <div class="d-flex justify-content-between py-1 small">
+                                <span class="text-muted">Subtotal:</span>
+                                <span class="fw-bold">Rs. ${parseFloat(o.subtotal).toFixed(2)}</span>
                             </div>
-                        `;
-                    });
-                }
-                $('#runningOrdersListContainer').html(html);
+                            ${parseFloat(o.delivery_charges) > 0 ? `
+                                <div class="d-flex justify-content-between py-1 small">
+                                    <span class="text-muted">Delivery Charges:</span>
+                                    <span class="fw-bold">Rs. ${parseFloat(o.delivery_charges).toFixed(2)}</span>
+                                </div>
+                            ` : ''}
+                            ${parseFloat(o.discount) > 0 ? `
+                                <div class="d-flex justify-content-between py-1 small text-danger">
+                                    <span>Discount:</span>
+                                    <span class="fw-bold">- Rs. ${parseFloat(o.discount).toFixed(2)}</span>
+                                </div>
+                            ` : ''}
+                            <div class="d-flex justify-content-between py-2 border-top border-bottom fs-6 fw-black text-dark">
+                                <span>Net Total:</span>
+                                <span class="text-success">Rs. ${parseFloat(o.net_total).toFixed(2)}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-1 small mt-1">
+                                <span class="text-muted">Paid:</span>
+                                <span class="fw-bold text-primary">Rs. ${parseFloat(o.cash_paid).toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                $('#odModalBody').html(html);
+            } else {
+                $('#odModalBody').html(`<div class="alert alert-danger mb-0">${res.message || 'Error loading details.'}</div>`);
+            }
+        }).fail(function() {
+            $('#odModalBody').html(`<div class="alert alert-danger mb-0">Server connection failed.</div>`);
+        });
+    }
+
+    // 2. DINE-IN SERVE (NO WAITER REQUIRED)
+    function markOrderServed(id) {
+        Swal.fire({
+            title: 'Serve Order?',
+            text: 'Mark this table order as served to guests?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#0284c7',
+            confirmButtonText: 'Yes, Mark Served!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.showLoading();
+                $.post(`{{ url('restaurant/orders') }}/${id}/serve`, {
+                    _token: '{{ csrf_token() }}'
+                }, function(res) {
+                    if (res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Served!',
+                            text: res.message,
+                            timer: 1000,
+                            showConfirmButton: false
+                        });
+                        refreshActiveOrders();
+                    } else {
+                        Swal.fire('Error', res.message || 'Failed to serve order.', 'error');
+                    }
+                }).fail(function() {
+                    Swal.fire('Error', 'Server communication error.', 'error');
+                });
             }
         });
     }
 
-    // Load Running Order
+    // 3. ASSIGN RIDER (DELIVERY STEP 1 - DIRECT 1-CLICK RIDER LIST)
+    function openAssignRiderModal(orderId, invoiceNo, currentRiderId) {
+        $('#arOrderId').val(orderId);
+        $('#arOrderInvoice').text('#' + invoiceNo);
+        $('#assignRiderModal').modal('show');
+    }
+
+    function submitDirectRiderAssign(riderId, riderName) {
+        let orderId = $('#arOrderId').val();
+        if (!orderId || !riderId) return;
+
+        Swal.fire({
+            title: `Assign ${riderName}?`,
+            text: `Dispatch order #${$('#arOrderInvoice').text()} with rider ${riderName}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2563eb',
+            confirmButtonText: 'Yes, Dispatch Order!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.showLoading();
+                $.post(`{{ url('restaurant/orders') }}/${orderId}/assign-rider`, {
+                    _token: '{{ csrf_token() }}',
+                    rider_id: riderId
+                }, function(res) {
+                    $('#assignRiderModal').modal('hide');
+                    if (res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Dispatched!',
+                            text: res.message,
+                            timer: 1200,
+                            showConfirmButton: false
+                        });
+                        refreshActiveOrders();
+                    } else {
+                        Swal.fire('Error', res.message || 'Failed to assign rider.', 'error');
+                    }
+                }).fail(function() {
+                    Swal.fire('Error', 'Server connection failed.', 'error');
+                });
+            }
+        });
+    }
+
+    // 4. UNIFIED COMPLETE & SETTLE MODAL (ALL ORDERS)
+    let csCurrentPayable = 0;
+    function openCompleteSettleModal(orderId, invoiceNo, payable) {
+        $('#csOrderId').val(orderId);
+        $('#csModalSubtitle').text('Invoice: #' + invoiceNo);
+        csCurrentPayable = parseFloat(payable) || 0;
+        $('#csTotalPayable').text('Rs. ' + csCurrentPayable.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+        $('#csCashReceived').val(csCurrentPayable);
+        $('#csDiscount').val('');
+        $('#csChangeReturn').val('0.00');
+        $('#completeSettleModal').modal('show');
+        setTimeout(() => {
+            $('#csCashReceived').focus().select();
+        }, 350);
+    }
+
+    function calculateCsChange() {
+        let disc = parseFloat($('#csDiscount').val()) || 0;
+        let adjustedPayable = Math.max(0, csCurrentPayable - disc);
+        $('#csTotalPayable').text('Rs. ' + adjustedPayable.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+
+        let given = parseFloat($('#csCashReceived').val()) || 0;
+        let change = Math.max(0, given - adjustedPayable);
+        $('#csChangeReturn').val(change.toFixed(2));
+    }
+
+    function submitCompleteSettle(e) {
+        e.preventDefault();
+        let orderId = $('#csOrderId').val();
+        let accountId = $('#csAccountSelect').val();
+        let cashReceived = parseFloat($('#csCashReceived').val()) || 0;
+        let discount = parseFloat($('#csDiscount').val()) || 0;
+
+        if (!accountId) {
+            Swal.fire('Select Account', 'Please choose receiving payment account.', 'warning');
+            return;
+        }
+
+        $('#btnSubmitCs').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Settling...');
+
+        $.post(`{{ url('restaurant/orders') }}/${orderId}/complete-settle`, {
+            _token: '{{ csrf_token() }}',
+            account_id: accountId,
+            cash_received: cashReceived,
+            discount: discount
+        }, function(res) {
+            $('#completeSettleModal').modal('hide');
+            $('#btnSubmitCs').prop('disabled', false).html('<i class="fas fa-check-double me-1"></i> Confirm & Print Receipt');
+
+            if (res.success) {
+                if (res.receipt_url) {
+                    openCenteredPrintWindow(res.receipt_url, 520, 750);
+                }
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Completed & Settled!',
+                    text: res.message,
+                    timer: 1200,
+                    showConfirmButton: false
+                });
+
+                // If currently editing this order, reset cart
+                if (activeSaleId == orderId) {
+                    resetCart();
+                }
+                refreshActiveOrders();
+            } else {
+                Swal.fire('Error', res.message || 'Failed to settle order.', 'error');
+            }
+        }).fail(function(xhr) {
+            $('#btnSubmitCs').prop('disabled', false).html('<i class="fas fa-check-double me-1"></i> Confirm & Print Receipt');
+            let msg = xhr.responseJSON ? xhr.responseJSON.message : 'Server error occurred.';
+            Swal.fire('Error', msg, 'error');
+        });
+    }
+
+    // 5. CANCEL ORDER ACTION
+    function cancelOrderAction(orderId, invoiceNo) {
+        Swal.fire({
+            title: `Cancel Order #${invoiceNo}?`,
+            text: 'Are you sure you want to cancel and void this order?',
+            icon: 'warning',
+            input: 'text',
+            inputPlaceholder: 'Reason for cancellation (optional)...',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            confirmButtonText: 'Yes, Cancel Order'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.showLoading();
+                $.post(`{{ url('restaurant/order') }}/${orderId}/cancel`, {
+                    _token: '{{ csrf_token() }}',
+                    reason: result.value || 'Cancelled by cashier'
+                }, function(res) {
+                    if (res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Order Cancelled',
+                            text: res.message,
+                            timer: 1000,
+                            showConfirmButton: false
+                        });
+                        if (activeSaleId == orderId) {
+                            resetCart();
+                        }
+                        refreshActiveOrders();
+                    } else {
+                        Swal.fire('Error', res.message || 'Failed to cancel order.', 'error');
+                    }
+                }).fail(function() {
+                    Swal.fire('Error', 'Server connection failed.', 'error');
+                });
+            }
+        });
+    }
+
+    // Load Running Order back into POS Cart
     function loadRunningOrder(id) {
         Swal.fire({
             title: 'Loading Table Order...',
@@ -2771,7 +4600,9 @@
 
         $.get(`{{ url('restaurant/order') }}/${id}`, function(res) {
             Swal.close();
-            $('#runningOrdersModal').modal('hide');
+            if ($(window).width() < 992) {
+                closeRunningOrdersDrawer();
+            }
 
             if (res.success && res.sale) {
                 let s = res.sale;
@@ -2801,9 +4632,36 @@
                     if (s.customer_phone) {
                         $('#posCustomerPhone').val(s.customer_phone);
                     }
+                    $('#posDeliveryCustomerName').val(s.walkin_name || '');
+                    $('#posDeliveryRemarks').val(s.order_notes || '');
                 }
-                $('#customerWalkinName').val(s.walkin_name || 'Walk-in Customer');
+                if (s.customer_id) {
+                    setCustomerMode('registered');
+                    $('#posCustomerSelect').val(s.customer_id);
+                    if ($.fn.select2 && $('#posCustomerSelect').hasClass('select2-hidden-accessible')) {
+                        $('#posCustomerSelect').trigger('change');
+                    } else {
+                        onCustomerSelectChange();
+                    }
+                } else {
+                    setCustomerMode('walkin');
+                    $('#customerWalkinName').val(s.walkin_name || 'Walk-in Customer');
+                    $('#selectedCustomerBadge').hide();
+                }
                 $('#orderRemarksInput').val(s.order_notes || '');
+
+                let extDisc = parseFloat(s.total_extradiscount || s.total_discount || 0);
+                if (extDisc > 0) {
+                    orderDiscountValue = extDisc;
+                    orderDiscountType = 'flat';
+                    $('#btnDiscTypeFlat, #modalBtnDiscTypeFlat').addClass('active');
+                    $('#btnDiscTypePercent, #modalBtnDiscTypePercent').removeClass('active');
+                    $('#orderDiscountInput, #modalDiscountInput').val(orderDiscountValue);
+                } else {
+                    orderDiscountValue = 0;
+                    orderDiscountType = 'flat';
+                    $('#orderDiscountInput, #modalDiscountInput').val(0);
+                }
 
                 cart = s.items.map(it => {
                     let vData = it.variant_data || '';
@@ -2835,6 +4693,17 @@
 
     // Initialize on page load
     $(document).ready(function() {
+        // Init Select2 on customer dropdown
+        if ($.fn.select2) {
+            $('#posCustomerSelect').select2({
+                placeholder: '-- Choose Customer --',
+                allowClear: true,
+                width: '100%'
+            }).on('change', function() {
+                onCustomerSelectChange();
+            });
+        }
+
         // Desktop auto-focus search
         if ($(window).width() >= 992) {
             setTimeout(() => {
@@ -2845,8 +4714,18 @@
             switchMobileView('menu');
         }
 
+        // Check URL parameter ?recall_id=xxx
+        let urlParams = new URLSearchParams(window.location.search);
+        let recallId = urlParams.get('recall_id');
+        if (recallId) {
+            loadRunningOrder(recallId);
+        }
+
+        // Immediately load Running Orders into docked sidebar
+        refreshActiveOrders();
+
         // Periodic poll for active tables/orders
-        setInterval(refreshActiveOrders, 30000);
+        setInterval(refreshActiveOrders, 15000);
     });
 </script>
 @endsection

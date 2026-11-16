@@ -74,9 +74,15 @@ class CustomerController extends Controller
     public function getCustomerLedger($id)
     {
         $ledger = CustomerLedger::where('customer_id', $id)->latest()->first();
+        if ($ledger) {
+            $balance = $ledger->closing_balance;
+        } else {
+            $customer = Customer::find($id);
+            $balance = $customer ? ($customer->opening_balance ?? 0) : 0;
+        }
 
         return response()->json([
-            'closing_balance' => $ledger->closing_balance,
+            'closing_balance' => (float)$balance,
         ]);
     }
 
@@ -262,8 +268,25 @@ class CustomerController extends Controller
     // View all customer payments
     public function customer_payments()
     {
-        $payments = CustomerPayment::with('customer')->orderByDesc('id')->get();
-        $customers = Customer::all();
+        $branchId = session('active_branch_id') ?? (auth()->check() ? auth()->user()->branch_id : null);
+
+        $payments = CustomerPayment::with('customer')
+            ->when($branchId, function ($query, $bId) {
+                return $query->where(function ($q) use ($bId) {
+                    $q->where('branch_id', $bId)->orWhereNull('branch_id');
+                });
+            })
+            ->orderByDesc('id')
+            ->get();
+
+        $customers = Customer::when($branchId, function ($query, $bId) {
+                return $query->where(function ($q) use ($bId) {
+                    $q->where('branch_id', $bId)->orWhereNull('branch_id');
+                });
+            })
+            ->where('status', 'active')
+            ->orderBy('customer_name')
+            ->get();
 
         return view('admin_panel.customers.customer_payments', compact('payments', 'customers'));
     }
@@ -281,11 +304,13 @@ class CustomerController extends Controller
         ]);
 
         $userId = Auth::id();
+        $branchId = session('active_branch_id') ?? (auth()->check() ? auth()->user()->branch_id : null);
 
         // Save the payment
         CustomerPayment::create([
             'customer_id' => $request->customer_id,
             'admin_or_user_id' => $userId,
+            'branch_id' => $branchId,
             'amount' => $request->amount,
             'payment_method' => $request->payment_method,
             'payment_date' => $request->payment_date,
@@ -315,6 +340,7 @@ class CustomerController extends Controller
         CustomerLedger::create([
             'customer_id' => $request->customer_id,
             'admin_or_user_id' => $userId,
+            'branch_id' => $branchId,
             'previous_balance' => $previousBalance,
             'opening_balance' => 0, // This is not an "opening" entry, so 0 or null
             'closing_balance' => $newBalance,

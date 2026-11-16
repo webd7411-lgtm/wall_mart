@@ -686,11 +686,25 @@
                             <span id="summarySubtotal">Rs 0.00</span>
                         </div>
                         <div class="summary-row align-items-center">
-                            <span>Discount (Rs):</span>
+                            <div class="d-flex align-items-center gap-1">
+                                <span>Discount:</span>
+                                <div class="btn-group btn-group-sm" role="group" style="scale: 0.8; transform-origin: left center;">
+                                    <button type="button" class="btn btn-outline-danger py-0 px-1 active" id="retailDiscModeRs" onclick="setRetailDiscMode('rs')">Rs</button>
+                                    <button type="button" class="btn btn-outline-danger py-0 px-1" id="retailDiscModePct" onclick="setRetailDiscMode('pct')">%</button>
+                                </div>
+                            </div>
                             <div class="d-flex align-items-center gap-1">
                                 <input type="number" step="0.01" min="0" id="summaryDiscount" class="form-control form-control-sm text-end bg-light" value="0" style="width: 80px; height: 26px !important; padding: 2px 8px;">
-                                <button type="button" class="btn btn-dark btn-sm py-0 px-2" id="btnDiscountDistribute" style="height: 24px; font-size: 10px; line-height: 20px;" title="Distribute Discount"><i class="fas fa-divide"></i> Distribute</button>
+                                <button type="button" class="btn btn-dark btn-sm py-0 px-2" id="btnDiscountDistribute" style="height: 24px; font-size: 10px; line-height: 20px;" title="Distribute Discount to Items"><i class="fas fa-divide"></i> Distribute</button>
                             </div>
+                        </div>
+                        <div class="d-flex gap-1 justify-content-end align-items-center py-1 mb-1 border-bottom" style="font-size: 10px;">
+                            <span class="text-muted">Quick:</span>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size: 10px; border-radius: 3px;" onclick="applyRetailQuickPercent(5)">5%</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size: 10px; border-radius: 3px;" onclick="applyRetailQuickPercent(10)">10%</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size: 10px; border-radius: 3px;" onclick="applyRetailQuickPercent(15)">15%</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size: 10px; border-radius: 3px;" onclick="applyRetailQuickPercent(20)">20%</button>
+                            <button type="button" class="btn btn-xs btn-outline-danger py-0 px-1" style="font-size: 10px; border-radius: 3px;" onclick="clearRetailDiscount()" title="Clear Discount"><i class="fas fa-times"></i></button>
                         </div>
                         <div class="summary-row payable">
                             <span>Total Payable:</span>
@@ -1590,6 +1604,7 @@
         // Core addToCart Helper
         function addToCart(id, name, price, stockPieces, qty, sizeMode, piecesPerBox, variantData, retailPrice = 0, wholesalePrice = 0, weightPerPiece = 0) {
             let cartItem = cart.find(item => item.id === id);
+            let targetIndex = -1;
             if (cartItem) {
                 if (cartItem.qty + qty <= stockPieces) {
                     cartItem.qty += qty;
@@ -1597,6 +1612,7 @@
                     cartItem.qty = stockPieces;
                     Swal.fire('Limit Exceeded', 'Adjusted to maximum available stock.', 'warning');
                 }
+                targetIndex = cart.indexOf(cartItem);
             } else {
                 cart.push({
                     id: id,
@@ -1612,8 +1628,20 @@
                     piecesPerBox: piecesPerBox,
                     variantData: variantData
                 });
+                targetIndex = cart.length - 1;
             }
             renderCart();
+        }
+
+        function focusRetailCartItemQty(index) {
+            setTimeout(() => {
+                let $inp = $(`#retail-cart-qty-${index}`);
+                if ($inp.length) {
+                    $inp[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    $inp.focus();
+                    $inp.select();
+                }
+            }, 50);
         }
 
         // Render Cart items list
@@ -1667,7 +1695,7 @@
                         <div class="cart-item-details">
                             <div class="qty-controls">
                                 <button type="button" class="qty-btn btn-qty-minus">-</button>
-                                <input type="number" class="qty-input cart-qty-val" value="${item.qty}" min="1" max="${item.stock}">
+                                <input type="number" class="qty-input cart-qty-val" id="retail-cart-qty-${index}" value="${item.qty}" min="1" max="${item.stock}">
                                 <button type="button" class="qty-btn btn-qty-plus">+</button>
                             </div>
                             <div class="d-flex flex-column align-items-end gap-1">
@@ -1788,6 +1816,18 @@
             
             item.qty = val;
             renderCart();
+            focusRetailCartItemQty(index);
+        });
+
+        $(document).on('focus', '.cart-qty-val', function() {
+            this.select();
+        });
+
+        $(document).on('keydown', '.cart-qty-val', function(e) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault();
+                $('#barcode_search').val('').focus();
+            }
         });
 
         // Split Payments Logic
@@ -1813,6 +1853,36 @@
         $(document).on('input', '#summaryDiscount, .receipt-amount', function() {
             updateBillSummary();
         });
+
+        let retailDiscMode = 'rs';
+
+        window.setRetailDiscMode = function(mode) {
+            retailDiscMode = mode;
+            if (mode === 'rs') {
+                $('#retailDiscModeRs').addClass('active');
+                $('#retailDiscModePct').removeClass('active');
+            } else {
+                $('#retailDiscModePct').addClass('active');
+                $('#retailDiscModeRs').removeClass('active');
+            }
+        };
+
+        window.applyRetailQuickPercent = function(pct) {
+            let subtotal = 0;
+            cart.forEach(item => {
+                if (!item.is_return) subtotal += item.qty * item.price;
+            });
+            if (subtotal <= 0) return;
+
+            let discVal = (subtotal * pct) / 100;
+            $('#summaryDiscount').val(discVal.toFixed(2));
+            updateBillSummary();
+        };
+
+        window.clearRetailDiscount = function() {
+            $('#summaryDiscount').val(0);
+            updateBillSummary();
+        };
 
         let lastItemDiscountsSum = 0;
 

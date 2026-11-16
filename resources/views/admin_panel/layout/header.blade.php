@@ -203,6 +203,19 @@
 
                         </li>
                         @endcanany
+
+                        @if(\App\Helpers\BranchHelper::isRestaurantBranch())
+                        <li class="nav-item">
+                            <a href="{{ route('restaurant.pos') }}" class="nav-link"><i
+                                    class="menu_icon fas fa-cash-register text-warning"></i><span
+                                    class="menu-title">Restaurant POS</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('restaurant.running_orders') }}" class="nav-link"><i
+                                    class="menu_icon fas fa-clock text-danger"></i><span
+                                    class="menu-title">Running Orders</span></a>
+                        </li>
+                        @endif
                         <!--=========================*
                               UI Features
                     *===========================-->

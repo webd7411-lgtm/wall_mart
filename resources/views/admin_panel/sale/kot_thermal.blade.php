@@ -9,12 +9,16 @@
             @page {
                 margin: 2mm 3mm 2mm 2mm !important;
             }
-            body {
+            html, body {
                 width: 100% !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #fff !important;
-                color: #000 !important;
+                color: #000000 !important;
+                font-weight: 800 !important;
+                -webkit-text-stroke: 0.15px #000;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             .no-print {
                 display: none !important;
@@ -34,15 +38,16 @@
         }
 
         body {
-            font-family: 'Courier New', Courier, monospace, 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background: #f1f5f9;
             margin: 0;
             padding: 10px 0;
-            color: #000;
-            font-size: 13px;
-            font-weight: 600;
-            line-height: 1.3;
+            color: #000000;
+            font-size: 13.5px;
+            font-weight: 700;
+            line-height: 1.35;
             -webkit-print-color-adjust: exact;
+            -webkit-font-smoothing: antialiased;
         }
 
         .kot-container {
@@ -120,16 +125,19 @@
         }
 
         .kot-table th {
-            border-bottom: 1.5px solid #000;
+            border-bottom: 2px solid #000;
             padding: 4px 0;
-            font-size: 12px;
+            font-size: 13px;
+            font-weight: 900;
             text-transform: uppercase;
+            color: #000;
         }
 
         .kot-table td {
             padding: 6px 0;
-            border-bottom: 1px dashed #bbb;
+            border-bottom: 1.5px dashed #000;
             vertical-align: top;
+            color: #000;
         }
 
         .item-name {

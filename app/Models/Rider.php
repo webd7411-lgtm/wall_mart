@@ -77,4 +77,34 @@ class Rider extends Model
     {
         return $query->where('is_active', true);
     }
+
+    /**
+     * Auto sync rider duty status based on active deliveries.
+     */
+    public static function syncDutyStatus($riderId = null)
+    {
+        $query = static::query();
+        if ($riderId) {
+            $query->where('id', $riderId);
+        }
+        $riders = $query->get();
+        foreach ($riders as $rider) {
+            $hasActiveSales = Sale::where('rider_id', $rider->id)
+                ->where('delivery_status', 'dispatched')
+                ->whereNotIn('order_status', ['cancelled', 'completed'])
+                ->where('sale_status', 'booked')
+                ->exists();
+
+            $hasActiveOnline = EcommerceOrder::where('rider_id', $rider->id)
+                ->where('order_status', 'shipped')
+                ->exists();
+
+            $expectedStatus = ($hasActiveSales || $hasActiveOnline) ? 'on_delivery' : 'available';
+
+            if ($rider->duty_status !== 'off_duty' && $rider->duty_status !== $expectedStatus) {
+                $rider->duty_status = $expectedStatus;
+                $rider->save();
+            }
+        }
+    }
 }

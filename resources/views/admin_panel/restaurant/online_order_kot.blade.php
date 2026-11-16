@@ -9,36 +9,51 @@
             size: 80mm auto;
             margin: 0;
         }
-        body {
-            font-family: 'Courier New', Courier, monospace, sans-serif;
-            font-size: 14px;
-            color: #000;
-            background: #fff;
-            margin: 0;
-            padding: 10px 14px;
-            width: 80mm;
+        * {
             box-sizing: border-box;
         }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #000000;
+            background: #fff;
+            margin: 0;
+            padding: 8px 10px;
+            width: 80mm;
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            -webkit-font-smoothing: antialiased;
+        }
         .text-center { text-align: center; }
-        .fw-bold { font-weight: bold; }
-        .fs-4 { font-size: 18px; }
+        .fw-bold { font-weight: 900; }
+        .fs-4 { font-size: 19px; }
         .fs-5 { font-size: 16px; }
         .border-top { border-top: 2px dashed #000; }
         .border-bottom { border-bottom: 2px dashed #000; }
         .my-1 { margin-top: 6px; margin-bottom: 6px; }
         .py-1 { padding-top: 6px; padding-bottom: 6px; }
         .d-flex { display: flex; justify-content: space-between; }
-        .kot-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-        .kot-table th, .kot-table td { padding: 6px 0; font-size: 14px; }
+        .kot-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-weight: 800; }
+        .kot-table th, .kot-table td { padding: 6px 0; font-size: 14px; color: #000; }
         .kot-badge {
             background: #000;
             color: #fff;
             padding: 4px 8px;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 900;
             display: inline-block;
         }
         @media print {
+            * {
+                color: #000000 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            body {
+                font-weight: 800 !important;
+                -webkit-text-stroke: 0.15px #000;
+            }
             .no-print { display: none !important; }
         }
     </style>
@@ -78,11 +93,11 @@
             </thead>
             <tbody>
                 @foreach($order->items as $item)
-                <tr style="border-bottom: 1px dotted #888;">
-                    <td class="fw-bold" style="font-size: 15px; padding: 6px 0;">
+                <tr style="border-bottom: 1.5px dashed #000;">
+                    <td class="fw-bold" style="font-size: 15px; padding: 6px 0; color: #000;">
                         {{ $item->product_name }}
                     </td>
-                    <td style="text-align: right; font-size: 18px; font-weight: bold;">
+                    <td style="text-align: right; font-size: 18px; font-weight: 900; color: #000;">
                         [ {{ $item->quantity }} ]
                     </td>
                 </tr>

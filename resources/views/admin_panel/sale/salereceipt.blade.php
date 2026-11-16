@@ -11,12 +11,19 @@
                 margin: 0 !important;
                 size: auto;
             }
+            * {
+                color: #000000 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
             html, body {
                 width: 100% !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #fff !important;
-                color: #000 !important;
+                color: #000000 !important;
+                font-weight: 700 !important;
+                -webkit-text-stroke: 0.12px #000;
             }
             .no-print {
                 display: none !important;
@@ -29,6 +36,9 @@
                 width: 100% !important;
                 max-width: 68mm !important;
             }
+            .items-table td {
+                border-bottom: 1px solid #000 !important;
+            }
         }
 
         * {
@@ -36,15 +46,18 @@
         }
 
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background: #f1f5f9;
             margin: 0;
             padding: 5px 0;
-            color: #000;
-            font-size: 11px;
-            font-weight: 400;
-            line-height: 1.3;
+            color: #000000;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.35;
             -webkit-print-color-adjust: exact;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
 
         .receipt-container {
@@ -58,6 +71,7 @@
             overflow: hidden;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            color: #000;
         }
 
         h1, h2, h3, p { margin: 0; padding: 0; }
@@ -79,7 +93,7 @@
 
         .company-name {
             font-size: 22px;
-            font-weight: 700;
+            font-weight: 900;
             text-align: center;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -88,10 +102,10 @@
         }
 
         .company-info {
-            font-size: 11.5px;
+            font-size: 12px;
             text-align: center;
             color: #000;
-            font-weight: 400;
+            font-weight: 700;
             line-height: 1.4;
             word-wrap: break-word;
             overflow-wrap: break-word;
@@ -105,8 +119,8 @@
             background-color: #000;
             color: #fff;
             text-align: center;
-            font-size: 10px;
-            font-weight: bold;
+            font-size: 11px;
+            font-weight: 900;
             padding: 4px 6px;
             margin: 6px 0 2px 0;
             border-radius: 4px;
@@ -117,7 +131,7 @@
         }
 
         .divider {
-            border-top: 1px dashed #000;
+            border-top: 1.5px solid #000;
             margin: 5px 0;
         }
 
@@ -133,49 +147,55 @@
         .meta-row {
             display: flex;
             justify-content: space-between;
-            font-size: 11px;
-            font-weight: 400;
+            font-size: 12px;
+            font-weight: 700;
+            color: #000;
         }
 
-        .meta-label { font-weight: 400; color: #000; }
-        .meta-value { font-weight: 400; color: #000; }
+        .meta-label { font-weight: 700; color: #000; }
+        .meta-value { font-weight: 800; color: #000; }
 
         /* Items Table */
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 11px;
+            font-size: 12px;
             color: #000;
             margin: 3px 0;
             table-layout: fixed;
+            font-weight: 700;
         }
 
         .items-table th {
-            border-bottom: 1px dashed #000;
+            border-bottom: 2px solid #000;
             padding: 4px 1px;
             text-align: left;
-            font-weight: 600;
-            font-size: 10px;
+            font-weight: 900;
+            font-size: 11px;
             text-transform: uppercase;
+            color: #000;
         }
 
         .items-table td {
             padding: 4px 1px;
             vertical-align: top;
-            border-bottom: 1px dashed #ccc;
+            border-bottom: 1px solid #000;
+            color: #000;
+            font-weight: 700;
         }
 
         .item-name {
-            font-weight: 500;
-            font-size: 11px;
+            font-weight: 900;
+            font-size: 13px;
             color: #000;
             display: block;
+            line-height: 1.25;
         }
 
         .item-variant {
-            font-size: 10px;
+            font-size: 11px;
             color: #000;
-            font-weight: 400;
+            font-weight: 700;
             margin-top: 1px;
             display: block;
         }
@@ -185,17 +205,22 @@
             white-space: nowrap !important;
             font-variant-numeric: tabular-nums;
             letter-spacing: -0.3px;
+            font-weight: 800;
+            color: #000;
         }
         .text-center { 
             text-align: center !important; 
             white-space: nowrap !important;
+            font-weight: 800;
+            color: #000;
         }
 
         /* Totals */
         .totals-section {
-            font-size: 11px;
+            font-size: 12px;
             margin-top: 5px;
             color: #000;
+            font-weight: 700;
         }
 
         .tot-row {
@@ -203,66 +228,78 @@
             justify-content: space-between;
             align-items: baseline;
             padding: 2px 0;
+            color: #000;
         }
 
         .tot-row span:first-child { 
-            font-weight: 400; 
+            font-weight: 700; 
             color: #000; 
             flex-shrink: 0;
+            font-size: 12px;
         }
         .tot-row span:last-child { 
-            font-weight: 400; 
+            font-weight: 800; 
+            color: #000;
             white-space: nowrap !important;
             font-variant-numeric: tabular-nums;
             text-align: right;
             margin-left: 6px;
+            font-size: 12.5px;
         }
 
         .tot-row.grand-total {
-            font-size: 13px;
-            font-weight: 700;
-            margin: 3px 0;
+            font-size: 15px;
+            font-weight: 900;
+            margin: 4px 0;
             padding: 5px 0;
-            border-top: 1.5px solid #000;
-            border-bottom: 2px double #000;
+            border-top: 2px solid #000;
+            border-bottom: 3px double #000;
             color: #000;
         }
 
         .tot-row.grand-total span:first-child { 
-            font-weight: 700; 
+            font-weight: 900; 
             flex-shrink: 0;
+            font-size: 15px;
+            color: #000;
         }
         .tot-row.grand-total span:last-child { 
-            font-weight: 700; 
+            font-weight: 900; 
             white-space: nowrap !important;
             font-variant-numeric: tabular-nums;
             text-align: right;
             margin-left: 6px;
+            font-size: 16px;
+            color: #000;
         }
 
         /* Balances */
         .balance-section {
-            font-size: 11px;
+            font-size: 12px;
             margin-top: 4px;
-            border-top: 1px dashed #000;
+            border-top: 1.5px dashed #000;
             padding-top: 4px;
+            color: #000;
+            font-weight: 700;
         }
 
         .balance-section .tot-row.closing-bal {
-            font-weight: 600;
+            font-weight: 900;
             background-color: #f8f9fa;
             padding: 3px 2px;
-            border: 1px solid #000;
+            border: 2px solid #000;
             margin-top: 2px;
+            color: #000;
         }
 
-        .balance-section .tot-row.closing-bal span:first-child { font-weight: 600; flex-shrink: 0; }
+        .balance-section .tot-row.closing-bal span:first-child { font-weight: 900; flex-shrink: 0; color: #000; }
         .balance-section .tot-row.closing-bal span:last-child { 
-            font-weight: 600; 
+            font-weight: 900; 
             white-space: nowrap !important;
             font-variant-numeric: tabular-nums;
             text-align: right;
             margin-left: 6px;
+            color: #000;
         }
 
         /* Footer */
@@ -273,16 +310,17 @@
         }
 
         .footer p {
-            font-size: 11px;
-            font-weight: 500;
+            font-size: 12px;
+            font-weight: 800;
             margin-bottom: 2px;
+            color: #000;
         }
 
         .footer .soft-credit {
-            font-size: 9px;
+            font-size: 10px;
             color: #000;
             margin-top: 3px;
-            font-weight: 400;
+            font-weight: 700;
         }
 
         /* Controls */
@@ -371,22 +409,47 @@
         <!-- Meta Grid -->
         @php
             $isWalkin = empty($sale->customer_id);
+            $isDelivery = ($sale->order_type === 'delivery') || !empty($sale->delivery_address);
+
+            // Resolve Customer details for delivery
+            $custName = $sale->walkin_name ?: ($sale->customer_relation->customer_name ?? ($sale->ecommerceOrder->shipping_name ?? 'Walking Customer'));
+            $custPhone = $sale->rider_phone ?? ($sale->customer_relation->mobile ?? ($sale->ecommerceOrder->shipping_phone ?? null));
+            $custAddress = $sale->delivery_address ?: ($sale->customer_relation->address ?? ($sale->ecommerceOrder->shipping_address ?? null));
+
+            // Resolve Rider details (if assigned)
+            $riderObj = $sale->rider ?? null;
+            $riderName = $riderObj ? $riderObj->name : ($sale->rider_name && !in_array(strtolower($sale->rider_name), ['delivery order', 'delivery']) ? $sale->rider_name : ($sale->ecommerceOrder->rider_name ?? null));
         @endphp
+
+        @if(request()->has('provisional') || !empty($isProvisional) || ($sale->sale_status === 'booked' && $sale->order_status !== 'completed'))
+            @if($isDelivery)
+            <div style="border: 2px solid #000; padding: 4px; margin: 4px 0; text-align: center; border-radius: 4px; background: #fff;">
+                <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #000;">*** DELIVERY BILL (CASH ON DELIVERY) ***</div>
+                <div style="font-size: 11.5px; font-weight: 900; margin-top: 2px; color: #000;">COLLECT CASH: Rs. {{ number_format($sale->total_net, 0) }}</div>
+            </div>
+            @else
+            <div style="border: 1.5px dashed #000; padding: 4px; margin: 4px 0; text-align: center; border-radius: 4px; background: #fff;">
+                <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #000;">*** GUEST BILL / KACHA SLIP ***</div>
+                <div style="font-size: 9.5px; font-weight: 700; margin-top: 1px; color: #000;">(AWAITING FINAL PAYMENT - UNPAID)</div>
+            </div>
+            @endif
+            <div class="divider"></div>
+        @endif
         <div class="meta-grid">
             <div class="meta-row">
                 <span class="meta-label">Invoice #:</span>
                 <span class="meta-value">{{ $sale->invoice_no }}</span>
             </div>
             @if(!empty($sale->order_type))
-            <div class="meta-row" style="font-weight: 700; font-size: 11px;">
-                <span class="meta-label">Order Type:</span>
+            <div class="meta-row" style="font-weight: 900; font-size: 12.5px; border: 1.5px solid #000; padding: 2px 4px; margin: 2px 0; border-radius: 3px;">
+                <span class="meta-label">ORDER TYPE:</span>
                 <span class="meta-value" style="text-transform: uppercase;">
                     @if($sale->order_type === 'dine_in')
-                        Dine-In (Table #{{ $sale->table_no ?? '-' }})
+                        DINE-IN (TABLE #{{ $sale->table_no ?? '-' }})
                     @elseif($sale->order_type === 'takeaway')
-                        Takeaway (Token #{{ $sale->token_no ?? '-' }})
+                        TAKEAWAY (TOKEN #{{ $sale->token_no ?? '-' }})
                     @else
-                        Delivery
+                        DELIVERY
                     @endif
                 </span>
             </div>
@@ -397,15 +460,39 @@
             </div>
             <div class="meta-row">
                 <span class="meta-label">Customer:</span>
-                <span class="meta-value">{{ Str::limit($sale->walkin_name ?? ($sale->customer_relation->customer_name ?? 'Walking Customer'), 22) }}</span>
+                <span class="meta-value" style="font-weight: 800;">{{ $custName }}</span>
             </div>
+            @if(!empty($custPhone))
+            <div class="meta-row">
+                <span class="meta-label">Phone #:</span>
+                <span class="meta-value" style="font-weight: 800;">{{ $custPhone }}</span>
+            </div>
+            @endif
+            @if(!empty($custAddress))
+            <div class="meta-row" style="align-items: flex-start; margin-top: 1px;">
+                <span class="meta-label" style="white-space: nowrap; flex-shrink: 0; margin-right: 6px;">Address:</span>
+                <span class="meta-value" style="font-weight: 800; text-align: right; word-break: break-word;">{{ $custAddress }}</span>
+            </div>
+            @endif
+            @if(!empty($riderName))
+            <div class="meta-row">
+                <span class="meta-label">Rider:</span>
+                <span class="meta-value" style="font-weight: 800;">{{ $riderName }}</span>
+            </div>
+            @endif
             @if (auth()->check())
             <div class="meta-row">
                 <span class="meta-label">Salesperson:</span>
                 <span class="meta-value">{{ auth()->user()->name }}</span>
             </div>
             @endif
-            @if($sale->reference)
+            @if(!empty($sale->order_notes))
+            <div class="meta-row" style="flex-direction: column; align-items: flex-start; margin-top: 2px;">
+                <span class="meta-label">Note:</span>
+                <span class="meta-value" style="font-style: italic;">{{ $sale->order_notes }}</span>
+            </div>
+            @endif
+            @if($sale->reference && $sale->reference !== $sale->order_notes)
             <div class="meta-row">
                 <span class="meta-label">Remarks:</span>
                 <span class="meta-value">{{ $sale->reference }}</span>
@@ -558,6 +645,13 @@
                 <span>{{ number_format($sale->total_bill_amount, 0) }}</span>
             </div>
 
+            @if ($sale->delivery_charges > 0)
+                <div class="tot-row" style="font-weight: 600;">
+                    <span>Delivery Charges:</span>
+                    <span>+ {{ number_format($sale->delivery_charges, 0) }}</span>
+                </div>
+            @endif
+
             @if ($sale->total_extradiscount > 0)
                 <div class="tot-row">
                     <span>Discount:</span>
@@ -588,31 +682,51 @@
 
         <!-- Ledger -->
         <div class="balance-section">
-            @if(!$isWalkin)
-            <div class="tot-row">
-                <span>Prev Balance:</span>
-                <span>{{ number_format(abs($previousBalance), 0) }} {{ $previousBalance >= 0 ? 'Dr' : 'Cr' }}</span>
-            </div>
-            @endif
-            <div class="tot-row">
-                <span>Paid Amount:</span>
-                <span>{{ number_format($sale->cash, 0) }}</span>
-            </div>
-            @if($sale->change > 0)
-            <div class="tot-row">
-                <span>Change:</span>
-                <span>{{ number_format($sale->change, 0) }}</span>
-            </div>
-            @endif
+            @if($isDelivery && ($sale->cash == 0 || $sale->order_status !== 'completed' || request()->has('provisional')))
+                <div class="tot-row" style="font-weight: 800; font-size: 11px; margin-top: 2px;">
+                    <span>PAYMENT TYPE:</span>
+                    <span>CASH ON DELIVERY (COD)</span>
+                </div>
+                <div class="tot-row" style="font-weight: 900; font-size: 13px; border-top: 1.5px solid #000; border-bottom: 1.5px solid #000; padding: 3px 0; margin-top: 3px;">
+                    <span>COLLECT FROM CUSTOMER:</span>
+                    <span>Rs. {{ number_format($finalPayable, 0) }}</span>
+                </div>
+            @elseif(request()->has('provisional') || !empty($isProvisional) || ($sale->sale_status === 'booked' && $sale->order_status !== 'completed'))
+                <div class="tot-row" style="font-weight: 800; font-size: 11px; margin-top: 2px;">
+                    <span>STATUS:</span>
+                    <span>UNPAID (PROVISIONAL)</span>
+                </div>
+                <div class="tot-row" style="font-weight: 900; font-size: 13px; border-top: 1.5px solid #000; border-bottom: 1.5px solid #000; padding: 3px 0; margin-top: 3px;">
+                    <span>AMOUNT DUE:</span>
+                    <span>Rs. {{ number_format($finalPayable, 0) }}</span>
+                </div>
+            @else
+                @if(!$isWalkin)
+                <div class="tot-row">
+                    <span>Prev Balance:</span>
+                    <span>{{ number_format(abs($previousBalance), 0) }} {{ $previousBalance >= 0 ? 'Dr' : 'Cr' }}</span>
+                </div>
+                @endif
+                <div class="tot-row">
+                    <span>Paid Amount:</span>
+                    <span>{{ number_format($sale->cash, 0) }}</span>
+                </div>
+                @if($sale->change > 0)
+                <div class="tot-row">
+                    <span>Change:</span>
+                    <span>{{ number_format($sale->change, 0) }}</span>
+                </div>
+                @endif
 
-            @if(!$isWalkin)
-            @php
-                $finalBalance = $previousBalance + $sale->total_net - $sale->cash;
-            @endphp
-            <div class="tot-row closing-bal">
-                <span>CLOSING BALANCE:</span>
-                <span>{{ number_format(abs($finalBalance), 0) }} {{ $finalBalance >= 0 ? 'Dr' : 'Cr' }}</span>
-            </div>
+                @if(!$isWalkin)
+                @php
+                    $finalBalance = $previousBalance + $sale->total_net - $sale->cash;
+                @endphp
+                <div class="tot-row closing-bal">
+                    <span>CLOSING BALANCE:</span>
+                    <span>{{ number_format(abs($finalBalance), 0) }} {{ $finalBalance >= 0 ? 'Dr' : 'Cr' }}</span>
+                </div>
+                @endif
             @endif
         </div>
 

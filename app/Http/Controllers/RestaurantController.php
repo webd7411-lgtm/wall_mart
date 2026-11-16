@@ -96,7 +96,7 @@ class RestaurantController extends Controller
         });
 
         // 3. Fetch Active Running Orders (Dine-In tables, Takeaways, Deliveries in progress)
-        $runningOrders = Sale::where('order_status', 'running')
+        $runningOrders = Sale::whereIn('order_status', ['running', 'served', 'on_delivery'])
             ->where('sale_status', 'booked')
             ->when($activeBranchId, function($q) use ($activeBranchId) {
                 $q->where('branch_id', $activeBranchId);
@@ -125,7 +125,13 @@ class RestaurantController extends Controller
         }
 
         // 5. Customers
-        $customers = Customer::orderBy('customer_name')->get();
+        $customersQuery = Customer::query();
+        if ($activeBranchId) {
+            $customersQuery->where(function($q) use ($activeBranchId) {
+                $q->where('branch_id', $activeBranchId)->orWhereNull('branch_id');
+            });
+        }
+        $customers = $customersQuery->where('status', '!=', 'inactive')->orderBy('customer_name')->get();
 
         // 6. Next Token Number for today
         $todayOrdersCount = Sale::whereDate('created_at', today())
@@ -151,7 +157,8 @@ class RestaurantController extends Controller
             $t->active_order = $runningOrdersKeyed->get($t->table_no);
         }
 
-        // 8. Fetch Active Riders for this branch
+        // 8. Fetch Active Riders for this branch & Auto-Sync Duty Status
+        \App\Models\Rider::syncDutyStatus();
         $riders = \App\Models\Rider::where('is_active', true)
             ->when($activeBranchId, function($q) use ($activeBranchId) {
                 $q->where('branch_id', $activeBranchId);
@@ -179,12 +186,12 @@ class RestaurantController extends Controller
     {
         $activeBranchId = BranchHelper::getActiveBranchId();
 
-        $orders = Sale::where('order_status', 'running')
+        $orders = Sale::whereIn('order_status', ['running', 'served', 'on_delivery'])
             ->where('sale_status', 'booked')
             ->when($activeBranchId, function($q) use ($activeBranchId) {
                 $q->where('branch_id', $activeBranchId);
             })
-            ->with(['items'])
+            ->with(['items.product', 'customer_relation'])
             ->orderBy('updated_at', 'desc')
             ->get()
             ->map(function ($s) {
@@ -205,14 +212,28 @@ class RestaurantController extends Controller
                     return "{$qty}x {$name}";
                 })->implode(', ');
 
+                $isPaid = (float)$s->cash >= (float)$s->total_net && (float)$s->total_net > 0;
+                $orderStatus = $s->order_status ?: 'running';
+                if ($s->order_type === 'delivery' && $s->delivery_status === 'dispatched') {
+                    $orderStatus = 'on_delivery';
+                }
+
                 return [
                     'id' => $s->id,
                     'invoice_no' => $s->invoice_no,
                     'order_type' => $s->order_type ?: 'takeaway',
                     'table_no' => $s->table_no,
                     'token_no' => $s->token_no,
-                    'walkin_name' => $s->walkin_name,
+                    'customer_name' => $s->walkin_name ?: (optional($s->customer_relation)->customer_name ?: 'Walk-in'),
+                    'customer_phone' => optional($s->customer_relation)->phone_number ?: ($s->rider_phone ?: ''),
+                    'rider_id' => $s->rider_id,
+                    'rider_name' => $s->rider_name,
+                    'delivery_address' => $s->delivery_address,
+                    'order_status' => $orderStatus,
+                    'delivery_status' => $s->delivery_status ?: 'pending',
+                    'payment_status' => $isPaid ? 'paid' : 'unpaid',
                     'total_bill' => (float) $s->total_bill_amount,
+                    'total_net' => (float) ($s->total_net ?: $s->total_bill_amount),
                     'items_count' => $s->items->count(),
                     'items_summary' => $itemsSummary,
                     'elapsed_time' => $s->created_at ? $s->created_at->diffForHumans(null, true) : 'just now',
@@ -225,6 +246,381 @@ class RestaurantController extends Controller
             'orders' => $orders,
             'count' => $orders->count(),
         ]);
+    }
+
+    /**
+     * Dedicated Running Orders Page (Simple Clean List View).
+     */
+    public function runningOrdersIndex(Request $request)
+    {
+        $activeBranchId = BranchHelper::getActiveBranchId();
+        $branch = BranchHelper::getActiveBranch();
+
+        $query = Sale::whereIn('order_status', ['running', 'served', 'on_delivery'])
+            ->where('sale_status', 'booked')
+            ->when($activeBranchId, function($q) use ($activeBranchId) {
+                $q->where('branch_id', $activeBranchId);
+            })
+            ->with(['items.product', 'customer_relation', 'rider']);
+
+        // Type filter: all, dine_in, takeaway, delivery, unpaid
+        $typeFilter = $request->get('type', 'all');
+        if ($typeFilter === 'dine_in') {
+            $query->where('order_type', 'dine_in');
+        } elseif ($typeFilter === 'takeaway') {
+            $query->where('order_type', 'takeaway');
+        } elseif ($typeFilter === 'delivery') {
+            $query->where('order_type', 'delivery');
+        } elseif ($typeFilter === 'unpaid') {
+            $query->where(function($q) {
+                $q->where('cash', '<', DB::raw('total_net'))
+                  ->orWhereNull('cash')
+                  ->orWhere('cash', 0);
+            });
+        }
+
+        // Search filter
+        if ($request->filled('search')) {
+            $s = trim($request->search);
+            $query->where(function($q) use ($s) {
+                $q->where('invoice_no', 'like', "%{$s}%")
+                  ->orWhere('table_no', 'like', "%{$s}%")
+                  ->orWhere('token_no', 'like', "%{$s}%")
+                  ->orWhere('walkin_name', 'like', "%{$s}%")
+                  ->orWhere('rider_name', 'like', "%{$s}%")
+                  ->orWhereHas('customer_relation', function($cq) use ($s) {
+                      $cq->where('customer_name', 'like', "%{$s}%")
+                         ->orWhere('phone_number', 'like', "%{$s}%");
+                  });
+            });
+        }
+
+        $orders = $query->orderBy('updated_at', 'desc')->paginate(30)->withQueryString();
+
+        // Stats summary
+        $baseStatQuery = Sale::whereIn('order_status', ['running', 'served', 'on_delivery'])
+            ->where('sale_status', 'booked')
+            ->when($activeBranchId, function($q) use ($activeBranchId) {
+                $q->where('branch_id', $activeBranchId);
+            });
+
+        $stats = [
+            'total' => (clone $baseStatQuery)->count(),
+            'dine_in' => (clone $baseStatQuery)->where('order_type', 'dine_in')->count(),
+            'takeaway' => (clone $baseStatQuery)->where('order_type', 'takeaway')->count(),
+            'delivery' => (clone $baseStatQuery)->where('order_type', 'delivery')->count(),
+            'unpaid_amount' => (clone $baseStatQuery)->sum('total_bill_amount'),
+        ];
+
+        // Riders for modal & Auto-Sync Duty Status
+        \App\Models\Rider::syncDutyStatus();
+        $riders = \App\Models\Rider::where('is_active', true)
+            ->when($activeBranchId, function($q) use ($activeBranchId) {
+                $q->where('branch_id', $activeBranchId);
+            })
+            ->orderBy('name')
+            ->get();
+
+        // Accounts for complete payment
+        $cashAndBankHeads = AccountHead::where(function ($q) {
+            $q->whereIn('name', ['Cash', 'Bank', 'cash', 'bank'])
+              ->orWhere('name', 'like', '%cash%')
+              ->orWhere('name', 'like', '%bank%');
+        })->pluck('id');
+
+        $accounts = Account::where(function ($q) use ($cashAndBankHeads) {
+            if ($cashAndBankHeads->isNotEmpty()) {
+                $q->whereIn('head_id', $cashAndBankHeads);
+            }
+            $q->orWhere('title', 'like', '%cash%')
+              ->orWhere('title', 'like', '%bank%');
+        })->where('status', 1)->orderBy('title')->get();
+
+        if ($accounts->isEmpty()) {
+            $accounts = Account::where('status', 1)->orderBy('title')->get();
+        }
+
+        return view('admin_panel.restaurant.running_orders.index', compact(
+            'orders',
+            'stats',
+            'typeFilter',
+            'riders',
+            'accounts',
+            'branch'
+        ));
+    }
+
+    /**
+     * Fetch full order details JSON for Details Modal.
+     */
+    public function orderDetailsJson($id)
+    {
+        $sale = Sale::with(['items.product', 'customer_relation', 'rider'])->find($id);
+        if (!$sale) {
+            return response()->json(['success' => false, 'message' => 'Order not found.'], 404);
+        }
+
+        $items = $sale->items->map(function ($it) {
+            $p = $it->product;
+            $qty = (int) ($it->total_pieces > 0 ? $it->total_pieces : ($it->qty > 0 ? $it->qty : 1));
+            $displayName = $it->product_name ?? ($p->item_name ?? 'Item');
+            $variant = '';
+            if (!empty($it->color)) {
+                $decoded = base64_decode($it->color, true);
+                $vData = $decoded !== false ? json_decode($decoded, true) : json_decode($it->color, true);
+                if (is_array($vData)) {
+                    if (!empty($vData['name'])) {
+                        $displayName = $vData['name'];
+                    } elseif (!empty($vData['size']) && $vData['size'] !== '-') {
+                        $variant = $vData['size'];
+                    }
+                }
+            }
+
+            return [
+                'name' => $displayName,
+                'variant' => $variant,
+                'qty' => $qty,
+                'price' => (float)$it->price,
+                'total' => (float)$it->total,
+                'notes' => $it->item_notes ?? '',
+            ];
+        });
+
+        $isPaid = (float)$sale->cash >= (float)$sale->total_net && (float)$sale->total_net > 0;
+        $orderStatus = $sale->order_status ?: 'running';
+        if ($sale->order_type === 'delivery' && $sale->delivery_status === 'dispatched') {
+            $orderStatus = 'on_delivery';
+        }
+
+        return response()->json([
+            'success' => true,
+            'order' => [
+                'id' => $sale->id,
+                'invoice_no' => $sale->invoice_no,
+                'order_type' => $sale->order_type ?: 'takeaway',
+                'table_no' => $sale->table_no,
+                'token_no' => $sale->token_no,
+                'customer_name' => $sale->walkin_name ?: (optional($sale->customer_relation)->customer_name ?: 'Walk-in Customer'),
+                'customer_phone' => optional($sale->customer_relation)->phone_number ?: '',
+                'rider_id' => $sale->rider_id,
+                'rider_name' => $sale->rider_name,
+                'rider_phone' => $sale->rider_phone,
+                'delivery_address' => $sale->delivery_address,
+                'delivery_charges' => (float)$sale->delivery_charges,
+                'order_notes' => $sale->order_notes ?? '',
+                'order_status' => $orderStatus,
+                'delivery_status' => $sale->delivery_status ?: 'pending',
+                'payment_status' => $isPaid ? 'paid' : 'unpaid',
+                'subtotal' => (float)$sale->total_bill_amount,
+                'discount' => (float)$sale->total_extradiscount,
+                'net_total' => (float)($sale->total_net ?: $sale->total_bill_amount),
+                'cash_paid' => (float)$sale->cash,
+                'change' => (float)$sale->change,
+                'created_at' => $sale->created_at ? $sale->created_at->format('d M Y, h:i A') : '',
+                'elapsed' => $sale->created_at ? $sale->created_at->diffForHumans() : '',
+                'items' => $items,
+            ]
+        ]);
+    }
+
+    /**
+     * Mark Dine-In Order as Served (No waiter selection required).
+     */
+    public function serveOrder($id)
+    {
+        $sale = Sale::findOrFail($id);
+        $sale->order_status = 'served';
+        $sale->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order #' . $sale->invoice_no . ' marked as Served.',
+            'order_status' => 'served',
+        ]);
+    }
+
+    /**
+     * Assign Rider to Delivery Order (Sets status to on_delivery and syncs to EcommerceOrder if applicable).
+     */
+    public function assignRider(Request $request, $id)
+    {
+        $request->validate([
+            'rider_id' => 'required|exists:riders,id',
+        ]);
+
+        $sale = Sale::findOrFail($id);
+        $rider = \App\Models\Rider::findOrFail($request->rider_id);
+
+        $sale->rider_id = $rider->id;
+        $sale->rider_name = $rider->name;
+        $sale->rider_phone = $rider->phone;
+        $sale->delivery_status = 'dispatched';
+        $sale->order_status = 'on_delivery';
+        $sale->dispatched_at = now();
+        $sale->save();
+
+        // Update rider duty status
+        $rider->duty_status = 'on_delivery';
+        $rider->save();
+
+        // BIDIRECTIONAL SYNC: Update linked EcommerceOrder so Online Orders page reflects assigned rider
+        try {
+            $ecomOrder = null;
+            if ($sale->ecommerce_order_id) {
+                $ecomOrder = \App\Models\EcommerceOrder::find($sale->ecommerce_order_id);
+            }
+            if (!$ecomOrder) {
+                $ecomOrder = \App\Models\EcommerceOrder::where('sale_id', $sale->id)->first();
+            }
+            if ($ecomOrder) {
+                $ecomOrder->rider_id = $rider->id;
+                $ecomOrder->rider_name = $rider->name;
+                $ecomOrder->rider_phone = $rider->phone;
+                $ecomOrder->order_status = 'shipped';
+                $ecomOrder->save();
+            }
+        } catch (\Exception $e) {
+            \Log::warning('EcommerceOrder rider sync error: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Order #{$sale->invoice_no} assigned to {$rider->name} (On Delivery).",
+            'rider_name' => $rider->name,
+            'order_status' => 'on_delivery',
+        ]);
+    }
+
+    /**
+     * Unified Complete & Settle Action for Dine-In, Takeaway, and Delivery.
+     * Receives payment, selects account, clears table/rider, and prints final receipt.
+     */
+    public function completeAndSettle(Request $request, $id)
+    {
+        $sale = Sale::with(['items', 'customer_relation'])->findOrFail($id);
+
+        if ($sale->sale_status === 'posted') {
+            return response()->json([
+                'success' => true,
+                'message' => 'Order is already completed.',
+                'receipt_url' => route('sales.receipt', $sale->id),
+                'sale_id' => $sale->id,
+            ]);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Apply optional extra discount
+            if ($request->filled('discount') && (float)$request->discount > 0) {
+                $discount = (float)$request->discount;
+                $sale->total_extradiscount = $discount;
+                $sale->total_net = max(0, (float)$sale->total_bill_amount - $discount + (float)$sale->delivery_charges);
+            }
+
+            $totalNet = (float)($sale->total_net ?: $sale->total_bill_amount);
+            $cashReceived = $request->filled('cash_received') ? (float)$request->cash_received : $totalNet;
+            $payAmount = min($cashReceived, $totalNet);
+            $change = max(0, $cashReceived - $totalNet);
+
+            $sale->cash = $payAmount;
+            $sale->change = $change;
+            $sale->sale_status = 'posted';
+            $sale->order_status = 'completed';
+            $sale->is_booking = 0;
+
+            if ($sale->order_type === 'delivery') {
+                $sale->delivery_status = 'delivered';
+                $sale->delivered_at = now();
+                $sale->rider_cash_settled = 1;
+            }
+
+            $sale->save();
+
+            // BIDIRECTIONAL SYNC: Update linked EcommerceOrder status to delivered
+            try {
+                $ecomOrder = null;
+                if ($sale->ecommerce_order_id) {
+                    $ecomOrder = \App\Models\EcommerceOrder::find($sale->ecommerce_order_id);
+                }
+                if (!$ecomOrder) {
+                    $ecomOrder = \App\Models\EcommerceOrder::where('sale_id', $sale->id)->first();
+                }
+                if ($ecomOrder) {
+                    $ecomOrder->order_status = 'delivered';
+                    $ecomOrder->save();
+                }
+            } catch (\Exception $e) {
+                \Log::warning('EcommerceOrder delivery complete sync error: ' . $e->getMessage());
+            }
+
+            // Release rider if any
+            if ($sale->rider_id) {
+                $activeRiderDeliveries = Sale::where('rider_id', $sale->rider_id)
+                    ->where('id', '!=', $sale->id)
+                    ->where('delivery_status', 'dispatched')
+                    ->count();
+                if ($activeRiderDeliveries === 0) {
+                    \App\Models\Rider::where('id', $sale->rider_id)->update(['duty_status' => 'available']);
+                }
+            }
+
+            // Deduct stock from warehouse
+            try {
+                app(\App\Http\Controllers\SaleController::class)->handleStockImpact($sale, 'out');
+            } catch (\Exception $e) {
+                \Log::warning('Stock impact error on complete: ' . $e->getMessage());
+            }
+
+            // Ledger updates
+            try {
+                $saleController = app(\App\Http\Controllers\SaleController::class);
+                $saleController->updateLedger($sale);
+
+                $balanceService = app(\App\Services\BalanceService::class);
+                $cust = $sale->customer_relation ?? \App\Models\Customer::find($sale->customer_id);
+                if ($cust) {
+                    $balanceService->createSaleVoucher(
+                        $cust,
+                        $totalNet,
+                        $sale->invoice_no,
+                        $sale->created_at ? $sale->created_at->format('Y-m-d') : date('Y-m-d')
+                    );
+                }
+
+                // Auto receipt transaction
+                $accountId = $request->account_id;
+                if ($payAmount > 0 && $accountId) {
+                    $transactionService = app(\App\Services\TransactionService::class);
+                    $transactionService->createReceiptFromSale($sale, [$accountId], [$payAmount]);
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Ledger/Transaction error on complete: ' . $e->getMessage());
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Order #{$sale->invoice_no} completed & settled successfully.",
+                'receipt_url' => route('sales.receipt', $sale->id),
+                'sale_id' => $sale->id,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to settle order: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Thermal Provisional Bill / Slip (Print before payment).
+     */
+    public function billSlip($id)
+    {
+        return redirect()->route('sales.receipt', ['id' => $id, 'provisional' => 1]);
     }
 
     /**
@@ -299,6 +695,20 @@ class RestaurantController extends Controller
         $sale->sale_status = 'cancelled';
         $sale->order_notes = ($sale->order_notes ? $sale->order_notes . ' | ' : '') . 'Cancelled: ' . ($request->reason ?? 'By cashier');
         $sale->save();
+
+        // BIDIRECTIONAL SYNC: Cancel linked EcommerceOrder
+        try {
+            if ($sale->ecommerce_order_id) {
+                \App\Models\EcommerceOrder::where('id', $sale->ecommerce_order_id)->update(['order_status' => 'cancelled']);
+            }
+            \App\Models\EcommerceOrder::where('sale_id', $sale->id)->update(['order_status' => 'cancelled']);
+        } catch (\Exception $e) {
+            \Log::warning('EcommerceOrder cancel sync error: ' . $e->getMessage());
+        }
+
+        if ($sale->rider_id) {
+            \App\Models\Rider::syncDutyStatus($sale->rider_id);
+        }
 
         return response()->json([
             'success' => true,

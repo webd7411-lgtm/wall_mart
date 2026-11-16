@@ -332,24 +332,50 @@
         /* ── Premium Dropdown Submenus ── */
         .restaurant-page-nav > .nav-item .submenu {
             position: absolute !important;
-            top: calc(100% + 4px) !important;
+            top: 100% !important;
+            margin-top: 2px !important;
             left: 0 !important;
-            min-width: 215px !important;
+            min-width: 220px !important;
             background: #ffffff !important;
             border: 1px solid #e2e8f0 !important;
             border-radius: 12px !important;
-            box-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.15), 0 4px 10px -2px rgba(15, 23, 42, 0.06) !important;
+            box-shadow: 0 14px 34px -4px rgba(15, 23, 42, 0.16), 0 4px 12px -2px rgba(15, 23, 42, 0.08) !important;
             padding: 6px !important;
             z-index: 1060 !important;
             display: none;
             opacity: 0;
-            transform: translateY(6px);
-            transition: opacity 0.18s ease, transform 0.18s ease;
+            visibility: hidden;
+            transform: translateY(4px);
+            transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+            pointer-events: none;
         }
-        .restaurant-page-nav > .nav-item:hover .submenu {
+
+        /* Invisible bridge to eliminate any hover gap between parent nav-item and submenu */
+        .restaurant-page-nav > .nav-item .submenu::before {
+            content: '';
+            position: absolute;
+            top: -14px;
+            left: 0;
+            right: 0;
+            height: 16px;
+            background: transparent;
+            display: block;
+        }
+
+        .restaurant-page-nav > .nav-item:hover .submenu,
+        .restaurant-page-nav > .nav-item.menu-open .submenu,
+        .restaurant-page-nav > .nav-item.show-submenu .submenu {
             display: block !important;
-            opacity: 1;
-            transform: translateY(0);
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: translateY(0) !important;
+            pointer-events: auto !important;
+        }
+
+        .restaurant-page-nav > .nav-item:hover > .nav-link .menu-arrow,
+        .restaurant-page-nav > .nav-item.menu-open > .nav-link .menu-arrow,
+        .restaurant-page-nav > .nav-item.show-submenu > .nav-link .menu-arrow {
+            transform: rotate(180deg) !important;
         }
         .restaurant-page-nav > .nav-item:nth-last-child(-n+4) .submenu {
             left: auto !important;
@@ -1584,8 +1610,8 @@
                             <li class="nav-item-divider d-none d-md-block"></li>
 
                             {{-- 6. Menu & Catalog Dropdown --}}
-                            <li class="nav-item {{ request()->is('product*') || request()->is('create*') || request()->is('category*') || request()->is('discount*') ? 'active' : '' }}">
-                                <a href="{{ url('product-catalog') }}" class="nav-link">
+                            <li class="nav-item has-dropdown {{ request()->is('product*') || request()->is('create*') || request()->is('category*') || request()->is('discount*') ? 'active' : '' }}">
+                                <a href="javascript:void(0);" class="nav-link dropdown-toggle-nav">
                                     <i class="menu_icon fas fa-utensils text-success"></i>
                                     <span class="menu-title">Menu</span>
                                     <i class="menu-arrow fas fa-chevron-down"></i>
@@ -1614,8 +1640,8 @@
                             </li>
 
                             {{-- 7. Orders & Reports Dropdown --}}
-                            <li class="nav-item {{ request()->is('sale*') || request()->is('report/sale*') ? 'active' : '' }}">
-                                <a href="{{ url('sale') }}" class="nav-link">
+                            <li class="nav-item has-dropdown {{ request()->is('sale*') || request()->is('report/sale*') ? 'active' : '' }}">
+                                <a href="javascript:void(0);" class="nav-link dropdown-toggle-nav">
                                     <i class="menu_icon fas fa-receipt text-warning"></i>
                                     <span class="menu-title">Orders &amp; Reports</span>
                                     <i class="menu-arrow fas fa-chevron-down"></i>
@@ -1637,13 +1663,61 @@
                                                 <i class="fas fa-chart-line text-info"></i> Sale Report &amp; Analytics
                                             </a>
                                         </li>
+                                        @can('customer.ledger.view')
+                                        <li>
+                                            <a href="{{ route('report.customer.ledger') }}">
+                                                <i class="fas fa-book text-primary"></i> Customer Ledger Report
+                                            </a>
+                                        </li>
+                                        @endcan
                                     </ul>
                                 </div>
                             </li>
 
+                            {{-- 7.1 Customers Dropdown --}}
+                            @can('customers.view')
+                            <li class="nav-item has-dropdown {{ request()->is('customer*') || request()->is('salecustomers*') || request()->is('report/customer*') ? 'active' : '' }}">
+                                <a href="javascript:void(0);" class="nav-link dropdown-toggle-nav">
+                                    <i class="menu_icon fas fa-users text-primary"></i>
+                                    <span class="menu-title">Customers</span>
+                                    <i class="menu-arrow fas fa-chevron-down"></i>
+                                </a>
+                                <div class="submenu">
+                                    <ul class="submenu-item">
+                                        <li>
+                                            <a href="{{ route('customers.index') }}">
+                                                <i class="fas fa-user-friends text-primary"></i> Customers List
+                                            </a>
+                                        </li>
+                                        @can('customers.create')
+                                        <li>
+                                            <a href="{{ route('customers.create') }}">
+                                                <i class="fas fa-user-plus text-success"></i> Add New Customer
+                                            </a>
+                                        </li>
+                                        @endcan
+                                        @can('customer.ledger.view')
+                                        <li>
+                                            <a href="{{ route('report.customer.ledger') }}">
+                                                <i class="fas fa-book text-info"></i> Customer Ledger Report
+                                            </a>
+                                        </li>
+                                        @endcan
+                                        @canany(['customer.payments.view', 'customers.view'])
+                                        <li>
+                                            <a href="{{ route('customer.payments') }}">
+                                                <i class="fas fa-money-bill-wave text-warning"></i> Customer Payments
+                                            </a>
+                                        </li>
+                                        @endcanany
+                                    </ul>
+                                </div>
+                            </li>
+                            @endcan
+
                             {{-- 8. Finance Dropdown --}}
-                            <li class="nav-item {{ request()->is('*expense*') || request()->is('view_all*') || request()->is('accounts*') ? 'active' : '' }}">
-                                <a href="{{ route('all_expense_vochers') }}" class="nav-link">
+                            <li class="nav-item has-dropdown {{ request()->is('*expense*') || request()->is('view_all*') || request()->is('accounts*') ? 'active' : '' }}">
+                                <a href="javascript:void(0);" class="nav-link dropdown-toggle-nav">
                                     <i class="menu_icon fas fa-wallet text-danger"></i>
                                     <span class="menu-title">Finance</span>
                                     <i class="menu-arrow fas fa-chevron-down"></i>
@@ -2332,6 +2406,62 @@
                     e.stopPropagation();
                 });
             });
+
+            // Restaurant POS Navigation Submenu Grace Period & Click Toggle Handler
+            (function() {
+                var restaurantNavItems = document.querySelectorAll('.restaurant-page-nav > .nav-item');
+                restaurantNavItems.forEach(function(item) {
+                    var submenu = item.querySelector('.submenu');
+                    if (!submenu) return;
+
+                    var timer = null;
+
+                    // Hover with 350ms grace period so dropdown doesn't suddenly vanish
+                    item.addEventListener('mouseenter', function() {
+                        if (timer) {
+                            clearTimeout(timer);
+                            timer = null;
+                        }
+                        restaurantNavItems.forEach(function(other) {
+                            if (other !== item) other.classList.remove('menu-open', 'show-submenu');
+                        });
+                        item.classList.add('menu-open');
+                    });
+
+                    item.addEventListener('mouseleave', function() {
+                        timer = setTimeout(function() {
+                            item.classList.remove('menu-open', 'show-submenu');
+                        }, 350);
+                    });
+
+                    // Click toggle support (both mouse click & touch)
+                    var navLink = item.querySelector('> .nav-link');
+                    if (navLink) {
+                        navLink.addEventListener('click', function(e) {
+                            var isOpen = item.classList.contains('menu-open') || item.classList.contains('show-submenu');
+                            if (e.target.closest('.menu-arrow') || navLink.getAttribute('href') === 'javascript:void(0);' || !navLink.getAttribute('href') || navLink.getAttribute('href') === '#') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                restaurantNavItems.forEach(function(other) {
+                                    other.classList.remove('menu-open', 'show-submenu');
+                                });
+                                if (!isOpen) {
+                                    item.classList.add('menu-open');
+                                }
+                            }
+                        });
+                    }
+                });
+
+                // Close menus when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.restaurant-page-nav > .nav-item')) {
+                        restaurantNavItems.forEach(function(item) {
+                            item.classList.remove('menu-open', 'show-submenu');
+                        });
+                    }
+                });
+            })();
             
             // Failsafe: Remove any rogue overlay class on body immediately
             document.body.classList.remove('modal-open', 'sidebar_collapsed');

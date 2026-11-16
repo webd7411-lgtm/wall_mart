@@ -73,10 +73,16 @@ class EnforceRestaurantBranchRestriction
         'delete.unit',
         'delete.Unit',
 
-        // Customer management
+        // Customer management & Ledger Reports
         'customer',
         'customer.*',
         'customers.*',
+        'salecustomers.*',
+        'customer.payments',
+        'customer.payments.*',
+        'report.customer.ledger',
+        'report.customer.ledger.*',
+        'report.customer.*',
 
         // Expense Vouchers & Categories
         'all_expense_vochers',
@@ -145,6 +151,11 @@ class EnforceRestaurantBranchRestriction
         'brands',
         'customer',
         'customers',
+        'salecustomers',
+        'customer-payments',
+        'report/customer',
+        'report/customer-ledger',
+        'customers/ledger',
         'all_expense_vochers',
         'expense_vochers',
         'store_expense_vochers',

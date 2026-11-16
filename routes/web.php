@@ -195,7 +195,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/customers/snooze-reminder/{id}', [CustomerController::class, 'snoozeReminder'])->middleware('permission:customer.payments.reminder|customers.view')->name('customers.snoozeReminder');
     Route::get('/customers/payment-reminders', [CustomerController::class, 'getReminders'])->middleware('permission:customer.payments.reminder|customers.view')->name('customers.reminders');
     // web.php
-    Route::get('/customer/ledger/{id}', [CustomerController::class, 'getCustomerLedger']);
+    Route::get('/customer/ledger/{id}', [CustomerController::class, 'getCustomerLedger'])->name('customer.ledger.get');
     Route::delete('/customer-payments/{id}', [CustomerController::class, 'destroy_payment'])->middleware('permission:customer.payments.delete|customers.delete')->name('customer.payments.destroy');
 
     // Vendor Routes
@@ -344,6 +344,8 @@ Route::middleware('auth')->group(function () {
 
     // Restaurant Operations
     Route::get('/restaurant/online-orders', [\App\Http\Controllers\RestaurantOnlineOrderController::class, 'index'])->name('restaurant.online_orders');
+    Route::get('/restaurant/online-orders/{id}/details', [\App\Http\Controllers\RestaurantOnlineOrderController::class, 'getOrderDetails'])->name('restaurant.online_orders.details');
+    Route::post('/restaurant/online-orders/{id}/update', [\App\Http\Controllers\RestaurantOnlineOrderController::class, 'updateOrder'])->name('restaurant.online_orders.update');
     Route::post('/restaurant/online-orders/{id}/status', [\App\Http\Controllers\RestaurantOnlineOrderController::class, 'updateStatus'])->name('restaurant.online_orders.update_status');
     Route::post('/restaurant/online-orders/{id}/assign-rider', [\App\Http\Controllers\RestaurantOnlineOrderController::class, 'assignRider'])->name('restaurant.online_orders.assign_rider');
     Route::get('/restaurant/online-orders/{id}/slip', [\App\Http\Controllers\RestaurantOnlineOrderController::class, 'deliverySlip'])->name('restaurant.online_orders.slip');
@@ -351,8 +353,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/restaurant/online-orders/api/stats', [\App\Http\Controllers\RestaurantOnlineOrderController::class, 'getStatsJson'])->name('restaurant.online_orders.stats');
 
     Route::get('/restaurant/pos', [\App\Http\Controllers\RestaurantController::class, 'pos'])->middleware('permission:restaurant.pos.view|sales.create')->name('restaurant.pos');
+    Route::get('/restaurant/running-orders', [\App\Http\Controllers\RestaurantController::class, 'runningOrdersIndex'])->middleware('permission:restaurant.pos.view|sales.view')->name('restaurant.running_orders');
     Route::get('/restaurant/active-orders', [\App\Http\Controllers\RestaurantController::class, 'activeOrders'])->middleware('permission:restaurant.kds.view|sales.view|sales.view_own')->name('restaurant.active_orders');
     Route::get('/restaurant/order/{id}', [\App\Http\Controllers\RestaurantController::class, 'getOrder'])->middleware('permission:sales.view|sales.view_own')->name('restaurant.get_order');
+    Route::get('/restaurant/orders/{id}/details', [\App\Http\Controllers\RestaurantController::class, 'orderDetailsJson'])->middleware('permission:sales.view|sales.view_own')->name('restaurant.order_details');
+    Route::post('/restaurant/orders/{id}/serve', [\App\Http\Controllers\RestaurantController::class, 'serveOrder'])->middleware('permission:sales.edit')->name('restaurant.serve_order');
+    Route::post('/restaurant/orders/{id}/assign-rider', [\App\Http\Controllers\RestaurantController::class, 'assignRider'])->middleware('permission:sales.edit')->name('restaurant.assign_rider');
+    Route::post('/restaurant/orders/{id}/complete-settle', [\App\Http\Controllers\RestaurantController::class, 'completeAndSettle'])->middleware('permission:sales.create|sales.edit')->name('restaurant.complete_settle');
+    Route::get('/restaurant/orders/{id}/bill-slip', [\App\Http\Controllers\RestaurantController::class, 'billSlip'])->middleware('permission:sales.view|sales.view_own')->name('restaurant.bill_slip');
     Route::post('/restaurant/order/{id}/cancel', [\App\Http\Controllers\RestaurantController::class, 'cancelOrder'])->middleware('permission:sales.edit')->name('restaurant.cancel_order');
 
     // Restaurant Table Management

@@ -1446,7 +1446,14 @@ class ReportingController extends Controller
 
     public function customer_ledger_report()
     {
-        $customers = DB::table('customers')->select('id', 'customer_name', 'zone')->get();
+        $activeBranchId = \App\Helpers\BranchHelper::getActiveBranchId();
+        $customersQuery = DB::table('customers')->select('id', 'customer_name', 'zone');
+        if ($activeBranchId) {
+            $customersQuery->where(function($q) use ($activeBranchId) {
+                $q->where('branch_id', $activeBranchId)->orWhereNull('branch_id');
+            });
+        }
+        $customers = $customersQuery->orderBy('customer_name')->get();
         $zones = \App\Models\Zone::orderBy('zone')->get();
 
         return view('admin_panel.reporting.customer_ledger_report', compact('customers', 'zones'));

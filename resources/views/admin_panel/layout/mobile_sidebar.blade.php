@@ -74,6 +74,12 @@
                         <span class="m-nav-text font-weight-bold">Restaurant POS</span>
                     </a>
                 </li>
+                <li class="m-nav-item">
+                    <a href="{{ route('restaurant.running_orders') }}" class="m-nav-link {{ request()->is('restaurant/running-orders*') ? 'active' : '' }}">
+                        <i class="fas fa-clock m-nav-icon text-danger"></i>
+                        <span class="m-nav-text font-weight-bold">Running Orders</span>
+                    </a>
+                </li>
                 @can('restaurant.tables.view')
                 <li class="m-nav-item">
                     <a href="{{ route('restaurant.tables.index') }}" class="m-nav-link {{ request()->is('restaurant/tables*') ? 'active' : '' }}">
@@ -110,6 +116,22 @@
                         <span class="m-nav-text">Sales / Orders</span>
                     </a>
                 </li>
+                @can('customers.view')
+                <li class="m-nav-item">
+                    <a href="{{ route('customers.index') }}" class="m-nav-link {{ request()->is('customer*') ? 'active' : '' }}">
+                        <i class="fas fa-users m-nav-icon text-primary"></i>
+                        <span class="m-nav-text">Customers</span>
+                    </a>
+                </li>
+                @endcan
+                @can('customer.ledger.view')
+                <li class="m-nav-item">
+                    <a href="{{ route('report.customer.ledger') }}" class="m-nav-link {{ request()->is('report/customer*') ? 'active' : '' }}">
+                        <i class="fas fa-book m-nav-icon text-info"></i>
+                        <span class="m-nav-text">Customer Ledger</span>
+                    </a>
+                </li>
+                @endcan
                 <li class="m-nav-item">
                     <a href="{{ route('Category.home') }}" class="m-nav-link {{ request()->is('category*') ? 'active' : '' }}">
                         <i class="fas fa-tags m-nav-icon text-info"></i>

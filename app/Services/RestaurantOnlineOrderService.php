@@ -16,10 +16,10 @@ class RestaurantOnlineOrderService
     /**
      * Synchronize an EcommerceOrder into the central Sales, Inventory, and Accounting systems.
      */
-    public static function syncOrderToSale(EcommerceOrder $order): ?Sale
+    public static function syncOrderToSale(EcommerceOrder $order, $accountId = null): ?Sale
     {
         try {
-            return DB::transaction(function () use ($order) {
+            return DB::transaction(function () use ($order, $accountId) {
                 $order->loadMissing('items');
 
                 $branchId = $order->branch_id ?: 2;
@@ -91,6 +91,7 @@ class RestaurantOnlineOrderService
                 $totalPieces = $order->items->sum('quantity');
                 $sale->total_items = $totalPieces;
                 $sale->total_bill_amount = (float)$order->subtotal;
+                $sale->total_extradiscount = (float)($order->discount ?: ($order->discount_amount ?: 0));
                 $sale->total_net = (float)$order->total;
                 $sale->cash = (float)$order->total;
                 $sale->change = 0;
@@ -159,27 +160,23 @@ class RestaurantOnlineOrderService
                         $order->save();
                     }
 
-                    // B. Auto Accounting Receipt into Restaurant Cash Account
+                    // B. Auto Accounting Receipt into Restaurant Cash/Selected Account
                     try {
                         $balanceService = app(BalanceService::class);
                         $transactionService = app(TransactionService::class);
-                        $cashAccountId = $balanceService->getCashAccountId();
-                        if ($cashAccountId) {
-                            $transactionService->createReceiptFromSale($sale, [$cashAccountId], [$sale->total_net]);
+                        $targetAccountId = $accountId ?: $balanceService->getCashAccountId();
+                        if ($targetAccountId) {
+                            $transactionService->createReceiptFromSale($sale, [$targetAccountId], [$sale->total_net]);
                         }
                     } catch (\Exception $accEx) {
                         Log::error("Accounting receipt error for online order #{$order->order_number}: " . $accEx->getMessage());
                     }
 
-                    // C. Release Rider if no other active deliveries
-                    if ($order->rider_id) {
-                        $activeCount = Sale::where('rider_id', $order->rider_id)
-                            ->where('delivery_status', 'dispatched')
-                            ->count();
-                        if ($activeCount === 0) {
-                            Rider::where('id', $order->rider_id)->update(['duty_status' => 'available']);
-                        }
-                    }
+                }
+
+                // C. Release Rider if order is Delivered or Cancelled
+                if (($isDelivered || $isCancelled) && !empty($order->rider_id)) {
+                    Rider::syncDutyStatus($order->rider_id);
                 }
 
                 return $sale;
