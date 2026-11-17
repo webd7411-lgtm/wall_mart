@@ -100,6 +100,16 @@ class EnforceRestaurantBranchRestriction
         // Settings (Branch specific)
         'settings.index',
         'settings.update',
+        'website_settings.index',
+        'website_settings.update',
+
+        // User Management, Roles & Permissions
+        'users',
+        'users.*',
+        'roles',
+        'roles.*',
+        'permissions',
+        'permissions.*',
 
         // Sale Report
         'report.sale',
@@ -166,6 +176,10 @@ class EnforceRestaurantBranchRestriction
         'accounts-head',
         'get-accounts-by-head',
         'settings',
+        'website-control',
+        'users',
+        'roles',
+        'permissions',
         'report/sale',
         'branch/switch',
         'logout',

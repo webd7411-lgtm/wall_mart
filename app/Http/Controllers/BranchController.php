@@ -51,11 +51,7 @@ class BranchController extends Controller
                 'reload'  => true
             ];
         } else {
-            $branch = new Branch();
-            $msg = [
-                'success'  => 'Branch Created Successfully',
-                'redirect' => route('branch.index')
-            ];
+            return response()->json(['errors' => ['name' => ['Creating new branches is disabled.']]], 403);
         }
 
         $branch->name    = $request->name;

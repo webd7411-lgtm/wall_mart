@@ -156,12 +156,32 @@
                         <span class="m-nav-text">Sale Report</span>
                     </a>
                 </li>
-                <li class="m-nav-item">
-                    <a href="{{ route('settings.index') }}" class="m-nav-link {{ request()->is('settings*') ? 'active' : '' }}">
-                        <i class="fas fa-sliders-h m-nav-icon text-secondary"></i>
-                        <span class="m-nav-text">POS Settings</span>
-                    </a>
+                @canany(['settings.view', 'settings.read', 'settings.edit', 'settings.update', 'users.view', 'roles.view', 'permissions.view'])
+                <li class="m-nav-item m-nav-group">
+                    <div class="m-nav-group-header" data-target="#mSubSettingsStaff">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-user-cog m-nav-icon text-secondary"></i>
+                            <span class="m-nav-text">Settings &amp; Roles</span>
+                        </div>
+                        <i class="fas fa-chevron-right m-chevron"></i>
+                    </div>
+                    <ul class="m-submenu collapse" id="mSubSettingsStaff">
+                        @canany(['settings.view', 'settings.read', 'settings.edit', 'settings.update'])
+                        <li><a href="{{ route('settings.index') }}"><i class="fas fa-sliders-h text-secondary"></i> POS Settings</a></li>
+                        <li><a href="{{ route('website_settings.index') }}"><i class="fas fa-globe text-primary"></i> Website Control</a></li>
+                        @endcanany
+                        @can('users.view')
+                        <li><a href="{{ route('users.index') }}"><i class="fas fa-users text-primary"></i> Branch Users</a></li>
+                        @endcan
+                        @can('roles.view')
+                        <li><a href="{{ route('roles.index') }}"><i class="fas fa-user-lock text-success"></i> Branch Roles</a></li>
+                        @endcan
+                        @can('permissions.view')
+                        <li><a href="{{ route('permissions.index') }}"><i class="fas fa-key text-warning"></i> Permissions</a></li>
+                        @endcan
+                    </ul>
                 </li>
+                @endcanany
             @else
             {{-- Dashboard --}}
             @canany(['dashboard.view', 'home.view'])
@@ -407,6 +427,15 @@
                             <li><a href="{{ route('branch.index') }}"><i class="fas fa-code-branch"></i> Branches</a></li>
                         @endcan
                     </ul>
+                </li>
+            @endcanany
+
+            @canany(['settings.view', 'settings.read', 'settings.edit', 'settings.update'])
+                <li class="m-nav-item">
+                    <a href="{{ route('website_settings.index') }}" class="m-nav-link {{ request()->is('website-control*') ? 'active' : '' }}">
+                        <i class="fas fa-globe m-nav-icon text-info"></i>
+                        <span class="m-nav-text">Website Control</span>
+                    </a>
                 </li>
             @endcanany
 

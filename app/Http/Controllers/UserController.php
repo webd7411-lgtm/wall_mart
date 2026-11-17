@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Branch;
+use App\Models\Role;
 use App\Helpers\BranchHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -18,32 +18,39 @@ class UserController extends Controller
         $isBranchLocked = !BranchHelper::canSwitchBranch();
 
         $query = User::with('branch')
-            ->where('email', '!=', 'superadmin@example.com')
-            ->whereDoesntHave('roles', function ($q) {
-                $q->where('name', 'superadmin');
-            });
+            ->where('email', '!=', 'superadmin@example.com');
 
-        if ($isBranchLocked && $currentBranchId) {
+        // If an active branch is selected (or user is locked to branch), show only this branch's users
+        if ($currentBranchId) {
             $query->where('branch_id', $currentBranchId);
+            $allRoles = Role::with('branch')
+                ->where(function ($q) use ($currentBranchId) {
+                    $q->whereNull('branch_id')->orWhere('branch_id', $currentBranchId);
+                })
+                ->orderBy('name', 'ASC')
+                ->get();
+            $branches = Branch::where('id', $currentBranchId)->where('status', 1)->get();
+        } else {
+            // In All Branches mode, show all users and all roles
+            $allRoles = Role::with('branch')->orderBy('name', 'ASC')->get();
+            $branches = Branch::where('status', 1)->get();
         }
 
         $users = $query->get();
-        $allRoles = Role::all();
-        $branches = $isBranchLocked 
-            ? Branch::where('id', $currentBranchId)->where('status', 1)->get()
-            : Branch::where('status', 1)->get();
+        $currentBranch = BranchHelper::getActiveBranch();
 
-        return view('admin_panel.users.users', compact(['users', 'allRoles', 'branches']));
+        return view('admin_panel.users.users', compact(['users', 'allRoles', 'branches', 'currentBranchId', 'currentBranch']));
     }
 
     public function store(Request $request)
     {
         $editId = $request->edit_id ?? null;
         $passwordRule = $editId ? 'nullable' : 'required';
+        $currentBranchId = BranchHelper::getActiveBranchId();
 
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'email' => 'required|unique:users,email,'.$request->edit_id,
+            'email' => 'required|unique:users,email,'.$editId,
             'password' => $passwordRule,
             'branch_id' => 'nullable|exists:branches,id',
         ]);
@@ -81,26 +88,19 @@ class UserController extends Controller
             $user->password = Hash::make($request->password);
         }
 
-        // Branch assignment logic
-        if (!BranchHelper::canSwitchBranch()) {
-            $user->branch_id = BranchHelper::getActiveBranchId();
+        // Branch assignment logic:
+        // 1. If currently in a specific branch (Restaurant or Mart): user is automatically locked to that branch!
+        // 2. If in "All Branches" mode: user branch is chosen from dropdown
+        if ($currentBranchId) {
+            $user->branch_id = $currentBranchId;
         } else {
-            $user->branch_id = $request->filled('branch_id') ? $request->branch_id : null;
+            $user->branch_id = $request->filled('branch_id') ? (int) $request->branch_id : null;
         }
 
         $user->save();
 
-        // Sync roles under the user's assigned branch team context
-        $currentSessionBranch = BranchHelper::getActiveBranchId();
-        if (function_exists('setPermissionsTeamId')) {
-            setPermissionsTeamId($user->branch_id);
-        }
-
-        $user->syncRoles($request->roles ?? []);
-
-        if (function_exists('setPermissionsTeamId')) {
-            setPermissionsTeamId($currentSessionBranch);
-        }
+        // Safely sync roles under user's branch context
+        $user->syncUserRoles($request->roles ?? [], $user->branch_id);
 
         return response()->json($msg);
 
@@ -132,6 +132,14 @@ class UserController extends Controller
 
     public function updateRoles(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'edit_id' => 'required|exists:users,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()]);
+        }
+
         $user = User::findOrFail($request->edit_id);
 
         if (!BranchHelper::canSwitchBranch()) {
@@ -141,19 +149,9 @@ class UserController extends Controller
             }
         }
 
-        // Assign new roles (by name) under user's branch context
-        $currentSessionBranch = BranchHelper::getActiveBranchId();
-        if (function_exists('setPermissionsTeamId')) {
-            setPermissionsTeamId($user->branch_id);
-        }
+        // Safely sync roles under user's branch context
+        $user->syncUserRoles($request->roles ?? [], $user->branch_id);
 
-        $user->syncRoles($request->roles ?? []);
-
-        if (function_exists('setPermissionsTeamId')) {
-            setPermissionsTeamId($currentSessionBranch);
-        }
-
-        // Return JSON so AJAX handlers get a clear response
         return response()->json(['success' => 'User roles updated successfully!', 'reload' => true]);
     }
 }

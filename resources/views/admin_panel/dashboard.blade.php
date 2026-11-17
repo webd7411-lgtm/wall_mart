@@ -424,6 +424,126 @@
     .spark-canvas-wrap { width: 80px; height: 42px; flex-shrink: 0; }
 
     /* =============================================
+       RESTAURANT ORDER CHANNELS (HUB)
+    ============================================= */
+    .rest-channel-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+    .rest-channel-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.35rem 1.25rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        transition: all 0.25s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .rest-channel-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    .rest-channel-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: var(--ch-color, var(--indigo));
+    }
+    .ch-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.85rem;
+    }
+    .ch-badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+        background: var(--ch-bg, #eef2ff);
+        color: var(--ch-color, var(--indigo));
+    }
+    .ch-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        background: var(--ch-bg, #eef2ff);
+        color: var(--ch-color, var(--indigo));
+    }
+    .ch-sales {
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+    }
+    .ch-title {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 0.2rem;
+    }
+    .ch-sub {
+        font-size: 0.74rem;
+        color: var(--muted);
+        font-weight: 500;
+    }
+    .ch-meta-box {
+        background: #f8fafc;
+        border: 1px solid #edf2f7;
+        border-radius: 10px;
+        padding: 0.65rem 0.85rem;
+        margin: 0.85rem 0 1rem;
+        font-size: 0.76rem;
+    }
+    .ch-meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.35rem;
+    }
+    .ch-meta-row:last-child {
+        margin-bottom: 0;
+    }
+    .ch-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        width: 100%;
+        padding: 0.55rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-decoration: none !important;
+        transition: all 0.2s;
+        background: #f1f5f9;
+        color: var(--text);
+    }
+    .ch-btn:hover {
+        background: var(--ch-color, var(--indigo));
+        color: #fff !important;
+    }
+    @media (max-width: 1200px) {
+        .rest-channel-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 576px) {
+        .rest-channel-grid { grid-template-columns: 1fr; }
+    }
+
+    /* =============================================
        RESPONSIVE
     ============================================= */
     @media (max-width: 1400px) {
@@ -540,31 +660,31 @@
                 <span class="kpi-trend up"><i class="fas fa-utensils"></i> Total Invoices Billed</span>
             </div>
 
-            <div class="kpi-card" style="--kpi-color: var(--amber); --kpi-icon-bg: #fffbeb;">
+            <div class="kpi-card" style="--kpi-color: var(--green); --kpi-icon-bg: #ecfdf5;">
                 <div class="kpi-top">
-                    <span class="kpi-label">Dine-In Sales (Today)</span>
-                    <div class="kpi-icon"><i class="fa-solid fa-chair"></i></div>
+                    <span class="kpi-label">Cash Collected (Today)</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-money-bill-1-wave"></i></div>
                 </div>
-                <div class="kpi-value">Rs {{ number_format($restaurantStats['dineInSales'] ?? 0, 0) }}</div>
-                <span style="font-size: 0.68rem; color: var(--muted); font-weight: 600;">Table Dining Sales</span>
+                <div class="kpi-value">Rs {{ number_format($restaurantStats['cashSalesToday'] ?? 0, 0) }}</div>
+                <span class="kpi-trend up"><i class="fas fa-arrow-up"></i> Counter Cash Billed</span>
+            </div>
+
+            <div class="kpi-card" style="--kpi-color: var(--cyan); --kpi-icon-bg: #ecfeff;">
+                <div class="kpi-top">
+                    <span class="kpi-label">Card / Digital (Today)</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-credit-card"></i></div>
+                </div>
+                <div class="kpi-value">Rs {{ number_format($restaurantStats['cardSalesToday'] ?? 0, 0) }}</div>
+                <span style="font-size: 0.68rem; color: var(--muted); font-weight: 600;">POS Terminal Payments</span>
             </div>
 
             <div class="kpi-card" style="--kpi-color: var(--red); --kpi-icon-bg: #fff1f2;">
                 <div class="kpi-top">
-                    <span class="kpi-label">Total Expenses (This Month)</span>
-                    <div class="kpi-icon"><i class="fa-solid fa-file-invoice"></i></div>
+                    <span class="kpi-label">Today's Expenses</span>
+                    <div class="kpi-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
                 </div>
-                <div class="kpi-value">Rs {{ number_format($expensesThisMonth ?? 0, 0) }}</div>
-                <span class="kpi-trend down"><i class="fas fa-arrow-down"></i> Monthly Expenses</span>
-            </div>
-
-            <div class="kpi-card" style="--kpi-color: var(--green); --kpi-icon-bg: #ecfdf5;">
-                <div class="kpi-top">
-                    <span class="kpi-label">Cash Balance</span>
-                    <div class="kpi-icon"><i class="fa-solid fa-wallet"></i></div>
-                </div>
-                <div class="kpi-value">Rs {{ number_format($totalCashAndBankBalance ?? 0, 0) }}</div>
-                <span style="font-size: 0.68rem; color: var(--muted); font-weight: 600;">Available Counter Cash</span>
+                <div class="kpi-value">Rs {{ number_format($expensesToday ?? 0, 0) }}</div>
+                <span class="kpi-trend down"><i class="fas fa-calendar-day"></i> Month: Rs {{ number_format($expensesThisMonth ?? 0, 0) }}</span>
             </div>
         @else
             {{-- STANDARD RETAIL / WHOLESALE KPI CARDS --}}
@@ -624,6 +744,148 @@
         @endif
 
     </div>
+
+    {{-- =============================================
+         3.1 RESTAURANT ORDER CHANNELS (DINE-IN, TAKEAWAY, DELIVERY, WEBSITE)
+    ============================================= --}}
+    @if($isRestaurant)
+        <div class="db-section-label">
+            <i class="fas fa-utensils text-warning"></i> Restaurant Order Channels &amp; Operations (Today's Live Performance)
+        </div>
+        <div class="rest-channel-grid">
+            {{-- 1. Dine-In --}}
+            <div class="rest-channel-card" style="--ch-color: #f59e0b; --ch-bg: #fffbeb;">
+                <div>
+                    <div class="ch-top">
+                        <div class="ch-icon"><i class="fa-solid fa-chair"></i></div>
+                        <span class="ch-badge"><i class="fas fa-receipt me-1"></i> {{ number_format($restaurantStats['dineInOrdersCount'] ?? 0) }} Orders Today</span>
+                    </div>
+                    <div class="ch-title">Dine-In Orders</div>
+                    <div class="ch-sales">Rs {{ number_format($restaurantStats['dineInSales'] ?? 0, 0) }}</div>
+                    <div class="ch-sub"><i class="fas fa-calendar-alt text-muted me-1"></i> Month Total: <b>Rs {{ number_format($restaurantStats['dineInMonthSales'] ?? 0, 0) }}</b></div>
+                    
+                    <div class="ch-meta-box">
+                        <div class="ch-meta-row">
+                            <span class="text-muted"><i class="fas fa-chair text-warning me-1"></i> Table Status:</span>
+                            <strong>{{ $restaurantStats['occupiedTables'] ?? 0 }} Occupied / {{ $restaurantStats['totalTables'] ?? 0 }} Total</strong>
+                        </div>
+                        <div class="ch-meta-row">
+                            <span class="text-muted"><i class="fas fa-chart-pie text-info me-1"></i> Occupancy Rate:</span>
+                            <strong class="{{ ($restaurantStats['tableOccupancyRate'] ?? 0) > 70 ? 'text-danger' : 'text-success' }}">{{ $restaurantStats['tableOccupancyRate'] ?? 0 }}%</strong>
+                        </div>
+                        <div class="ch-meta-row">
+                            <span class="text-muted"><i class="fas fa-check-circle text-success me-1"></i> Available Tables:</span>
+                            <strong class="text-success">{{ $restaurantStats['availableTables'] ?? 0 }} Available</strong>
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ route('restaurant.tables.index') }}" class="ch-btn">
+                    <i class="fas fa-chair text-warning"></i> Manage Dine-In Tables &rarr;
+                </a>
+            </div>
+
+            {{-- 2. Takeaway / Counter --}}
+            <div class="rest-channel-card" style="--ch-color: #3b82f6; --ch-bg: #eff6ff;">
+                <div>
+                    <div class="ch-top">
+                        <div class="ch-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+                        <span class="ch-badge"><i class="fas fa-receipt me-1"></i> {{ number_format($restaurantStats['takeawayOrdersCount'] ?? 0) }} Orders Today</span>
+                    </div>
+                    <div class="ch-title">Takeaway / Pickup</div>
+                    <div class="ch-sales">Rs {{ number_format($restaurantStats['takeawaySales'] ?? 0, 0) }}</div>
+                    <div class="ch-sub"><i class="fas fa-calendar-alt text-muted me-1"></i> Month Total: <b>Rs {{ number_format($restaurantStats['takeawayMonthSales'] ?? 0, 0) }}</b></div>
+                    
+                    <div class="ch-meta-box">
+                        <div class="ch-meta-row">
+                            <span class="text-muted"><i class="fas fa-calculator text-primary me-1"></i> Avg Order Value:</span>
+                            <strong>Rs {{ ($restaurantStats['takeawayOrdersCount'] ?? 0) > 0 ? number_format(($restaurantStats['takeawaySales'] ?? 0) / $restaurantStats['takeawayOrdersCount'], 0) : '0' }}</strong>
+                        </div>
+                        <div class="ch-meta-row">
+                            <span class="text-muted"><i class="fas fa-ticket-alt text-warning me-1"></i> Service Model:</span>
+                            <strong>Counter Quick Pick</strong>
+                        </div>
+                        <div class="ch-meta-row">
+                            <span class="text-muted"><i class="fas fa-fire text-danger me-1"></i> Kitchen KOT:</span>
+                            <strong class="text-primary">Direct KOT Print</strong>
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ route('pos.index') }}" class="ch-btn">
+                    <i class="fas fa-cash-register text-primary"></i> Open POS Counter &rarr;
+                </a>
+            </div>
+
+            {{-- 3. Home Delivery --}}
+            <div class="rest-channel-card" style="--ch-color: #8b5cf6; --ch-bg: #f5f3ff;">
+                <div>
+                    <div class="ch-top">
+                        <div class="ch-icon"><i class="fa-solid fa-motorcycle"></i></div>
+                        <span class="ch-badge"><i class="fas fa-receipt me-1"></i> {{ number_format($restaurantStats['deliveryOrdersCount'] ?? 0) }} Orders Today</span>
+                    </div>
+                    <div class="ch-title">Home Delivery &amp; Riders</div>
+                    <div class="ch-sales">Rs {{ number_format($restaurantStats['deliverySales'] ?? 0, 0) }}</div>
+                    <div class="ch-sub"><i class="fas fa-calendar-alt text-muted me-1"></i> Month Total: <b>Rs {{ number_format($restaurantStats['deliveryMonthSales'] ?? 0, 0) }}</b></div>
+                    
+                    <div class="ch-meta-box">
+                        <div class="ch-meta-row">
+                            <span class="text-muted"><i class="fas fa-route text-purple me-1"></i> Delivery Pipeline:</span>
+                            <span>
+                                <span class="badge badge-warning text-dark px-1" title="Pending Dispatch">{{ $restaurantStats['deliveryPendingCount'] ?? 0 }} Pend</span>
+                                <span class="badge badge-primary px-1" title="On the Road">{{ $restaurantStats['deliveryOutCount'] ?? 0 }} Road</span>
+                                <span class="badge badge-success px-1" title="Delivered">{{ $restaurantStats['deliveryDeliveredCount'] ?? 0 }} Done</span>
+                            </span>
+                        </div>
+                        <div class="ch-meta-row">
+                            <span class="text-muted"><i class="fas fa-money-bill-wave text-success me-1"></i> Unsettled Rider Cash:</span>
+                            <strong class="{{ ($restaurantStats['riderUnsettledCash'] ?? 0) > 0 ? 'text-danger' : 'text-success' }}">Rs {{ number_format($restaurantStats['riderUnsettledCash'] ?? 0, 0) }}</strong>
+                        </div>
+                        <div class="ch-meta-row">
+                            <span class="text-muted"><i class="fas fa-user-check text-info me-1"></i> Active Fleet:</span>
+                            <strong>{{ $restaurantStats['activeRiders'] ?? 0 }} Active / {{ $restaurantStats['totalRiders'] ?? 0 }} Riders</strong>
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ route('restaurant.deliveries.index') }}" class="ch-btn">
+                    <i class="fas fa-motorcycle text-purple"></i> Deliveries &amp; Riders Hub &rarr;
+                </a>
+            </div>
+
+            {{-- 4. Website Online Orders --}}
+            <div class="rest-channel-card" style="--ch-color: #10b981; --ch-bg: #ecfdf5;">
+                <div>
+                    <div class="ch-top">
+                        <div class="ch-icon"><i class="fa-solid fa-globe"></i></div>
+                        <span class="ch-badge"><i class="fas fa-shopping-cart me-1"></i> {{ number_format($restaurantStats['onlineOrdersToday'] ?? 0) }} Orders Today</span>
+                    </div>
+                    <div class="ch-title">Website Online Orders</div>
+                    <div class="ch-sales">Rs {{ number_format($restaurantStats['onlineSalesToday'] ?? 0, 0) }}</div>
+                    <div class="ch-sub"><i class="fas fa-store text-muted me-1"></i> Munch Fried Chicken Customer Portal</div>
+                    
+                    <div class="ch-meta-box">
+                        <div class="ch-meta-row">
+                            <span class="text-muted"><i class="fas fa-bell text-danger me-1"></i> Needs Kitchen Action:</span>
+                            @if(($restaurantStats['onlineOrdersPending'] ?? 0) > 0)
+                                <span class="badge badge-danger px-2 py-1"><i class="fas fa-exclamation-circle me-1"></i> {{ $restaurantStats['onlineOrdersPending'] }} PENDING</span>
+                            @else
+                                <span class="badge badge-success px-2 py-1"><i class="fas fa-check me-1"></i> All Orders Handled</span>
+                            @endif
+                        </div>
+                        <div class="ch-meta-row">
+                            <span class="text-muted"><i class="fab fa-whatsapp text-success me-1"></i> Order Channel:</span>
+                            <strong class="text-success">Live Website &amp; WA</strong>
+                        </div>
+                        <div class="ch-meta-row">
+                            <span class="text-muted"><i class="fas fa-sliders-h text-primary me-1"></i> Online Control:</span>
+                            <strong class="text-primary">Instant Web Sync</strong>
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ route('restaurant.online_orders') }}" class="ch-btn">
+                    <i class="fas fa-globe text-success"></i> Manage Live Online Orders &rarr;
+                </a>
+            </div>
+        </div>
+    @endif
 
     {{-- =============================================
          4. SALES OVERVIEW + CATEGORY + TOP PRODUCTS
@@ -711,21 +973,15 @@
                             <div>
                                 <div class="biz-val">{{ number_format($restaurantStats['occupiedTables'] ?? 0) }} / {{ number_format($restaurantStats['totalTables'] ?? 0) }}</div>
                                 <div class="biz-lbl">Occupied Tables</div>
-                                <div class="biz-trend up"><a href="{{ route('restaurant.tables.index') }}" style="text-decoration:none; color:var(--indigo); font-size:0.68rem; font-weight:700;">Tables →</a></div>
-                            </div>
-                        </div>
-                        <div class="biz-box">
-                            <div class="biz-icon" style="background:#fef3c7; color:#d97706;"><i class="fas fa-bag-shopping"></i></div>
-                            <div>
-                                <div class="biz-val">Rs {{ number_format($restaurantStats['takeawaySales'] ?? 0, 0) }}</div>
-                                <div class="biz-lbl">Takeaway Today</div>
+                                <div class="biz-trend up"><a href="{{ route('restaurant.tables.index') }}" style="text-decoration:none; color:var(--indigo); font-size:0.68rem; font-weight:700;">Tables &rarr;</a></div>
                             </div>
                         </div>
                         <div class="biz-box">
                             <div class="biz-icon" style="background:#f3e8ff; color:#8b5cf6;"><i class="fas fa-motorcycle"></i></div>
                             <div>
-                                <div class="biz-val">Rs {{ number_format($restaurantStats['deliverySales'] ?? 0, 0) }}</div>
-                                <div class="biz-lbl">Delivery Today</div>
+                                <div class="biz-val">{{ number_format($restaurantStats['activeRiders'] ?? 0) }} / {{ number_format($restaurantStats['totalRiders'] ?? 0) }}</div>
+                                <div class="biz-lbl">Active Riders</div>
+                                <div class="biz-trend up"><a href="{{ route('restaurant.deliveries.index') }}" style="text-decoration:none; color:var(--purple); font-size:0.68rem; font-weight:700;">Riders &rarr;</a></div>
                             </div>
                         </div>
                         <div class="biz-box">
@@ -733,6 +989,15 @@
                             <div>
                                 <div class="biz-val">{{ number_format($productCount) }}</div>
                                 <div class="biz-lbl">Menu Items</div>
+                                <div class="biz-trend up"><a href="{{ route('product') }}" style="text-decoration:none; color:var(--green); font-size:0.68rem; font-weight:700;">Menu &rarr;</a></div>
+                            </div>
+                        </div>
+                        <div class="biz-box">
+                            <div class="biz-icon" style="background:#fef3c7; color:#d97706;"><i class="fas fa-tags"></i></div>
+                            <div>
+                                <div class="biz-val">{{ number_format($categoryCount) }}</div>
+                                <div class="biz-lbl">Categories</div>
+                                <div class="biz-trend up"><a href="{{ route('Category.home') }}" style="text-decoration:none; color:var(--amber); font-size:0.68rem; font-weight:700;">Categories &rarr;</a></div>
                             </div>
                         </div>
                     </div>

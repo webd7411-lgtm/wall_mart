@@ -353,6 +353,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/restaurant/online-orders/api/stats', [\App\Http\Controllers\RestaurantOnlineOrderController::class, 'getStatsJson'])->name('restaurant.online_orders.stats');
 
     Route::get('/restaurant/pos', [\App\Http\Controllers\RestaurantController::class, 'pos'])->middleware('permission:restaurant.pos.view|sales.create')->name('restaurant.pos');
+    Route::get('/restaurant/lookup-customer', [\App\Http\Controllers\RestaurantController::class, 'lookupCustomerByPhone'])->name('restaurant.lookup_customer');
     Route::get('/restaurant/running-orders', [\App\Http\Controllers\RestaurantController::class, 'runningOrdersIndex'])->middleware('permission:restaurant.pos.view|sales.view')->name('restaurant.running_orders');
     Route::get('/restaurant/active-orders', [\App\Http\Controllers\RestaurantController::class, 'activeOrders'])->middleware('permission:restaurant.kds.view|sales.view|sales.view_own')->name('restaurant.active_orders');
     Route::get('/restaurant/order/{id}', [\App\Http\Controllers\RestaurantController::class, 'getOrder'])->middleware('permission:sales.view|sales.view_own')->name('restaurant.get_order');
@@ -522,12 +523,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [App\Http\Controllers\SettingsController::class, 'index'])->middleware('permission:settings.view|settings.read')->name('settings.index');
     Route::post('/settings', [App\Http\Controllers\SettingsController::class, 'update'])->middleware('permission:settings.edit|settings.update')->name('settings.update');
 
+    // Complete Website Control / CMS Management
+    Route::get('/website-control', [App\Http\Controllers\WebsiteSettingsController::class, 'index'])->middleware('permission:settings.view')->name('website_settings.index');
+    Route::post('/website-control', [App\Http\Controllers\WebsiteSettingsController::class, 'update'])->middleware('permission:settings.edit|settings.update')->name('website_settings.update');
+
     // Website Control Routes (Controlled by ENABLE_WEBSITE_CONTROL in .env)
     Route::middleware(['feature:website_control'])->group(function () {
-        // Website Settings
-        Route::get('/website-settings', [App\Http\Controllers\WebsiteSettingsController::class, 'index'])->middleware('permission:website-settings.view')->name('website_settings.index');
-        Route::post('/website-settings', [App\Http\Controllers\WebsiteSettingsController::class, 'update'])->middleware('permission:website-settings.edit|website-settings.update|website-settings.create|website-settings.delete|website-settings.upload_manage')->name('website_settings.update');
-        Route::post('/website-settings/categories', [App\Http\Controllers\WebsiteSettingsController::class, 'updateCategories'])->middleware('permission:website-settings.edit|website-settings.update|website-settings.create|website-settings.delete|website-settings.upload_manage')->name('website_settings.categories.update');
 
         // Web Orders
         Route::get('/web-orders', [App\Http\Controllers\WebOrderController::class, 'index'])->middleware('permission:web_orders.view|web_orders.read')->name('web_orders.index');

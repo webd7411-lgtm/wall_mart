@@ -1678,34 +1678,47 @@
                 <div class="cart-footer-config">
                     <!-- Delivery Specific Fields (Shown only in Delivery mode - SINGLE COMPACT CARD) -->
                     <div id="deliveryDetailsBox" class="p-1 px-2 mb-1 rounded border bg-light d-none" style="font-size: 0.75rem;">
-                        <!-- Row 1: Rider (with +Add Rider) + Delivery Charges -->
+                        <!-- Row 1: Rider + Delivery Charges -->
                         <div class="row g-1 mb-1 align-items-center">
-                            <div class="col-8">
-                                <select class="form-select form-select-sm" id="posRiderSelect" style="font-size: 0.74rem; height: 27px; padding: 2px 6px;" onchange="onRiderSelectChange()">
-                                    <option value="">🛵 Choose Rider (Optional)</option>
+                            <div class="col-7">
+                                <select class="form-select form-select-sm" id="posRiderSelect" style="font-size: 0.75rem; height: 28px; padding: 2px 22px 2px 8px; border: 1.5px solid #94a3b8 !important; border-radius: 4px; background-color: #ffffff; color: #1e293b; font-weight: 500; cursor: pointer;" onchange="onRiderSelectChange()">
+                                    <option value="">Choose Rider (Optional)</option>
                                     @foreach($riders as $rd)
                                         <option value="{{ $rd->id }}" data-name="{{ $rd->name }}" data-phone="{{ $rd->phone }}">
                                             {{ $rd->name }} ({{ ucfirst(str_replace('_', ' ', $rd->duty_status)) }})
                                         </option>
                                     @endforeach
+                                    <option value="__add_new__" style="color: #2563eb; font-weight: bold;">+ Add New Rider...</option>
                                 </select>
                             </div>
-                            <div class="col-4">
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text px-1" style="font-size: 0.68rem; padding: 2px 4px;">Del Rs</span>
-                                    <input type="number" class="form-control form-control-sm px-1 text-center fw-bold text-success" id="posDeliveryCharges" value="0" placeholder="0" style="font-size: 0.76rem; height: 27px; padding: 2px 4px;" oninput="renderCart()">
+                            <div class="col-5">
+                                <div class="input-group input-group-sm" style="height: 28px;">
+                                    <span class="input-group-text px-1 bg-light text-muted" style="font-size: 0.7rem; padding: 2px 6px; border: 1.5px solid #94a3b8; border-right: none;">Del Rs</span>
+                                    <input type="number" class="form-control form-control-sm px-1 text-center fw-bold text-success" id="posDeliveryCharges" value="0" placeholder="0" style="font-size: 0.76rem; height: 28px; padding: 2px 4px; border: 1.5px solid #94a3b8; border-left: 1px solid #cbd5e1;" oninput="renderCart()">
                                 </div>
                             </div>
                         </div>
 
                         <!-- Row 2: Customer Name + Phone Number -->
+                        <input type="hidden" id="posDeliveryCustomerId" value="">
                         <div class="row g-1 mb-1">
                             <div class="col-6">
                                 <input type="text" class="form-control form-control-sm" id="posDeliveryCustomerName" placeholder="Customer Name *" style="font-size: 0.75rem; height: 27px; padding: 2px 6px;" oninput="$('#customerWalkinName').val(this.value)">
                             </div>
                             <div class="col-6">
-                                <input type="text" class="form-control form-control-sm" id="posCustomerPhone" placeholder="Phone (03xx...)" style="font-size: 0.75rem; height: 27px; padding: 2px 6px;">
+                                <div class="position-relative">
+                                    <input type="text" class="form-control form-control-sm" id="posCustomerPhone" placeholder="Phone (03xx...)" style="font-size: 0.75rem; height: 27px; padding: 2px 20px 2px 6px;" autocomplete="off">
+                                    <span id="posPhoneLookupSpinner" class="position-absolute end-0 top-50 translate-middle-y me-1 d-none" style="font-size: 0.68rem; color: #2563eb;" title="Searching customer...">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </span>
+                                </div>
                             </div>
+                        </div>
+
+                        <!-- Customer Found Banner (Auto-Fill Status) -->
+                        <div id="deliveryCustomerFoundNotice" class="d-none alert alert-success py-1 px-2 mb-1 rounded d-flex align-items-center justify-content-between" style="font-size: 0.7rem; border-left: 3px solid #16a34a; background-color: #ecfdf5;">
+                            <span class="text-truncate text-success fw-bold"><i class="fas fa-check-circle me-1"></i> Auto-filled: <span id="deliveryFoundBadgeName"></span></span>
+                            <span class="badge bg-success" style="font-size: 0.62rem;">Found</span>
                         </div>
 
                         <!-- Row 3: Delivery Address -->
@@ -2505,6 +2518,11 @@
     function onRiderSelectChange() {
         let opt = $('#posRiderSelect option:selected');
         let rId = opt.val() || '';
+        if (rId === '__add_new__') {
+            $('#posRiderSelect').val('');
+            openQuickRiderModal();
+            return;
+        }
         let rName = opt.data('name') || '';
         if (rId && rName) {
             $('#orderTargetInput').val('Rider: ' + rName);
@@ -2512,6 +2530,99 @@
             $('#orderTargetInput').val('Delivery Order');
         }
     }
+
+    // Auto-Lookup Customer by Phone for Delivery Orders
+    let phoneLookupTimer = null;
+    let lastSearchedDeliveryPhone = '';
+
+    function lookupCustomerDetailsByPhone(phone, force = false) {
+        phone = (phone || '').trim();
+        let cleanDigits = phone.replace(/[^0-9]/g, '');
+
+        // Allow search for at least 3 digits (supports short numbers, test inputs, and full mobile numbers)
+        if (cleanDigits.length < 3 && phone.length < 3) {
+            $('#deliveryCustomerFoundNotice').addClass('d-none');
+            $('#posDeliveryCustomerId').val('');
+            return;
+        }
+
+        if (!force && phone === lastSearchedDeliveryPhone) {
+            return;
+        }
+
+        lastSearchedDeliveryPhone = phone;
+        $('#posPhoneLookupSpinner').removeClass('d-none');
+
+        $.ajax({
+            url: "{{ route('restaurant.lookup_customer') }}",
+            type: "GET",
+            data: { phone: phone },
+            dataType: "json",
+            success: function(res) {
+                $('#posPhoneLookupSpinner').addClass('d-none');
+                if (res && res.found) {
+                    if (res.name) {
+                        $('#posDeliveryCustomerName').val(res.name);
+                        $('#customerWalkinName').val(res.name);
+                    }
+                    if (res.address) {
+                        $('#posDeliveryAddress').val(res.address);
+                    }
+                    if (res.remarks) {
+                        $('#posDeliveryRemarks').val(res.remarks);
+                        $('#orderRemarksInput').val(res.remarks);
+                    }
+                    if (res.customer_id) {
+                        $('#posDeliveryCustomerId').val(res.customer_id);
+                    }
+
+                    $('#deliveryFoundBadgeName').text(res.name || 'Saved Customer');
+                    $('#deliveryCustomerFoundNotice').removeClass('d-none');
+
+                    // Highlight visual feedback
+                    $('#posDeliveryCustomerName, #posDeliveryAddress')
+                        .css('transition', 'background-color 0.3s ease')
+                        .css('background-color', '#dcfce7');
+                    setTimeout(() => {
+                        $('#posDeliveryCustomerName, #posDeliveryAddress').css('background-color', '');
+                    }, 1200);
+                } else {
+                    $('#deliveryCustomerFoundNotice').addClass('d-none');
+                    $('#posDeliveryCustomerId').val('');
+                }
+            },
+            error: function() {
+                $('#posPhoneLookupSpinner').addClass('d-none');
+            }
+        });
+    }
+
+    $(document).on('input', '#posCustomerPhone', function() {
+        let phone = $(this).val();
+        clearTimeout(phoneLookupTimer);
+        let clean = phone.replace(/[^0-9]/g, '');
+        // If 10 or 11 digits (full mobile) or user stops typing, trigger fast
+        let delay = (clean.length >= 10) ? 200 : 350;
+        phoneLookupTimer = setTimeout(() => {
+            lookupCustomerDetailsByPhone(phone);
+        }, delay);
+    });
+
+    $(document).on('blur change', '#posCustomerPhone', function() {
+        let phone = $(this).val();
+        if (phone) {
+            lookupCustomerDetailsByPhone(phone, true);
+        }
+    });
+
+    $(document).on('paste', '#posCustomerPhone', function() {
+        setTimeout(() => {
+            let phone = $('#posCustomerPhone').val();
+            if (phone) {
+                lookupCustomerDetailsByPhone(phone, true);
+            }
+        }, 100);
+    });
 
     // Quick Add Rider Modal
     function openQuickRiderModal() {
@@ -3567,6 +3678,12 @@
         $('#posDeliveryAddress').val('');
         $('#posDeliveryCharges').val(0);
         $('#posDeliveryRemarks').val('');
+        $('#posDeliveryCustomerId').val('');
+        $('#deliveryCustomerFoundNotice').addClass('d-none');
+        $('#posPhoneLookupSpinner').addClass('d-none');
+        if (typeof lastSearchedDeliveryPhone !== 'undefined') {
+            lastSearchedDeliveryPhone = '';
+        }
         $('#posRiderSelect').val('');
         $('#posCustomerSelect').val('');
         if ($.fn.select2 && $('#posCustomerSelect').hasClass('select2-hidden-accessible')) {

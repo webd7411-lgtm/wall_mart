@@ -438,33 +438,96 @@ class HomeController extends Controller
             // Restaurant Specific Stats
             $restaurantStats = [];
             if ($isRestaurantBranch) {
+                $todayDate = \Carbon\Carbon::today();
+
+                // 1. Overall Today & Month Counts & Sales
                 $todayOrdersCount = DB::table('sales')
-                    ->whereDate('created_at', \Carbon\Carbon::today())
+                    ->whereDate('created_at', $todayDate)
                     ->whereNotIn('sale_status', ['cancelled'])
                     ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
                     ->count();
 
-                $dineInSales = DB::table('sales')
-                    ->whereDate('created_at', \Carbon\Carbon::today())
+                // Group by order_type for today in single query
+                $todayOrderTypeStats = DB::table('sales')
+                    ->whereDate('created_at', $todayDate)
                     ->whereNotIn('sale_status', ['cancelled'])
-                    ->where('order_type', 'dine_in')
                     ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
-                    ->sum('total_net');
+                    ->select('order_type', DB::raw('COUNT(*) as orders_count'), DB::raw('COALESCE(SUM(total_net), 0) as total_sales'))
+                    ->groupBy('order_type')
+                    ->get()
+                    ->keyBy('order_type');
 
-                $takeawaySales = DB::table('sales')
-                    ->whereDate('created_at', \Carbon\Carbon::today())
+                $dineInOrdersCount = (int) ($todayOrderTypeStats['dine_in']->orders_count ?? 0);
+                $dineInSales       = (float) ($todayOrderTypeStats['dine_in']->total_sales ?? 0);
+
+                $takeawayOrdersCount = (int) ($todayOrderTypeStats['takeaway']->orders_count ?? 0);
+                $takeawaySales       = (float) ($todayOrderTypeStats['takeaway']->total_sales ?? 0);
+
+                $deliveryOrdersCount = (int) ($todayOrderTypeStats['delivery']->orders_count ?? 0);
+                $deliverySales       = (float) ($todayOrderTypeStats['delivery']->total_sales ?? 0);
+
+                // Month Order Type Stats (in single query)
+                $monthOrderTypeStats = DB::table('sales')
+                    ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
                     ->whereNotIn('sale_status', ['cancelled'])
-                    ->where('order_type', 'takeaway')
                     ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
-                    ->sum('total_net');
+                    ->select('order_type', DB::raw('COUNT(*) as orders_count'), DB::raw('COALESCE(SUM(total_net), 0) as total_sales'))
+                    ->groupBy('order_type')
+                    ->get()
+                    ->keyBy('order_type');
 
-                $deliverySales = DB::table('sales')
-                    ->whereDate('created_at', \Carbon\Carbon::today())
-                    ->whereNotIn('sale_status', ['cancelled'])
+                $dineInMonthSales   = (float) ($monthOrderTypeStats['dine_in']->total_sales ?? 0);
+                $takeawayMonthSales = (float) ($monthOrderTypeStats['takeaway']->total_sales ?? 0);
+                $deliveryMonthSales = (float) ($monthOrderTypeStats['delivery']->total_sales ?? 0);
+
+                // 2. Delivery Pipeline Stats
+                $deliveryPendingCount = DB::table('sales')
+                    ->whereDate('created_at', $todayDate)
                     ->where('order_type', 'delivery')
+                    ->whereNotIn('sale_status', ['cancelled'])
+                    ->where(function($q) {
+                        $q->whereNull('delivery_status')->orWhereIn('delivery_status', ['pending', 'preparing']);
+                    })
                     ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
-                    ->sum('total_net');
+                    ->count();
 
+                $deliveryOutCount = DB::table('sales')
+                    ->whereDate('created_at', $todayDate)
+                    ->where('order_type', 'delivery')
+                    ->whereNotIn('sale_status', ['cancelled'])
+                    ->whereIn('delivery_status', ['assigned', 'out_for_delivery'])
+                    ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+                    ->count();
+
+                $deliveryDeliveredCount = DB::table('sales')
+                    ->whereDate('created_at', $todayDate)
+                    ->where('order_type', 'delivery')
+                    ->whereNotIn('sale_status', ['cancelled'])
+                    ->where('delivery_status', 'delivered')
+                    ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+                    ->count();
+
+                // Unsettled Rider Cash Today
+                $riderUnsettledCash = (float) (DB::table('sales')
+                    ->whereDate('created_at', $todayDate)
+                    ->where('order_type', 'delivery')
+                    ->whereNotIn('sale_status', ['cancelled'])
+                    ->where(function($q) {
+                        $q->whereNull('rider_cash_settled')->orWhere('rider_cash_settled', 0);
+                    })
+                    ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+                    ->sum('cash') ?? 0);
+
+                // 3. Riders Stats
+                $totalRiders = \Illuminate\Support\Facades\Schema::hasTable('riders')
+                    ? DB::table('riders')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count()
+                    : 0;
+
+                $activeRiders = \Illuminate\Support\Facades\Schema::hasTable('riders')
+                    ? DB::table('riders')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->where('is_active', 1)->count()
+                    : 0;
+
+                // 4. Tables Stats
                 $totalTables = \Illuminate\Support\Facades\Schema::hasTable('restaurant_tables')
                     ? DB::table('restaurant_tables')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->count()
                     : 0;
@@ -473,13 +536,81 @@ class HomeController extends Controller
                     ? DB::table('restaurant_tables')->when($branchId, fn($q) => $q->where('branch_id', $branchId))->where('status', 'occupied')->count()
                     : 0;
 
+                $availableTables = max(0, $totalTables - $occupiedTables);
+                $tableOccupancyRate = $totalTables > 0 ? round(($occupiedTables / $totalTables) * 100) : 0;
+
+                // 5. Website Online Orders Stats
+                $onlineOrdersPending = 0;
+                $onlineOrdersToday = 0;
+                $onlineSalesToday = 0;
+                if (\Illuminate\Support\Facades\Schema::hasTable('ecommerce_orders')) {
+                    $onlineOrdersPending = DB::table('ecommerce_orders')
+                        ->where('order_status', 'pending')
+                        ->count();
+
+                    $onlineOrdersToday = DB::table('ecommerce_orders')
+                        ->whereDate('created_at', $todayDate)
+                        ->whereNotIn('order_status', ['cancelled'])
+                        ->count();
+
+                    $onlineSalesToday = (float) (DB::table('ecommerce_orders')
+                        ->whereDate('created_at', $todayDate)
+                        ->whereNotIn('order_status', ['cancelled'])
+                        ->sum('total') ?? 0);
+                }
+
+                // 6. Cash & Card Breakdown Today
+                $todayPaymentStats = DB::table('sales')
+                    ->whereDate('created_at', $todayDate)
+                    ->whereNotIn('sale_status', ['cancelled'])
+                    ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+                    ->select(
+                        DB::raw('COALESCE(SUM(cash), 0) as total_cash'),
+                        DB::raw('COALESCE(SUM(card), 0) as total_card'),
+                        DB::raw('COALESCE(SUM(delivery_charges), 0) as total_delivery_charges')
+                    )
+                    ->first();
+
+                $cashSalesToday = (float) ($todayPaymentStats->total_cash ?? 0);
+                $cardSalesToday = (float) ($todayPaymentStats->total_card ?? 0);
+                $deliveryChargesToday = (float) ($todayPaymentStats->total_delivery_charges ?? 0);
+
+                // 7. Recent Live Restaurant Orders (Detailed)
+                $recentRestaurantSales = DB::table('sales')
+                    ->whereNotIn('sale_status', ['cancelled'])
+                    ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+                    ->latest()
+                    ->limit(8)
+                    ->get();
+
                 $restaurantStats = [
-                    'todayOrdersCount' => $todayOrdersCount,
-                    'dineInSales' => $dineInSales,
-                    'takeawaySales' => $takeawaySales,
-                    'deliverySales' => $deliverySales,
-                    'totalTables' => $totalTables,
-                    'occupiedTables' => $occupiedTables,
+                    'todayOrdersCount'       => $todayOrdersCount,
+                    'dineInOrdersCount'      => $dineInOrdersCount,
+                    'dineInSales'            => $dineInSales,
+                    'dineInMonthSales'       => $dineInMonthSales,
+                    'takeawayOrdersCount'    => $takeawayOrdersCount,
+                    'takeawaySales'          => $takeawaySales,
+                    'takeawayMonthSales'     => $takeawayMonthSales,
+                    'deliveryOrdersCount'    => $deliveryOrdersCount,
+                    'deliverySales'          => $deliverySales,
+                    'deliveryMonthSales'     => $deliveryMonthSales,
+                    'deliveryPendingCount'   => $deliveryPendingCount,
+                    'deliveryOutCount'       => $deliveryOutCount,
+                    'deliveryDeliveredCount' => $deliveryDeliveredCount,
+                    'riderUnsettledCash'     => $riderUnsettledCash,
+                    'totalRiders'            => $totalRiders,
+                    'activeRiders'           => $activeRiders,
+                    'totalTables'            => $totalTables,
+                    'occupiedTables'         => $occupiedTables,
+                    'availableTables'        => $availableTables,
+                    'tableOccupancyRate'     => $tableOccupancyRate,
+                    'onlineOrdersPending'    => $onlineOrdersPending,
+                    'onlineOrdersToday'      => $onlineOrdersToday,
+                    'onlineSalesToday'       => $onlineSalesToday,
+                    'cashSalesToday'         => $cashSalesToday,
+                    'cardSalesToday'         => $cardSalesToday,
+                    'deliveryChargesToday'   => $deliveryChargesToday,
+                    'recentRestaurantSales'  => $recentRestaurantSales,
                 ];
             }
 
@@ -527,15 +658,43 @@ class HomeController extends Controller
                 $recentActivities = DB::table('sales')
                     ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
                     ->latest()
-                    ->limit(5)
+                    ->limit(8)
                     ->get()
                     ->map(function($s) {
-                        $type = ucfirst(str_replace('_', ' ', $s->order_type ?? 'Sale'));
+                        $orderType = strtolower($s->order_type ?? 'counter');
+                        $icon = 'fa-receipt text-primary';
+                        $bg = '#eff6ff';
+                        $subtitle = $s->walkin_name ?: 'Walk-in Customer';
+
+                        if ($orderType === 'dine_in') {
+                            $type = 'Dine-In';
+                            $icon = 'fa-chair text-warning';
+                            $bg = '#fffbeb';
+                            $subtitle = !empty($s->table_no) ? 'Table ' . $s->table_no : ($s->walkin_name ?: 'Dine-In Customer');
+                        } elseif ($orderType === 'delivery') {
+                            $type = 'Delivery';
+                            $icon = 'fa-motorcycle text-purple';
+                            $bg = '#f5f3ff';
+                            $subtitle = !empty($s->rider_name) ? 'Rider: ' . $s->rider_name : (!empty($s->delivery_address) ? $s->delivery_address : 'Home Delivery');
+                        } elseif ($orderType === 'takeaway') {
+                            $type = 'Takeaway';
+                            $icon = 'fa-bag-shopping text-info';
+                            $bg = '#ecfeff';
+                            $subtitle = !empty($s->token_no) ? 'Token #' . $s->token_no : ($s->walkin_name ?: 'Takeaway Pickup');
+                        } elseif ($s->ecommerce_order_id) {
+                            $type = 'Website Order';
+                            $icon = 'fa-globe text-success';
+                            $bg = '#ecfdf5';
+                            $subtitle = 'Online Website Order';
+                        } else {
+                            $type = ucfirst($orderType);
+                        }
+
                         return [
-                            'icon' => 'fa-receipt text-success',
-                            'bg' => '#ecfdf5',
-                            'title' => 'Order #' . $s->invoice_no . ' (' . $type . ')',
-                            'subtitle' => !empty($s->table_no) ? 'Table ' . $s->table_no : ($s->walkin_name ?: 'Counter Order'),
+                            'icon' => $icon,
+                            'bg' => $bg,
+                            'title' => 'Invoice #' . $s->invoice_no . ' (' . $type . ')',
+                            'subtitle' => $subtitle,
                             'amount' => 'Rs ' . number_format($s->total_net, 0),
                             'time' => \Carbon\Carbon::parse($s->created_at)->diffForHumans()
                         ];

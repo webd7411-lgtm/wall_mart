@@ -933,22 +933,39 @@
                             </div>
                         </div>
 
-                        <div class="form-group-modern">
-                            <label class="form-label">
-                                <i class="fa fa-code-branch"></i>
-                                Branch Scope
-                            </label>
-                            <select name="branch_id" id="roleBranchId" class="form-control" style="height: 48px;">
-                                <option value="">Global (All Branches / Head Office)</option>
-                                @foreach($branches ?? [] as $b)
-                                    <option value="{{ $b->id }}" data-type="{{ $b->type }}">{{ $b->name }} ({{ ucfirst($b->type) }})</option>
-                                @endforeach
-                            </select>
-                            <div class="form-hint">
-                                <i class="fa fa-info-circle"></i>
-                                Select a specific branch to scope roles and auto-match branch functions (Mart vs Restaurant).
+                        @if(!empty($activeBranchId) && !empty($currentBranch))
+                            <div class="form-group-modern">
+                                <label class="form-label">
+                                    <i class="fa fa-code-branch"></i>
+                                    Branch Scope
+                                </label>
+                                <div class="p-3 rounded border bg-light d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <strong><i class="fa {{ $currentBranch->type === 'restaurant' ? 'fa-utensils text-danger' : 'fa-store text-primary' }}"></i> {{ $currentBranch->name }}</strong>
+                                        <span class="badge {{ $currentBranch->type === 'restaurant' ? 'bg-danger text-white' : 'bg-primary text-white' }} ms-2" style="font-size: 11px;">{{ ucfirst($currentBranch->type) }} Branch</span>
+                                    </div>
+                                    <small class="text-muted"><i class="fa fa-lock"></i> Auto-assigned to current branch</small>
+                                </div>
+                                <input type="hidden" name="branch_id" value="{{ $activeBranchId }}">
                             </div>
-                        </div>
+                        @else
+                            <div class="form-group-modern">
+                                <label class="form-label">
+                                    <i class="fa fa-code-branch"></i>
+                                    Branch Scope
+                                </label>
+                                <select name="branch_id" id="roleBranchId" class="form-control" style="height: 48px;">
+                                    <option value="">Global (All Branches / Head Office)</option>
+                                    @foreach($branches ?? [] as $b)
+                                        <option value="{{ $b->id }}" data-type="{{ $b->type }}">{{ $b->name }} ({{ ucfirst($b->type) }})</option>
+                                    @endforeach
+                                </select>
+                                <div class="form-hint">
+                                    <i class="fa fa-info-circle"></i>
+                                    Select a specific branch or keep Global for all branches.
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                     <div class="modal-footer-modern">
@@ -1109,8 +1126,10 @@
                 var card = $(this).closest('.role-card');
                 var id = card.data('role-id');
                 var name = card.find('.role-name').text().trim();
-                var branchType = card.data('branch-type') || 'global';
-                var branchName = card.data('branch-name') || 'Global';
+                var rawBranchType = card.data('branch-type');
+                var activeBranchType = '{{ $currentBranch?->type ?? "" }}';
+                var branchType = (rawBranchType && rawBranchType !== 'global') ? rawBranchType : (activeBranchType || 'global');
+                var branchName = card.data('branch-name') || (activeBranchType ? '{{ $currentBranch?->name ?? "Current Branch" }}' : 'Global');
                 var assignedPerms = card.data('permissions') || [];
 
                 $('#permEditId').val(id);
@@ -1174,7 +1193,35 @@
                     'warehouse',
                     'warehouse.stock',
                     'stock.transfer',
-                    'stock.adjust'
+                    'stock.adjust',
+                    'purchases',
+                    'purchase.returns',
+                    'purchase_pos',
+                    'vendors',
+                    'vendor.payments',
+                    'subcategories',
+                    'brands',
+                    'units',
+                    'zones',
+                    'sales.officers',
+                    'checkbook',
+                    'bookings',
+                    'receipts.voucher',
+                    'journal.voucher',
+                    'payment.voucher',
+                    'income.voucher',
+                    'branches',
+                    'executive.report',
+                    'item.stock.report',
+                    'purchase.report',
+                    'vendor.ledger',
+                    'inventory.onhand',
+                    'profit.loss.report',
+                    'recovery.report',
+                    'payable.report',
+                    'parties.balance.report',
+                    'aging.report',
+                    'balance.sheet.report'
                 ];
 
                 allPermissions.forEach(function(p) {

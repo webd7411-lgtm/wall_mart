@@ -127,16 +127,28 @@
         </tbody>
     </table>
 
+    @php
+        $itemsSubtotal = (float)$sale->total_bill_amount;
+        $delCharges = (float)($sale->delivery_charges ?? 0);
+        $discountAmount = (float)($sale->total_extradiscount ?? 0);
+        $codCollectable = max(0, ($itemsSubtotal + $delCharges) - $discountAmount);
+    @endphp
     <!-- Totals -->
     <div class="my-1" style="font-size: 12px;">
         <div class="d-flex">
             <span>Items Subtotal:</span>
-            <span>Rs. {{ number_format($sale->total_bill_amount - ($sale->delivery_charges ?? 0), 0) }}</span>
+            <span>Rs. {{ number_format($itemsSubtotal, 0) }}</span>
         </div>
-        @if(($sale->delivery_charges ?? 0) > 0)
+        @if($delCharges > 0)
             <div class="d-flex">
                 <span>Delivery Charges:</span>
-                <span>Rs. {{ number_format($sale->delivery_charges, 0) }}</span>
+                <span>Rs. {{ number_format($delCharges, 0) }}</span>
+            </div>
+        @endif
+        @if($discountAmount > 0)
+            <div class="d-flex">
+                <span>Discount:</span>
+                <span>- Rs. {{ number_format($discountAmount, 0) }}</span>
             </div>
         @endif
     </div>
@@ -144,7 +156,7 @@
     <!-- COD Box -->
     <div class="cod-box">
         <div style="font-size: 11px; font-weight: bold; text-transform: uppercase;">Cash On Delivery (COD)</div>
-        <div class="fw-bold fs-5">Rs. {{ number_format($sale->total_bill_amount, 0) }}</div>
+        <div class="fw-bold fs-5">Rs. {{ number_format($codCollectable, 0) }}</div>
         <div style="font-size: 11px; color: #000; font-weight: 700;">Please collect exact amount</div>
     </div>
 

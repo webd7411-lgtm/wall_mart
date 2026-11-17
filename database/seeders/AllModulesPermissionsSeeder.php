@@ -16,12 +16,9 @@ class AllModulesPermissionsSeeder extends Seeder
         // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Comprehensive list of modules
-        $modules = [
-            'home',
-            'profile',
+        // Active Standard modules with (view, create, edit, delete)
+        $standardModules = [
             'products',
-            'product.bookings',
             'discount.products',
             'categories',
             'subcategories',
@@ -31,7 +28,6 @@ class AllModulesPermissionsSeeder extends Seeder
             'warehouse.stock',
             'stock.transfer',
             'stock.adjust',
-            'stocks',
             'purchases',
             'purchase.returns',
             'vendors',
@@ -42,84 +38,71 @@ class AllModulesPermissionsSeeder extends Seeder
             'sales.returns',
             'customers',
             'customer.payments',
-            'customer.ledger',
             'bookings',
             'checkbook',
-
-            // Restaurant Modules
-            'restaurant.tables',
-            'restaurant.riders',
-            'restaurant.deliveries',
-            'restaurant.kds',
-            'restaurant.pos',
-
+            'zones',
+            'sales.officers',
             'chart.of.accounts',
             'expense.voucher',
             'receipts.voucher',
             'journal.voucher',
             'payment.voucher',
             'income.voucher',
-            'item.stock.report',
-            'purchase.report',
-            'sale.report',
-            'reporting',
-            'recovery.report',
-            'payable.report',
-            'parties.balance.report',
-            'aging.report',
-            'balance.sheet.report',
-            'profit.loss.report',
-            'inventory.onhand',
-            'vendor.ledger',
+            'restaurant.tables',
+            'restaurant.riders',
+            'restaurant.deliveries',
             'users',
             'roles',
             'permissions',
-            'branches',
-            'zones',
-            'sales.officers',
-            'narrations',
-            'executive.report',
-            'package.types',
-            // HR Modules
-            'hr.departments',
-            'hr.employees',
-            'hr.attendance',
-            'hr.payroll',
-            'hr.leaves',
-            'hr.designations',
-            'hr.shifts',
-            'hr.holidays',
-            'hr.salary.structure',
-            'hr.loans',
-            'hr.biometric.devices',
-            'web_products',
-            'coupons',
-            'web_orders',
-            'settings',
-            'web_users'
+            'settings'
         ];
 
         // Standard actions
         $actions = ['view', 'create', 'edit', 'delete'];
 
-        foreach ($modules as $module) {
+        foreach ($standardModules as $module) {
             foreach ($actions as $action) {
-                // Format: module.action (lowercase)
                 $permissionName = strtolower("{$module}.{$action}");
                 Permission::firstOrCreate(['name' => $permissionName]);
             }
         }
 
-        // Register Website Settings specific permissions (with custom actions)
-        foreach ([
-            'website-settings.view',
-            'website-settings.create',
-            'website-settings.edit',
-            'website-settings.delete',
-            'website-settings.update',
-            'website-settings.upload_manage'
-        ] as $permName) {
-            Permission::firstOrCreate(['name' => $permName]);
+        // Custom / Granular permissions
+        $specificPermissions = [
+            'dashboard.view',
+            'home.view',
+            'purchase_pos.create',
+            'sales.view_own',
+            'customer.payments.reminder',
+            'customer.ledger.view',
+            'payments.pos_split',
+            'payments.refund',
+            'payment.voucher.print',
+            'settings.update',
+            'restaurant.deliveries.status_update',
+            'restaurant.kds.view',
+            'restaurant.pos.view',
+            // Branches (view, edit, delete - NO branches.create to prevent creating more branches)
+            'branches.view',
+            'branches.edit',
+            'branches.delete',
+            // Reports (Read-only View)
+            'executive.report.view',
+            'item.stock.report.view',
+            'purchase.report.view',
+            'sale.report.view',
+            'vendor.ledger.view',
+            'inventory.onhand.view',
+            'profit.loss.report.view',
+            'recovery.report.view',
+            'payable.report.view',
+            'parties.balance.report.view',
+            'aging.report.view',
+            'balance.sheet.report.view'
+        ];
+
+        foreach ($specificPermissions as $perm) {
+            Permission::firstOrCreate(['name' => $perm]);
         }
 
         // Grant all new permissions to Super Admin just in case (though Gate::before handles it)

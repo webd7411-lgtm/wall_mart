@@ -27,7 +27,13 @@ class PermissionController extends Controller
             Permission::firstOrCreate(['name' => $permName, 'guard_name' => 'web']);
         }
 
-        $permissions = Permission::orderBy('name',"ASC")->get();
+        $activeBranchId = \App\Helpers\BranchHelper::getActiveBranchId();
+        $currentBranch = \App\Helpers\BranchHelper::getActiveBranch();
+        $branchType = $currentBranch ? $currentBranch->type : null;
+
+        $permissions = Permission::orderBy('name',"ASC")->get()->filter(function ($p) use ($branchType) {
+            return \App\Helpers\BranchHelper::isPermissionAllowedForBranchType($p->name, $branchType);
+        })->values();
         return view('admin_panel.permissions.permission', compact('permissions'));
     }
 

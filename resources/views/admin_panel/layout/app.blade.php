@@ -1740,13 +1740,54 @@
 
                             <li class="nav-item-divider d-none d-md-block"></li>
 
-                            {{-- 9. POS Settings --}}
-                            <li class="nav-item {{ request()->is('settings*') ? 'active' : '' }}">
-                                <a href="{{ route('settings.index') }}" class="nav-link">
-                                    <i class="menu_icon fas fa-sliders-h text-secondary"></i>
-                                    <span class="menu-title">Settings</span>
+                            {{-- 9. Settings, Roles & Website Control Combined Dropdown --}}
+                            @canany(['settings.view', 'settings.read', 'settings.edit', 'settings.update', 'users.view', 'roles.view', 'permissions.view'])
+                            <li class="nav-item has-dropdown {{ request()->is('settings*') || request()->is('website-control*') || request()->is('users*') || request()->is('roles*') || request()->is('permissions*') ? 'active' : '' }}">
+                                <a href="javascript:void(0);" class="nav-link dropdown-toggle-nav">
+                                    <i class="menu_icon fas fa-user-cog text-info"></i>
+                                    <span class="menu-title">Settings &amp; Roles</span>
+                                    <i class="menu-arrow fas fa-chevron-down"></i>
                                 </a>
+                                <div class="submenu">
+                                    <ul class="submenu-item">
+                                        @canany(['settings.view', 'settings.read', 'settings.edit', 'settings.update'])
+                                        <li>
+                                            <a href="{{ route('settings.index') }}">
+                                                <i class="fas fa-sliders-h text-secondary"></i> POS Settings
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('website_settings.index') }}">
+                                                <i class="fas fa-globe text-primary"></i> Website Control
+                                            </a>
+                                        </li>
+                                        @endcanany
+
+                                        @can('users.view')
+                                        <li>
+                                            <a href="{{ route('users.index') }}">
+                                                <i class="fas fa-users text-primary"></i> Branch Users
+                                            </a>
+                                        </li>
+                                        @endcan
+                                        @can('roles.view')
+                                        <li>
+                                            <a href="{{ route('roles.index') }}">
+                                                <i class="fas fa-user-lock text-success"></i> Branch Roles
+                                            </a>
+                                        </li>
+                                        @endcan
+                                        @can('permissions.view')
+                                        <li>
+                                            <a href="{{ route('permissions.index') }}">
+                                                <i class="fas fa-key text-warning"></i> Permissions
+                                            </a>
+                                        </li>
+                                        @endcan
+                                    </ul>
+                                </div>
                             </li>
+                            @endcanany
                         @else
                         <!--=========================*
                               Home
@@ -2152,37 +2193,14 @@
 
 
                         <!-- Website Management -->
-                        @if (config('features.website_control'))
-                        @canany(['website-settings.view', 'web_products.view', 'web_products.read', 'coupons.view', 'coupons.read', 'web_orders.view', 'web_orders.read', 'web_users.view', 'web_users.read'])
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="menu_icon fas fa-globe"></i>
+                        @canany(['settings.view', 'settings.read', 'settings.edit', 'settings.update'])
+                            <li class="nav-item {{ request()->is('website-control*') ? 'active' : '' }}">
+                                <a href="{{ route('website_settings.index') }}" class="nav-link">
+                                    <i class="menu_icon fas fa-globe text-primary"></i>
                                     <span class="menu-title">Website Control</span>
-                                    <i class="menu-arrow"></i>
                                 </a>
-                                <div class="submenu">
-                                    <ul class="submenu-item">
-                                        @can('website-settings.view')
-                                            <li><a href="{{ route('website_settings.index') }}"><i class="fa-solid fa-cogs"></i> Website Settings</a></li>
-                                        @endcan
-                                        @canany(['web_products.view', 'web_products.read'])
-                                            <li><a href="{{ route('web_products.index') }}"><i class="fa-solid fa-box"></i> Web Products</a></li>
-                                        @endcan
-                                        @canany(['coupons.view', 'coupons.read'])
-                                            <li><a href="{{ route('admin.coupons.index') }}"><i class="fas fa-tags"></i> Coupons</a></li>
-                                        @endcan
-                                        @canany(['web_orders.view', 'web_orders.read'])
-                                            <li><a href="{{ route('web_orders.dashboard') }}"><i class="fa-solid fa-chart-line"></i> Web Dashboard</a></li>
-                                            <li><a href="{{ route('web_orders.index') }}"><i class="fa-solid fa-shopping-cart"></i> Web Orders</a></li>
-                                        @endcan
-                                        @canany(['web_users.view', 'web_users.read'])
-                                            <li><a href="{{ route('web_users.index') }}"><i class="fas fa-users"></i> Web Users</a></li>
-                                        @endcan
-                                    </ul>
-                                </div>
                             </li>
                         @endcanany
-                        @endif
                         @endif
 
                         <!-- Mobile User Profile & Direct Logout -->

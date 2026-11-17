@@ -545,14 +545,12 @@
                     </div>
                     <div class="stat-card warning">
                         <div class="stat-icon"><i class="fa fa-user-check"></i></div>
-                        <div class="stat-value">{{ $users->filter(fn($u) => $u->getRoleNames()->count() > 0)->count() }}
-                        </div>
+                        <div class="stat-value">{{ $users->filter(fn($u) => count($u->getAssignedRoleNames()) > 0)->count() }}</div>
                         <div class="stat-label">Users with Roles</div>
                     </div>
                     <div class="stat-card info">
                         <div class="stat-icon"><i class="fa fa-user-times"></i></div>
-                        <div class="stat-value">{{ $users->filter(fn($u) => $u->getRoleNames()->count() === 0)->count() }}
-                        </div>
+                        <div class="stat-value">{{ $users->filter(fn($u) => count($u->getAssignedRoleNames()) === 0)->count() }}</div>
                         <div class="stat-label">No Role Assigned</div>
                     </div>
                 </div>
@@ -577,11 +575,19 @@
 
                     <div class="users-grid" id="usersGrid">
                         @forelse($users as $user)
+                            @php
+                                $assignedRoleNames = $user->getAssignedRoleNames();
+                                $assignedRoleIds = $user->getAssignedRoleIds();
+                            @endphp
                             <div class="user-card" data-user-id="{{ $user->id }}"
-                                data-name="{{ strtolower($user->name) }}" data-email="{{ strtolower($user->email) }}"
+                                data-name="{{ strtolower($user->name) }}"
+                                data-real-name="{{ $user->name }}"
+                                data-email="{{ strtolower($user->email) }}"
+                                data-real-email="{{ $user->email }}"
                                 data-branch-id="{{ $user->branch_id ?? '' }}"
                                 data-branch-name="{{ strtolower($user->branch?->name ?? 'All Branches') }}"
-                                data-roles="{{ json_encode($user->getRoleNames()) }}">
+                                data-role-ids='@json($assignedRoleIds)'
+                                data-role-names='@json($assignedRoleNames)'>
                                 <div class="user-card-header">
                                     <div class="d-flex align-items-center">
                                         <div class="user-avatar">{{ strtoupper(substr($user->name, 0, 2)) }}</div>
@@ -622,7 +628,7 @@
                                 <div class="roles-section">
                                     <div class="roles-label">Assigned Roles</div>
                                     <div class="role-tags">
-                                        @forelse($user->getRoleNames() as $role)
+                                        @forelse($assignedRoleNames as $role)
                                             <span class="role-tag">{{ $role }}</span>
                                         @empty
                                             <span class="role-tag no-role">No Role Assigned</span>
@@ -651,7 +657,7 @@
                         <i class="fa fa-user-plus"></i>
                         <span>Add New User</span>
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close close" data-dismiss="modal" data-bs-dismiss="modal">&times;</button>
                 </div>
                 <form id="userForm" class="myform" action="{{ route('users.store') }}" method="POST">
                     @csrf
@@ -692,15 +698,28 @@
                                     </div>
                                 </div>
                             </div>
+                            @if(!empty($currentBranchId) && !empty($currentBranch))
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label class="form-label">
+                                        <i class="fa {{ $currentBranch->type === 'restaurant' ? 'fa-utensils text-danger' : 'fa-store text-primary' }}"></i> Assigned Branch
+                                    </label>
+                                    <div class="p-2 px-3 rounded border bg-light d-flex align-items-center justify-content-between" style="height: 48px;">
+                                        <strong class="text-dark"><i class="fa {{ $currentBranch->type === 'restaurant' ? 'fa-utensils text-danger' : 'fa-store text-primary' }}"></i> {{ $currentBranch->name }}</strong>
+                                        <span class="badge {{ $currentBranch->type === 'restaurant' ? 'bg-danger text-white' : 'bg-primary text-white' }}" style="font-size: 11px;"><i class="fa fa-lock me-1"></i>Auto-locked</span>
+                                    </div>
+                                    <input type="hidden" name="branch_id" id="userBranchId" value="{{ $currentBranchId }}">
+                                    <small class="text-muted" style="font-size: 11px;">User strictly created for {{ $currentBranch->name }}</small>
+                                </div>
+                            </div>
+                            @else
                             <div class="col-md-6">
                                 <div class="form-group-modern">
                                     <label class="form-label">
                                         <i class="fa fa-store"></i> Assign Branch
                                     </label>
                                     <select name="branch_id" id="userBranchId" class="form-control" style="height: 48px;">
-                                        @if(\App\Helpers\BranchHelper::canSwitchBranch())
-                                            <option value="">All Branches (Global Access / Super Admin)</option>
-                                        @endif
+                                        <option value="">Select Branch (or All Branches / Global)</option>
                                         @foreach($branches ?? [] as $b)
                                             <option value="{{ $b->id }}">{{ $b->name }} ({{ ucfirst($b->type) }})</option>
                                         @endforeach
@@ -708,6 +727,7 @@
                                     <small class="text-muted" style="font-size: 11px;">Restricts user strictly to this branch</small>
                                 </div>
                             </div>
+                            @endif
                             <div class="col-md-12">
                                 <div class="form-group-modern">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -726,7 +746,7 @@
                     </div>
 
                     <div class="modal-footer-modern">
-                        <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-cancel" data-dismiss="modal" data-bs-dismiss="modal">
                             <i class="fa fa-times me-2"></i>Cancel
                         </button>
                         <button type="submit" class="btn btn-save">
@@ -751,7 +771,7 @@
                         </h5>
                         <small class="text-white-50 mt-1" id="editRoleUserLabel">User: John Doe</small>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close close" data-dismiss="modal" data-bs-dismiss="modal">&times;</button>
                 </div>
                 <form id="editRoleForm" class="edit-role-form" action="{{ route('users.update.roles') }}"
                     method="POST">
@@ -768,7 +788,7 @@
                     </div>
 
                     <div class="modal-footer-modern">
-                        <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-cancel" data-dismiss="modal" data-bs-dismiss="modal">
                             <i class="fa fa-times me-2"></i>Cancel
                         </button>
                         <button type="submit" class="btn btn-save">
@@ -788,38 +808,71 @@
     <script>
         const allRoles = @json($allRoles);
 
-        function buildRolesCheckboxes(container, assignedRoles) {
+        function buildRolesCheckboxes(container, assignedRoleIds, branchId) {
             var $container = $(container);
             $container.empty();
 
-            (allRoles || []).forEach(function(r) {
-                var checked = (assignedRoles || []).includes(r.name);
-                var id = 'role_' + r.name.replace(/[^a-z0-9]/gi, '_');
+            var bId = (branchId !== '' && branchId !== undefined && branchId !== null) ? parseInt(branchId) : null;
+
+            var filtered = (allRoles || []).filter(function(r) {
+                if (bId === null) {
+                    // Global user: show global roles (branch_id is null) plus allow other roles
+                    return true;
+                } else {
+                    // Specific branch user: show global roles + roles assigned specifically to this branch
+                    return r.branch_id === null || parseInt(r.branch_id) === bId;
+                }
+            });
+
+            if (filtered.length === 0) {
+                $container.html('<div class="text-muted p-3 text-center small"><i class="fa fa-info-circle me-1"></i>No roles configured for this branch. Create roles in Role Management first.</div>');
+                return;
+            }
+
+            filtered.forEach(function(r) {
+                var checked = (assignedRoleIds || []).includes(r.id) || (assignedRoleIds || []).includes(r.name) || (assignedRoleIds || []).includes(String(r.id));
+                var branchBadge = r.branch ? `<span class="badge" style="background:#e0e7ff; color:#4338ca; font-size:10px; padding:2px 8px; border-radius:4px;">${r.branch.name}</span>` : `<span class="badge" style="background:#f1f5f9; color:#475569; font-size:10px; padding:2px 8px; border-radius:4px;">Global</span>`;
                 var $item = $(`
-                    <label class="role-checkbox-item ${checked ? 'checked' : ''}">
-                        <input type="checkbox" name="roles[]" value="${r.name}" ${checked ? 'checked' : ''}>
-                        <span>${r.name}</span>
+                    <label class="role-checkbox-item ${checked ? 'checked' : ''}" style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; margin-bottom:8px; background: ${checked ? '#eef2ff' : '#fff'}; transition:all 0.2s;">
+                        <div class="d-flex align-items-center">
+                            <input type="checkbox" name="roles[]" value="${r.id}" ${checked ? 'checked' : ''} style="margin-right:10px; width:16px; height:16px;">
+                            <span class="fw-semibold text-dark">${r.name}</span>
+                        </div>
+                        <div>${branchBadge}</div>
                     </label>
                 `);
                 $container.append($item);
             });
 
             $container.find('input[type="checkbox"]').on('change', function() {
-                $(this).closest('.role-checkbox-item').toggleClass('checked', $(this).is(':checked'));
+                var isChecked = $(this).is(':checked');
+                $(this).closest('.role-checkbox-item').toggleClass('checked', isChecked);
+                $(this).closest('.role-checkbox-item').css('background', isChecked ? '#eef2ff' : '#fff');
             });
         }
 
         $(document).ready(function() {
+            // Branch change dynamically filters available roles
+            $('#userBranchId').on('change', function() {
+                var selectedBranch = $(this).val();
+                var currentlyChecked = [];
+                $('#rolesContainer input[type="checkbox"]:checked').each(function() {
+                    currentlyChecked.push(parseInt($(this).val()));
+                });
+                buildRolesCheckboxes('#rolesContainer', currentlyChecked, selectedBranch);
+            });
+
             // Add User Button
             $('#addUserBtn').click(function() {
                 $('#userEditId').val('');
                 $('#userName').val('');
                 $('#userEmail').val('');
-                $('#userPassword').val('');
-                $('#userBranchId').val('');
+                $('#userPassword').val('').prop('required', true).attr('placeholder', 'Enter password (required)');
+                var defaultBranch = '{{ $currentBranchId ?? "" }}' || $('#userBranchId').val() || '';
+                $('#userBranchId').val(defaultBranch);
                 $('#userModalTitle').html('<i class="fa fa-user-plus"></i><span>Add New User</span>');
                 $('#userSaveText').text('Create User');
-                buildRolesCheckboxes('#rolesContainer', []);
+                buildRolesCheckboxes('#rolesContainer', [], defaultBranch);
                 $('#selectAllRoles').prop('checked', false);
                 $('#userModal').modal('show');
             });
@@ -828,19 +881,19 @@
             $(document).on('click', '.edit-user-btn', function() {
                 var card = $(this).closest('.user-card');
                 var id = card.data('user-id');
-                var name = card.find('.user-name').text();
-                var email = card.find('.user-email').text();
+                var name = card.data('real-name') || card.find('.user-name').text().trim();
+                var email = card.data('real-email') || card.find('.user-email').text().trim();
                 var branchId = card.data('branch-id') !== undefined ? card.data('branch-id') : '';
-                var roles = card.data('roles') || [];
+                var roleIds = card.data('role-ids') || [];
 
                 $('#userEditId').val(id);
                 $('#userName').val(name);
                 $('#userEmail').val(email);
-                $('#userPassword').val('');
+                $('#userPassword').val('').prop('required', false).attr('placeholder', 'Leave blank to keep existing password');
                 $('#userBranchId').val(branchId);
                 $('#userModalTitle').html('<i class="fa fa-pen"></i><span>Edit User</span>');
                 $('#userSaveText').text('Save Changes');
-                buildRolesCheckboxes('#rolesContainer', roles);
+                buildRolesCheckboxes('#rolesContainer', roleIds, branchId);
                 $('#selectAllRoles').prop('checked', false);
                 $('#userModal').modal('show');
             });
@@ -849,12 +902,13 @@
             $(document).on('click', '.edit-role-btn', function() {
                 var card = $(this).closest('.user-card');
                 var id = card.data('user-id');
-                var name = card.find('.user-name').text();
-                var roles = card.data('roles') || [];
+                var name = card.data('real-name') || card.find('.user-name').text().trim();
+                var branchId = card.data('branch-id') !== undefined ? card.data('branch-id') : '';
+                var roleIds = card.data('role-ids') || [];
 
                 $('#editRoleUserId').val(id);
                 $('#editRoleUserLabel').text('User: ' + name);
-                buildRolesCheckboxes('#editRolesContainer', roles);
+                buildRolesCheckboxes('#editRolesContainer', roleIds, branchId);
                 $('#editRoleModal').modal('show');
             });
 
@@ -880,6 +934,7 @@
                 var checked = $(this).is(':checked');
                 $('#rolesContainer input[type="checkbox"]').prop('checked', checked).each(function() {
                     $(this).closest('.role-checkbox-item').toggleClass('checked', checked);
+                    $(this).closest('.role-checkbox-item').css('background', checked ? '#eef2ff' : '#fff');
                 });
             });
 
@@ -890,9 +945,8 @@
                     var name = $(this).data('name') || '';
                     var email = $(this).data('email') || '';
                     var branch = $(this).data('branch-name') || '';
-                    var roles = JSON.stringify($(this).data('roles') || []).toLowerCase();
-                    $(this).toggle(name.indexOf(q) !== -1 || email.indexOf(q) !== -1 || branch.indexOf(q) !== -1 || roles
-                        .indexOf(q) !== -1);
+                    var roles = JSON.stringify($(this).data('role-names') || []).toLowerCase();
+                    $(this).toggle(name.indexOf(q) !== -1 || email.indexOf(q) !== -1 || branch.indexOf(q) !== -1 || roles.indexOf(q) !== -1);
                 });
                 var visible = $('.user-card:visible').length;
                 $('#usersCount').text(visible + ' users');

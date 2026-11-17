@@ -114,6 +114,35 @@ class BranchHelper
             'warehouse.stock',
             'stock.transfer',
             'stock.adjust',
+            'purchases',
+            'purchase.returns',
+            'purchase_pos',
+            'vendors',
+            'vendor.payments',
+            'subcategories',
+            'brands',
+            'units',
+            'zones',
+            'sales.officers',
+            'checkbook',
+            'bookings',
+            'receipts.voucher',
+            'journal.voucher',
+            'payment.voucher',
+            'income.voucher',
+            'branches',
+            // Mart Reports
+            'executive.report',
+            'item.stock.report',
+            'purchase.report',
+            'vendor.ledger',
+            'inventory.onhand',
+            'profit.loss.report',
+            'recovery.report',
+            'payable.report',
+            'parties.balance.report',
+            'aging.report',
+            'balance.sheet.report'
         ];
 
         if (in_array($module, $martOnly)) {
@@ -124,11 +153,40 @@ class BranchHelper
     }
 
     /**
+     * Check if a specific permission name is allowed for a given branch type.
+     */
+    public static function isPermissionAllowedForBranchType(string $permissionName, ?string $branchType): bool
+    {
+        if (empty($branchType) || $branchType === 'all' || $branchType === 'global') {
+            return true;
+        }
+
+        $branchType = strtolower(trim($branchType));
+
+        // Extract module name from permission (everything before last dot)
+        $parts = explode('.', $permissionName);
+        if (count($parts) > 1) {
+            array_pop($parts);
+            $module = implode('.', $parts);
+        } else {
+            $module = $permissionName;
+        }
+
+        $compat = static::getModuleCompatibility($module);
+
+        if ($compat === 'universal') {
+            return true;
+        }
+
+        return $compat === $branchType;
+    }
+
+    /**
      * Check if a module is allowed for a given branch type.
      */
     public static function isModuleAllowedForBranchType(string $module, ?string $branchType): bool
     {
-        if (empty($branchType) || $branchType === 'all') {
+        if (empty($branchType) || $branchType === 'all' || $branchType === 'global') {
             return true; // Global roles can have all modules
         }
 

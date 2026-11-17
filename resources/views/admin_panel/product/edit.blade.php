@@ -276,22 +276,24 @@
 
                                 {{-- Image Uploader side-by-side (Right) --}}
                                 <div class="col-md-3">
-                                    <label class="form-label-pro">Product Image</label>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <label class="form-label-pro mb-0">Product Image</label>
+                                    </div>
                                     <input type="file" id="imageInput" name="image" class="d-none" accept="image/*">
                                     <input type="hidden" name="remove_image" id="removeImage" value="0">
-                                    <div class="img-uploader" id="imageUploaderBox" style="height: 110px;">
+                                    <div class="img-uploader" id="imageUploaderBox" style="height: 110px; cursor: pointer;">
                                         <button type="button" id="clearImageBtn" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 {{ $product->image ? '' : 'd-none' }} rounded-circle" style="width:22px;height:22px;padding:0;z-index:10; font-size:14px; line-height:1; display:flex; align-items:center; justify-content:center;" title="Remove Image">&times;</button>
                                         @if($product->image)
-                                            <img id="preview" src="{{ asset('uploads/products/' . $product->image) }}" style="max-height: 100px;">
+                                            <img id="preview" src="{{ asset('uploads/products/' . $product->image) }}" style="max-height: 100px; object-fit: contain;">
                                             <div id="uploadPlaceholder" class="text-center p-2 d-none">
                                                 <i class="fas fa-camera fs-3 text-primary"></i>
-                                                <div class="fw-bold" style="font-size: 11px;">Upload</div>
+                                                <div class="fw-bold" style="font-size: 11px;">Upload Photo</div>
                                             </div>
                                         @else
-                                            <img id="preview" class="d-none" style="max-height: 100px;">
+                                            <img id="preview" class="d-none" style="max-height: 100px; object-fit: contain;">
                                             <div id="uploadPlaceholder" class="text-center p-2">
                                                 <i class="fas fa-camera fs-3 text-primary"></i>
-                                                <div class="fw-bold" style="font-size: 11px;">Upload</div>
+                                                <div class="fw-bold" style="font-size: 11px;">Upload Photo</div>
                                             </div>
                                         @endif
                                     </div>
@@ -719,6 +721,7 @@
                 if (ph) ph.classList.remove('d-none');
                 clr.classList.add('d-none');
                 if (removeImgInput) removeImgInput.value = '1';
+                $('#aiImageFilename').val('');
             });
 
             // AJAX Submission

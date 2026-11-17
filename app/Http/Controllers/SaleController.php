@@ -863,8 +863,9 @@ class SaleController extends Controller
         if ($sale) {
             $allSaleItems = \App\Models\SaleItem::where('sale_id', $sale->id)->get();
             $sale->total_bill_amount = $allSaleItems->sum('total');
-            // Recalculate Net (Accounting for extra discount if any)
-            $sale->total_net = max(0, $sale->total_bill_amount - ($sale->total_extradiscount ?? 0));
+            // Recalculate Net (Accounting for delivery charges and extra discount if any)
+            $deliveryCharges = (float) ($sale->delivery_charges ?? 0);
+            $sale->total_net = max(0, ($sale->total_bill_amount + $deliveryCharges) - ($sale->total_extradiscount ?? 0));
             $sale->total_items = $allSaleItems->sum('total_pieces');
             $sale->save();
         }
@@ -1130,7 +1131,13 @@ class SaleController extends Controller
                 $previousBalance = 0;
             }
         }
-        $currentBalance = $previousBalance + $sale->total_net;
+        $deliveryCharges = (float) ($sale->delivery_charges ?? 0);
+        $netAmount = (float) $sale->total_net;
+        $itemsNet = (float) $sale->total_bill_amount - (float) ($sale->total_extradiscount ?? 0);
+        if ($deliveryCharges > 0 && abs($netAmount - $itemsNet) < 0.01) {
+            $netAmount += $deliveryCharges;
+        }
+        $currentBalance = $previousBalance + $netAmount;
 
         return view('admin_panel.sale.saleinvoice', [
             'sale' => $sale,
@@ -1261,7 +1268,13 @@ class SaleController extends Controller
                 $previousBalance = $balanceService->getCustomerBalance($sale->customer_id);
             }
         }
-        $currentBalance = $previousBalance + $sale->total_net;
+        $deliveryCharges = (float) ($sale->delivery_charges ?? 0);
+        $netAmount = (float) $sale->total_net;
+        $itemsNet = (float) $sale->total_bill_amount - (float) ($sale->total_extradiscount ?? 0);
+        if ($deliveryCharges > 0 && abs($netAmount - $itemsNet) < 0.01) {
+            $netAmount += $deliveryCharges;
+        }
+        $currentBalance = $previousBalance + $netAmount;
 
         return view('admin_panel.sale.salereceipt', [
             'sale' => $sale,
@@ -1365,7 +1378,7 @@ class SaleController extends Controller
             if ($request->filled('delivery_address')) {
                 $sale->delivery_address = $request->delivery_address;
             }
-            if ($request->filled('delivery_charges')) {
+            if ($request->has('delivery_charges')) {
                 $sale->delivery_charges = (float) $request->delivery_charges;
             }
             if ($request->filled('delivery_status')) {
@@ -1374,6 +1387,59 @@ class SaleController extends Controller
                 $sale->delivery_status = $request->filled('rider_id') ? 'dispatched' : 'pending';
                 if ($request->filled('rider_id')) {
                     $sale->dispatched_at = now();
+                }
+            }
+
+            // Auto-Save / Sync Delivery Customer into Customers table
+            if ($request->order_type === 'delivery' && $request->filled('rider_phone')) {
+                try {
+                    $dPhone = trim($request->rider_phone);
+                    $dName = trim($request->walkin_name ?: ($sale->walkin_name ?: 'Delivery Customer'));
+                    $dAddress = trim($request->delivery_address ?: ($sale->delivery_address ?: ''));
+
+                    $dDigits = preg_replace('/[^0-9]/', '', $dPhone);
+                    $dLast7 = strlen($dDigits) >= 7 ? substr($dDigits, -7) : $dDigits;
+
+                    $cust = \App\Models\Customer::where(function($q) use ($dPhone, $dLast7) {
+                        $q->where('mobile', $dPhone)
+                          ->orWhere('mobile_2', $dPhone);
+                        if (strlen($dLast7) >= 7) {
+                            $q->orWhere('mobile', 'like', "%{$dLast7}%")
+                              ->orWhere('mobile_2', 'like', "%{$dLast7}%");
+                        }
+                    })->first();
+
+                    if (!$cust) {
+                        $newCustId = 'CUST-' . str_pad((\App\Models\Customer::max('id') ?? 0) + 1, 4, '0', STR_PAD_LEFT);
+                        $branchId = session('active_branch_id') ?? (auth()->check() ? auth()->user()->branch_id : null);
+                        $cust = \App\Models\Customer::create([
+                            'customer_id'     => $newCustId,
+                            'customer_name'   => $dName,
+                            'mobile'          => $dPhone,
+                            'address'         => $dAddress,
+                            'opening_balance' => 0,
+                            'customer_type'   => 'retail',
+                            'status'          => 'active',
+                            'branch_id'       => $branchId,
+                        ]);
+                    } else {
+                        $updates = [];
+                        if ($dAddress && (empty($cust->address) || $cust->address !== $dAddress)) {
+                            $updates['address'] = $dAddress;
+                        }
+                        if ($dName && $dName !== 'Delivery Customer' && (empty($cust->customer_name) || $cust->customer_name === 'Delivery Customer')) {
+                            $updates['customer_name'] = $dName;
+                        }
+                        if (!empty($updates)) {
+                            $cust->update($updates);
+                        }
+                    }
+
+                    if ($cust && empty($sale->customer_id)) {
+                        $sale->customer_id = $cust->id;
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('Auto-sync delivery customer failed: ' . $e->getMessage());
                 }
             }
 
@@ -1629,14 +1695,16 @@ class SaleController extends Controller
                 $total_items += $totalPieces;
             }
 
+            $deliveryCharges = (float) ($sale->delivery_charges ?? 0);
+
             // Update Sale Totals
             $sale->total_bill_amount = $total_bill;
             $sale->total_extradiscount = $request->total_extra_cost ?? 0;
-            $sale->total_net = $total_bill - $sale->total_extradiscount;
+            $sale->total_net = max(0, ($total_bill + $deliveryCharges) - $sale->total_extradiscount);
             $sale->total_items = $total_items;
 
             $sale->cash = $request->cash ?? 0;
-            $sale->change = ($sale->cash - $sale->total_net);
+            $sale->change = max(0, $sale->cash - $sale->total_net);
 
             $sale->save();
 
@@ -1802,7 +1870,8 @@ class SaleController extends Controller
                     // Update Original Sale Header Totals
                     $allSaleItems = \App\Models\SaleItem::where('sale_id', $origSale->id)->get();
                     $origSale->total_bill_amount = $allSaleItems->sum('total');
-                    $origSale->total_net = max(0, $origSale->total_bill_amount - ($origSale->total_extradiscount ?? 0));
+                    $origDelivery = (float) ($origSale->delivery_charges ?? 0);
+                    $origSale->total_net = max(0, ($origSale->total_bill_amount + $origDelivery) - ($origSale->total_extradiscount ?? 0));
                     $origSale->total_items = $allSaleItems->sum('total_pieces');
                     $origSale->save();
 

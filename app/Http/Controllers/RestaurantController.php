@@ -233,7 +233,7 @@ class RestaurantController extends Controller
                     'delivery_status' => $s->delivery_status ?: 'pending',
                     'payment_status' => $isPaid ? 'paid' : 'unpaid',
                     'total_bill' => (float) $s->total_bill_amount,
-                    'total_net' => (float) ($s->total_net ?: $s->total_bill_amount),
+                    'total_net' => (float) ($s->total_net ?: ((float)$s->total_bill_amount + (float)($s->delivery_charges ?? 0) - (float)($s->total_extradiscount ?? 0))),
                     'items_count' => $s->items->count(),
                     'items_summary' => $itemsSummary,
                     'elapsed_time' => $s->created_at ? $s->created_at->diffForHumans(null, true) : 'just now',
@@ -414,7 +414,7 @@ class RestaurantController extends Controller
                 'payment_status' => $isPaid ? 'paid' : 'unpaid',
                 'subtotal' => (float)$sale->total_bill_amount,
                 'discount' => (float)$sale->total_extradiscount,
-                'net_total' => (float)($sale->total_net ?: $sale->total_bill_amount),
+                'net_total' => (float)($sale->total_net ?: ((float)$sale->total_bill_amount + (float)($sale->delivery_charges ?? 0) - (float)($sale->total_extradiscount ?? 0))),
                 'cash_paid' => (float)$sale->cash,
                 'change' => (float)$sale->change,
                 'created_at' => $sale->created_at ? $sale->created_at->format('d M Y, h:i A') : '',
@@ -512,11 +512,12 @@ class RestaurantController extends Controller
         DB::beginTransaction();
         try {
             // Apply optional extra discount
+            $discount = (float)($sale->total_extradiscount ?? 0);
             if ($request->filled('discount') && (float)$request->discount > 0) {
                 $discount = (float)$request->discount;
                 $sale->total_extradiscount = $discount;
-                $sale->total_net = max(0, (float)$sale->total_bill_amount - $discount + (float)$sale->delivery_charges);
             }
+            $sale->total_net = max(0, (float)$sale->total_bill_amount - $discount + (float)($sale->delivery_charges ?? 0));
 
             $totalNet = (float)($sale->total_net ?: $sale->total_bill_amount);
             $cashReceived = $request->filled('cash_received') ? (float)$request->cash_received : $totalNet;
@@ -714,5 +715,100 @@ class RestaurantController extends Controller
             'success' => true,
             'message' => 'Order #' . $sale->invoice_no . ' cancelled successfully.',
         ]);
+    }
+
+    /**
+     * Search and auto-fill customer details by phone number (for delivery orders).
+     */
+    public function lookupCustomerByPhone(Request $request)
+    {
+        $phone = trim($request->input('phone', ''));
+        if (!$phone) {
+            return response()->json(['found' => false]);
+        }
+
+        // Clean digits
+        $digits = preg_replace('/[^0-9]/', '', $phone);
+        if (strlen($digits) < 1 && strlen($phone) < 1) {
+            return response()->json(['found' => false]);
+        }
+
+        $last7 = strlen($digits) >= 7 ? substr($digits, -7) : null;
+
+        // 1. Search in Customers table
+        $customerQuery = Customer::query();
+        if (method_exists(Customer::class, 'bootBelongsToBranch')) {
+            $customerQuery->withoutGlobalScope(\App\Scopes\BranchScope::class);
+        }
+
+        $customer = $customerQuery->where(function ($q) use ($phone, $digits, $last7) {
+            $q->where('mobile', $phone)
+              ->orWhere('mobile', $digits)
+              ->orWhere('mobile_2', $phone)
+              ->orWhere('mobile_2', $digits);
+            if ($last7) {
+                $q->orWhere('mobile', 'like', "%{$last7}%")
+                  ->orWhere('mobile_2', 'like', "%{$last7}%");
+            }
+        })
+        ->where('status', '!=', 'inactive')
+        ->first();
+
+        if ($customer) {
+            // Also check latest delivery sale for this customer for recent address/remarks
+            $latestSale = Sale::withoutGlobalScope(\App\Scopes\BranchScope::class)
+                ->where('customer_id', $customer->id)
+                ->where('order_type', 'delivery')
+                ->whereNotNull('delivery_address')
+                ->where('delivery_address', '!=', '')
+                ->latest('id')
+                ->first();
+
+            $custAddress = $customer->address ?: ($latestSale->delivery_address ?? '');
+
+            return response()->json([
+                'found' => true,
+                'source' => 'customer',
+                'customer_id' => $customer->id,
+                'name' => $customer->customer_name,
+                'phone' => $customer->mobile ?: $phone,
+                'address' => $custAddress ?: '',
+                'remarks' => $latestSale->order_notes ?? '',
+            ]);
+        }
+
+        // 2. Fallback: Search past delivery sales history
+        $pastSale = Sale::withoutGlobalScope(\App\Scopes\BranchScope::class)
+            ->where('order_type', 'delivery')
+            ->where(function ($q) use ($phone, $digits, $last7) {
+                $q->where('rider_phone', $phone)
+                  ->orWhere('rider_phone', $digits);
+                if ($last7) {
+                    $q->orWhere('rider_phone', 'like', "%{$last7}%");
+                }
+            })
+            ->whereNotNull('delivery_address')
+            ->where('delivery_address', '!=', '')
+            ->latest('id')
+            ->first();
+
+        if ($pastSale) {
+            $pastName = trim($pastSale->walkin_name ?: '');
+            if (in_array(strtolower($pastName), ['walk-in customer', 'walkin customer', 'delivery customer'])) {
+                $pastName = '';
+            }
+
+            return response()->json([
+                'found' => true,
+                'source' => 'past_sale',
+                'customer_id' => $pastSale->customer_id,
+                'name' => $pastName,
+                'phone' => $pastSale->rider_phone ?: $phone,
+                'address' => $pastSale->delivery_address ?: '',
+                'remarks' => $pastSale->order_notes ?: '',
+            ]);
+        }
+
+        return response()->json(['found' => false]);
     }
 }

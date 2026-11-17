@@ -2118,4 +2118,8 @@ class ProductController extends Controller
 
         return $results;
     }
+
+    /**
+     * Generate an AI Product/Food Image using Pollinations Flux/SDXL with Smart Fallback
+     */
 }

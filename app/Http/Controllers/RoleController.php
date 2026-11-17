@@ -13,28 +13,40 @@ use Spatie\Permission\Models\Permission;
 
 class RoleController extends Controller
 {
-     public function index()
+    public function index()
     {
         $activeBranchId = BranchHelper::getActiveBranchId();
         $rolesQuery = Role::with('branch')->orderBy('name', "ASC");
 
-        if (!BranchHelper::canSwitchBranch() && $activeBranchId) {
+        if ($activeBranchId) {
             $rolesQuery->where(function ($q) use ($activeBranchId) {
                 $q->whereNull('branch_id')->orWhere('branch_id', $activeBranchId);
             });
+            $branches = Branch::where('id', $activeBranchId)->where('status', 1)->get();
+        } else {
+            $branches = Branch::where('status', 1)->get();
         }
 
         $roles = $rolesQuery->get();
-        $branches = Branch::where('status', 1)->get();
-        $allPermissions = Permission::orderBy('name', 'ASC')->get();
+        $currentBranch = BranchHelper::getActiveBranch();
+        $branchType = $currentBranch ? $currentBranch->type : null;
 
-        return view('admin_panel.roles.role', compact(['roles', 'allPermissions', 'branches']));
+        // Strictly filter permissions for the current branch type
+        $allPermissions = Permission::orderBy('name', 'ASC')->get()->filter(function ($p) use ($branchType) {
+            return BranchHelper::isPermissionAllowedForBranchType($p->name, $branchType);
+        })->values();
+
+        return view('admin_panel.roles.role', compact(['roles', 'allPermissions', 'branches', 'activeBranchId', 'currentBranch']));
     }
 
     public function store(Request $request)
     {
         $editId = $request->edit_id ?? null;
-        $branchId = $request->filled('branch_id') ? (int) $request->branch_id : null;
+        $activeBranchId = BranchHelper::getActiveBranchId();
+        
+        // If active branch is set, force the role to that branch
+        // If in All Branches mode, use the selected branch_id from form (or null for global)
+        $branchId = $activeBranchId ? $activeBranchId : ($request->filled('branch_id') ? (int) $request->branch_id : null);
 
         $validator = Validator::make($request->all(), [
             'name' => [

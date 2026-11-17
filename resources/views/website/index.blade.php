@@ -922,7 +922,7 @@
         <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
                 <i class="bi bi-fire me-1 text-warning"></i>
-                <strong>FREE DELIVERY</strong> on all orders above <strong>Rs. 1,500</strong>!
+                {!! $settings['top_announcement'] ?? '<strong>FREE DELIVERY</strong> on all orders above <strong>Rs. 1,500</strong>!' !!}
             </div>
             <div class="d-flex align-items-center gap-3">
                 <span><i class="bi bi-telephone-fill me-1"></i> Hotline: <a href="tel:{{ $phone }}" class="text-white text-decoration-none fw-bold">{{ $phone }}</a></span>
@@ -937,11 +937,15 @@
         <div class="container d-flex justify-content-between align-items-center">
             <!-- Brand Logo -->
             <a href="{{ route('website') }}" class="brand-logo">
-                <div class="brand-logo-icon">🍗</div>
-                <div class="brand-logo-text">
-                    <span class="brand-name">MUNCH <span>FRIED CHICKEN</span></span>
-                    <span class="brand-subtitle">Crispy &bull; Juicy &bull; Halal</span>
-                </div>
+                @if(!empty($settings['site_logo']))
+                    <img src="{{ $settings['site_logo'] }}" alt="{{ $restaurantName }}" style="max-height: 48px; object-fit: contain;">
+                @else
+                    <div class="brand-logo-icon">🍗</div>
+                    <div class="brand-logo-text">
+                        <span class="brand-name">{{ $restaurantName }}</span>
+                        <span class="brand-subtitle">{{ $settings['site_tagline'] ?? 'Crispy • Juicy • Halal' }}</span>
+                    </div>
+                @endif
             </a>
 
             <!-- Navigation Links -->
@@ -975,36 +979,36 @@
             <div class="row align-items-center gy-5">
                 <div class="col-lg-6">
                     <div class="hero-badge">
-                        <i class="bi bi-stars"></i> Handcrafted &bull; Secret 12-Spice Blend
+                        <i class="bi bi-stars"></i> {{ $settings['hero_badge'] ?? 'Handcrafted • Secret 12-Spice Blend' }}
                     </div>
                     <h1 class="hero-title">
-                        CRUNCHY.<br>
-                        <span class="highlight-gold">JUICY.</span><br>
-                        <span class="highlight-red">UNFORGETTABLE.</span>
+                        {{ $settings['hero_title_line1'] ?? 'CRUNCHY.' }}<br>
+                        <span class="highlight-gold">{{ $settings['hero_title_gold'] ?? 'JUICY.' }}</span><br>
+                        <span class="highlight-red">{{ $settings['hero_title_red'] ?? 'UNFORGETTABLE.' }}</span>
                     </h1>
                     <p class="hero-lead">
-                        Indulge in 100% fresh, farm-raised Halal chicken hand-breaded in our proprietary golden recipe. Fried to sizzling crunch outside, bursting with tender flavors inside.
+                        {{ $settings['hero_lead'] ?? 'Indulge in 100% fresh, farm-raised Halal chicken hand-breaded in our proprietary golden recipe. Fried to sizzling crunch outside, bursting with tender flavors inside.' }}
                     </p>
                     <div class="hero-cta-group">
                         <a href="#menu" class="btn-munch-primary">
-                            <i class="bi bi-lightning-charge-fill"></i> Order Online Now
+                            <i class="bi bi-lightning-charge-fill"></i> {{ $settings['hero_btn1_text'] ?? 'Order Online Now' }}
                         </a>
-                        <a href="https://wa.me/{{ $whatsappNumber }}?text={{ urlencode('Hello Munch Fried Chicken! I want to inquire about menu and delivery.') }}" target="_blank" class="btn-munch-outline">
-                            <i class="bi bi-whatsapp text-success"></i> WhatsApp Order
+                        <a href="https://wa.me/{{ $whatsappNumber }}?text={{ urlencode('Hello ' . $restaurantName . '! I want to inquire about menu and delivery.') }}" target="_blank" class="btn-munch-outline">
+                            <i class="bi bi-whatsapp text-success"></i> {{ $settings['hero_btn2_text'] ?? 'WhatsApp Order' }}
                         </a>
                     </div>
                     <div class="hero-stats">
                         <div class="hero-stat-item">
-                            <h4>4.9 ★</h4>
-                            <p>2,800+ Foodies</p>
+                            <h4>{{ $settings['hero_stat1_val'] ?? '4.9 ★' }}</h4>
+                            <p>{{ $settings['hero_stat1_text'] ?? '2,800+ Foodies' }}</p>
                         </div>
                         <div class="hero-stat-item">
-                            <h4>30 Min</h4>
-                            <p>Fast Hot Delivery</p>
+                            <h4>{{ $settings['hero_stat2_val'] ?? '30 Min' }}</h4>
+                            <p>{{ $settings['hero_stat2_text'] ?? 'Fast Hot Delivery' }}</p>
                         </div>
                         <div class="hero-stat-item">
-                            <h4>100%</h4>
-                            <p>Halal & Fresh Daily</p>
+                            <h4>{{ $settings['hero_stat3_val'] ?? '100%' }}</h4>
+                            <p>{{ $settings['hero_stat3_text'] ?? 'Halal & Fresh Daily' }}</p>
                         </div>
                     </div>
                 </div>
@@ -1012,13 +1016,13 @@
                 <div class="col-lg-6">
                     <div class="hero-image-wrap">
                         <div class="hero-glow-circle"></div>
-                        <img src="https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&w=1000&q=85" alt="Munch Fried Chicken Signature Bucket" class="hero-main-img img-fluid">
+                        <img src="{{ $settings['hero_image'] ?? 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&w=1000&q=85' }}" alt="{{ $restaurantName }}" class="hero-main-img img-fluid">
                         <div class="floating-deal-badge">
-                            <span class="fs-1">🔥</span>
+                            <span class="fs-1">{{ $settings['hero_deal_emoji'] ?? '🔥' }}</span>
                             <div class="text-start">
-                                <span class="badge bg-danger text-uppercase fw-bold mb-1">Mega Deal</span>
-                                <div class="fw-bold text-white fs-6">Family Bucket Feast</div>
-                                <div class="text-warning fw-bold">Starting from Rs. 1,050</div>
+                                <span class="badge bg-danger text-uppercase fw-bold mb-1">{{ $settings['hero_deal_tag'] ?? 'Mega Deal' }}</span>
+                                <div class="fw-bold text-white fs-6">{{ $settings['hero_deal_title'] ?? 'Family Bucket Feast' }}</div>
+                                <div class="text-warning fw-bold">{{ $settings['hero_deal_price'] ?? 'Starting from Rs. 1,050' }}</div>
                             </div>
                         </div>
                     </div>
@@ -1032,9 +1036,9 @@
     <section id="deals" class="deals-section">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">Chef's Signature Specials</span>
-                <h2 class="section-title">Today's Hot Deals & Combos</h2>
-                <p class="section-subtitle">Specially curated value buckets and mouthwatering combos designed for maximum crunch and big savings.</p>
+                <span class="section-tag">{{ $settings['deals_tag'] ?? "Chef's Signature Specials" }}</span>
+                <h2 class="section-title">{{ $settings['deals_title'] ?? "Today's Hot Deals & Combos" }}</h2>
+                <p class="section-subtitle">{{ $settings['deals_subtitle'] ?? 'Specially curated value buckets and mouthwatering combos designed for maximum crunch and big savings.' }}</p>
             </div>
 
             <div class="row g-4">
@@ -1073,9 +1077,9 @@
     <section id="menu" class="py-5" style="background: var(--brand-dark);">
         <div class="container py-4">
             <div class="section-header">
-                <span class="section-tag">Fresh From The Kitchen</span>
-                <h2 class="section-title">Explore Our Full Menu</h2>
-                <p class="section-subtitle">Every piece is fresh, marinated with authentic seasonings, and fried to golden perfection on order.</p>
+                <span class="section-tag">{{ $settings['menu_tag'] ?? 'Fresh From The Kitchen' }}</span>
+                <h2 class="section-title">{{ $settings['menu_title'] ?? 'Explore Our Full Menu' }}</h2>
+                <p class="section-subtitle">{{ $settings['menu_subtitle'] ?? 'Every piece is fresh, marinated with authentic seasonings, and fried to golden perfection on order.' }}</p>
             </div>
 
             <!-- Search Bar -->
@@ -1146,38 +1150,38 @@
     <section id="why-us" class="features-section">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">Quality In Every Bite</span>
-                <h2 class="section-title">Why Foodies Love Munch</h2>
-                <p class="section-subtitle">We never compromise on freshness, hygiene, or authentic crunch. Here is what makes us extraordinary.</p>
+                <span class="section-tag">{{ $settings['why_tag'] ?? 'Quality In Every Bite' }}</span>
+                <h2 class="section-title">{{ $settings['why_title'] ?? 'Why Foodies Love Munch' }}</h2>
+                <p class="section-subtitle">{{ $settings['why_subtitle'] ?? 'We never compromise on freshness, hygiene, or authentic crunch. Here is what makes us extraordinary.' }}</p>
             </div>
 
             <div class="row g-4">
                 <div class="col-md-6 col-lg-3">
                     <div class="feature-box">
-                        <div class="feature-icon-wrap">🍗</div>
-                        <h4 class="feature-title">100% Fresh Halal</h4>
-                        <p class="feature-desc">Never frozen chicken sourced daily from certified farms. Tender, juicy, and naturally delicious.</p>
+                        <div class="feature-icon-wrap">{{ $settings['why_icon_1'] ?? '🍗' }}</div>
+                        <h4 class="feature-title">{{ $settings['why_title_1'] ?? '100% Fresh Halal' }}</h4>
+                        <p class="feature-desc">{{ $settings['why_desc_1'] ?? 'Never frozen chicken sourced daily from certified farms. Tender, juicy, and naturally delicious.' }}</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="feature-box">
-                        <div class="feature-icon-wrap">🌶️</div>
-                        <h4 class="feature-title">Secret 12-Spice Blend</h4>
-                        <p class="feature-desc">A proprietary master mix of aromatic spices marinated for 12 hours for deep, explosive flavor.</p>
+                        <div class="feature-icon-wrap">{{ $settings['why_icon_2'] ?? '🌶️' }}</div>
+                        <h4 class="feature-title">{{ $settings['why_title_2'] ?? 'Secret 12-Spice Blend' }}</h4>
+                        <p class="feature-desc">{{ $settings['why_desc_2'] ?? 'A proprietary master mix of aromatic spices marinated for 12 hours for deep, explosive flavor.' }}</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="feature-box">
-                        <div class="feature-icon-wrap">⚡</div>
-                        <h4 class="feature-title">Super Fast Delivery</h4>
-                        <p class="feature-desc">Piping hot food delivered straight to your doorstep in thermal heat-sealed boxes within 30-40 mins.</p>
+                        <div class="feature-icon-wrap">{{ $settings['why_icon_3'] ?? '⚡' }}</div>
+                        <h4 class="feature-title">{{ $settings['why_title_3'] ?? 'Super Fast Delivery' }}</h4>
+                        <p class="feature-desc">{{ $settings['why_desc_3'] ?? 'Piping hot food delivered straight to your doorstep in thermal heat-sealed boxes within 30-40 mins.' }}</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="feature-box">
-                        <div class="feature-icon-wrap">🧼</div>
-                        <h4 class="feature-title">Ultra Clean Kitchens</h4>
-                        <p class="feature-desc">Prepared under stringent food safety and hygienic protocols in modern commercial deep-fryers.</p>
+                        <div class="feature-icon-wrap">{{ $settings['why_icon_4'] ?? '🧼' }}</div>
+                        <h4 class="feature-title">{{ $settings['why_title_4'] ?? 'Ultra Clean Kitchens' }}</h4>
+                        <p class="feature-desc">{{ $settings['why_desc_4'] ?? 'Prepared under stringent food safety and hygienic protocols in modern commercial deep-fryers.' }}</p>
                     </div>
                 </div>
             </div>
@@ -1188,21 +1192,21 @@
     <section id="reviews" class="reviews-section">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">Real Foodie Experiences</span>
-                <h2 class="section-title">Loved by Thousands</h2>
-                <p class="section-subtitle">Discover what our happy diners and online orderers say about Munch Fried Chicken.</p>
+                <span class="section-tag">{{ $settings['reviews_tag'] ?? 'Real Foodie Experiences' }}</span>
+                <h2 class="section-title">{{ $settings['reviews_title'] ?? 'Loved by Thousands' }}</h2>
+                <p class="section-subtitle">{{ $settings['reviews_subtitle'] ?? 'Discover what our happy diners and online orderers say about Munch Fried Chicken.' }}</p>
             </div>
 
             <div class="row g-4">
                 <div class="col-md-4">
                     <div class="review-card">
                         <div class="stars-wrap">★★★★★</div>
-                        <p class="review-text">"Hands down the crispiest fried chicken I've tasted in town! The seasoning hits every note and the Double Crunch Tower Burger is colossal. Fast delivery too!"</p>
+                        <p class="review-text">"{{ $settings['rev_text_1'] ?? "Hands down the crispiest fried chicken I've tasted in town! The seasoning hits every note and the Double Crunch Tower Burger is colossal. Fast delivery too!" }}"</p>
                         <div class="reviewer-info">
-                            <div class="reviewer-avatar">AZ</div>
+                            <div class="reviewer-avatar">{{ strtoupper(substr($settings['rev_name_1'] ?? 'AZ', 0, 2)) }}</div>
                             <div>
-                                <h5 class="reviewer-name">Ali Zafar</h5>
-                                <p class="reviewer-role">Verified Foodie &bull; 15+ Orders</p>
+                                <h5 class="reviewer-name">{{ $settings['rev_name_1'] ?? 'Ali Zafar' }}</h5>
+                                <p class="reviewer-role">{{ $settings['rev_role_1'] ?? 'Verified Foodie • 15+ Orders' }}</p>
                             </div>
                         </div>
                     </div>
@@ -1210,12 +1214,12 @@
                 <div class="col-md-4">
                     <div class="review-card">
                         <div class="stars-wrap">★★★★★</div>
-                        <p class="review-text">"The Family Feast bucket was piping hot when it arrived! The pieces are generous, skin is insanely crunchy without feeling oily. Our kids loved the wings!"</p>
+                        <p class="review-text">"{{ $settings['rev_text_2'] ?? "The Family Feast bucket was piping hot when it arrived! The pieces are generous, skin is insanely crunchy without feeling oily. Our kids loved the wings!" }}"</p>
                         <div class="reviewer-info">
-                            <div class="reviewer-avatar">SN</div>
+                            <div class="reviewer-avatar">{{ strtoupper(substr($settings['rev_name_2'] ?? 'SN', 0, 2)) }}</div>
                             <div>
-                                <h5 class="reviewer-name">Sana Naveed</h5>
-                                <p class="reviewer-role">Regular Family Customer</p>
+                                <h5 class="reviewer-name">{{ $settings['rev_name_2'] ?? 'Sana Naveed' }}</h5>
+                                <p class="reviewer-role">{{ $settings['rev_role_2'] ?? 'Regular Family Customer' }}</p>
                             </div>
                         </div>
                     </div>
@@ -1223,12 +1227,12 @@
                 <div class="col-md-4">
                     <div class="review-card">
                         <div class="stars-wrap">★★★★★</div>
-                        <p class="review-text">"Ordered online and received instant WhatsApp updates. The loaded fries with melted cheese and chicken bites are addictive. 10/10 highly recommended!"</p>
+                        <p class="review-text">"{{ $settings['rev_text_3'] ?? "Ordered online and received instant WhatsApp updates. The loaded fries with melted cheese and chicken bites are addictive. 10/10 highly recommended!" }}"</p>
                         <div class="reviewer-info">
-                            <div class="reviewer-avatar">HK</div>
+                            <div class="reviewer-avatar">{{ strtoupper(substr($settings['rev_name_3'] ?? 'HK', 0, 2)) }}</div>
                             <div>
-                                <h5 class="reviewer-name">Hamza Khan</h5>
-                                <p class="reviewer-role">Food Blogger</p>
+                                <h5 class="reviewer-name">{{ $settings['rev_name_3'] ?? 'Hamza Khan' }}</h5>
+                                <p class="reviewer-role">{{ $settings['rev_role_3'] ?? 'Food Blogger' }}</p>
                             </div>
                         </div>
                     </div>
@@ -1321,15 +1325,27 @@
         <div class="container">
             <div class="row gy-4 pb-5 border-bottom border-secondary border-opacity-25">
                 <div class="col-lg-4 col-md-6">
-                    <div class="footer-brand-title">MUNCH <span>FRIED CHICKEN</span></div>
+                    <div class="footer-brand-title">
+                        @if(!empty($settings['site_logo']))
+                            <img src="{{ asset($settings['site_logo']) }}" alt="{{ $restaurantName }}" style="max-height: 48px; object-fit: contain;" class="mb-2">
+                        @else
+                            {{ $restaurantName }}
+                        @endif
+                    </div>
                     <p class="small text-muted mb-4" style="line-height: 1.7;">
-                        Premium handcrafted crispy fried chicken seasoned with our authentic secret spice blend. Fast delivery, unbeatable crunch, and 100% Halal goodness.
+                        {{ $settings['footer_about'] ?? "Crafting Hyderabad's favorite crispy fried chicken, towering burgers, and sizzling deals. Freshly prepared, hygienically packed, and delivered blazing fast." }}
                     </p>
                     <div class="d-flex">
-                        <a href="#" class="social-btn"><i class="bi bi-facebook"></i></a>
-                        <a href="#" class="social-btn"><i class="bi bi-instagram"></i></a>
-                        <a href="#" class="social-btn"><i class="bi bi-tiktok"></i></a>
-                        <a href="https://wa.me/{{ $whatsappNumber }}" class="social-btn"><i class="bi bi-whatsapp"></i></a>
+                        @if(!empty($settings['facebook_url']))
+                            <a href="{{ $settings['facebook_url'] }}" target="_blank" class="social-btn"><i class="bi bi-facebook"></i></a>
+                        @endif
+                        @if(!empty($settings['instagram_url']))
+                            <a href="{{ $settings['instagram_url'] }}" target="_blank" class="social-btn"><i class="bi bi-instagram"></i></a>
+                        @endif
+                        @if(!empty($settings['tiktok_url']))
+                            <a href="{{ $settings['tiktok_url'] }}" target="_blank" class="social-btn"><i class="bi bi-tiktok"></i></a>
+                        @endif
+                        <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" class="social-btn"><i class="bi bi-whatsapp"></i></a>
                     </div>
                 </div>
 
@@ -1340,15 +1356,13 @@
                         <li><a href="#menu" class="footer-link">Full Menu</a></li>
                         <li><a href="#deals" class="footer-link">Today's Deals</a></li>
                         <li><a href="#why-us" class="footer-link">Our Quality</a></li>
-
                     </ul>
                 </div>
 
                 <div class="col-lg-3 col-md-6 col-6">
                     <h6 class="text-white fw-bold mb-3 text-uppercase small">Restaurant Hours</h6>
                     <ul class="list-unstyled small">
-                        <li class="mb-2"><strong class="text-white">Monday - Thursday:</strong><br>12:00 PM – 02:00 AM</li>
-                        <li class="mb-2"><strong class="text-white">Friday - Sunday:</strong><br>12:00 PM – 03:00 AM</li>
+                        <li class="mb-2"><strong class="text-white">Timing:</strong><br>{{ $openingHours }}</li>
                         <li class="text-warning fw-bold"><i class="bi bi-check-circle-fill"></i> Delivery Active Now</li>
                     </ul>
                 </div>
@@ -1358,14 +1372,13 @@
                     <ul class="list-unstyled small">
                         <li class="mb-2"><i class="bi bi-geo-alt-fill text-danger me-2"></i> {{ $address }}</li>
                         <li class="mb-2"><i class="bi bi-telephone-fill text-warning me-2"></i> <a href="tel:{{ $phone }}" class="text-muted text-decoration-none">{{ $phone }}</a></li>
-                        <li class="mb-3"><i class="bi bi-whatsapp text-success me-2"></i> <a href="https://wa.me/{{ $whatsappNumber }}" class="text-muted text-decoration-none">WhatsApp Order</a></li>
-                        
+                        <li class="mb-3"><i class="bi bi-whatsapp text-success me-2"></i> <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" class="text-muted text-decoration-none">WhatsApp Order</a></li>
                     </ul>
                 </div>
             </div>
 
             <div class="d-flex justify-content-between align-items-center flex-wrap pt-4 small">
-                <div>&copy; {{ date('Y') }} {{ $restaurantName }}. All rights reserved.</div>
+                <div>{{ $settings['copyright_text'] ?? ('© ' . date('Y') . ' ' . $restaurantName . '. All rights reserved.') }}</div>
                 <div>Fresh &bull; Crispy &bull; 100% Halal</div>
             </div>
         </div>

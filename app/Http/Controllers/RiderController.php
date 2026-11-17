@@ -58,7 +58,7 @@ class RiderController extends Controller
             $r->unsettled_cash = (float) Sale::where('rider_id', $r->id)
                 ->where('delivery_status', 'delivered')
                 ->where('rider_cash_settled', false)
-                ->sum('total_bill_amount');
+                ->sum(DB::raw('COALESCE(total_net, total_bill_amount)'));
         }
 
         // Summary metrics
@@ -215,7 +215,9 @@ class RiderController extends Controller
             ->get();
 
         $count = $unsettledSales->count();
-        $totalAmount = $unsettledSales->sum('total_bill_amount');
+        $totalAmount = (float) $unsettledSales->sum(function($s) {
+            return (float) ($s->total_net ?: $s->total_bill_amount);
+        });
 
         if ($count === 0) {
             return response()->json([

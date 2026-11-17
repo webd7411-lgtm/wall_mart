@@ -6,10 +6,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h3>Branch</h3>
-                            @can('branches.create')
-                                <button type="button" class="btn btn-primary" id="reset-form">Create</button>
-                            @endcan
+                            <h3>Branches Management</h3>
                         </div>
                         <div class="border mt-1 shadow rounded" style="background-color: white;">
                             <div class="col-lg-12 m-auto">
@@ -78,7 +75,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Add Branch</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Branch</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -164,19 +161,7 @@
             $("#exampleModal").modal("show");
         });
 
-        $(document).on('click', '#reset-form', function() {
-            $('#exampleModalLabel').text('Add Branch');
-            $('.save-btn').val('Submit');
 
-            $('#id').val('');
-            $('#name').val('');
-            $('#type').val('mart');
-            $('#address').val('');
-            $('#number').val('');
-            $('#user_id').val('');
-
-            $("#exampleModal").modal("show");
-        });
 
         function confirmedBox(element, event) {
             event.preventDefault(); // Stop immediate redirect

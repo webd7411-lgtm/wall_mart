@@ -226,13 +226,22 @@
         <!-- Highlight Table or Token -->
         <div class="order-highlight">
             @if(($sale->order_type ?? '') === 'dine_in')
-                <div class="order-type-title">DINE-IN ORDER</div>
+                <div class="order-type-title" style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+                    <svg width="15" height="15" viewBox="0 0 416 512" fill="#000" style="vertical-align: middle;"><path d="M207.9 15.2c.8 4.7 16.1 94.5 16.1 128.8 0 52.3-27.8 89.6-68.9 97.2V480c0 17.7-14.3 32-32 32s-32-14.3-32-32V241.2C49.9 233.6 22.1 196.3 22.1 144c0-34.3 15.3-124.1 16.1-128.8.6-3.8 3.9-6.6 7.8-6.6h17.9c4 0 7.4 3 7.8 7 1.8 17.7 8.1 79.5 13.9 104.4 1.1 4.7 5.2 8 10 8s8.9-3.3 10-8C111.4 95.1 117.7 33.3 119.5 15.6c.4-4 3.8-7 7.8-7h15.8c4 0 7.4 3 7.8 7 1.8 17.7 8.1 79.5 13.9 104.4 1.1 4.7 5.2 8 10 8s8.9-3.3 10-8c5.8-24.9 12.1-86.7 13.9-104.4.4-4 3.8-7 7.8-7h17.9c3.9 0 7.2 2.8 7.8 6.6zM271.7 16c21.8 0 39.5 17.7 39.5 39.5V288h-32c-17.7 0-32 14.3-32 32v160c0 17.7 14.3 32 32 32h32c17.7 0 32-14.3 32-32V55.5C343.2 24.9 311.2 0 271.7 0h-16c-8.8 0-16 7.2-16 16s7.2 16 16 16h16z"/></svg>
+                    <span>DINE-IN ORDER</span>
+                </div>
                 <div class="order-target-id">TABLE #{{ $sale->table_no ?? '-' }}</div>
             @elseif(($sale->order_type ?? '') === 'takeaway')
-                <div class="order-type-title">TAKEAWAY ORDER</div>
+                <div class="order-type-title" style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+                    <svg width="15" height="15" viewBox="0 0 448 512" fill="#000" style="vertical-align: middle;"><path d="M352 160V128C352 57.3 294.7 0 224 0S96 57.3 96 128v32H16c-8.8 0-16 7.2-16 16v288c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V176c0-8.8-7.2-16-16-16h-80zm-192-32c0-35.3 28.7-64 64-64s64 28.7 64 64v32H160v-32zm224 320H64V224h32v32c0 8.8 7.2 16 16 16s16-7.2 16-16v-32h192v32c0 8.8 7.2 16 16 16s16-7.2 16-16v-32h32v224z"/></svg>
+                    <span>TAKEAWAY ORDER</span>
+                </div>
                 <div class="order-target-id">TOKEN #{{ $sale->token_no ?? '-' }}</div>
             @else
-                <div class="order-type-title">DELIVERY ORDER</div>
+                <div class="order-type-title" style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+                    <svg width="20" height="15" viewBox="0 0 640 512" fill="#000" style="vertical-align: middle;"><path d="M575.8 245.8l-40.3-80.6A48 48 0 0 0 492.6 138H448v-26c0-14.3-11.7-26-26-26h-36c-14.3 0-26 11.7-26 26v26h-24c-13.3 0-24 10.7-24 24v48c0 13.3 10.7 24 24 24h18.2l-28.7 57.4C307 274.6 279.7 272 256 272c-20.7 0-40.5 4.1-59 11.1L244 192h52c13.3 0 24-10.7 24-24s-10.7-24-24-24H216c-8.9 0-17.1 5-21.2 12.8L151.2 240H96c-53 0-96 43-96 96 0 48.9 36.7 89.2 84.1 95.3-2.7 8-4.1 16.5-4.1 25.3 0 44.2 35.8 80 80 80s80-35.8 80-80c0-9.6-1.8-18.9-5-27.5 1.7-.3 3.3-.8 5-1.2 24.3-6.1 47.1-15.6 67.8-27.9l40.7 40.7c-5.8 10.8-9.5 22.9-9.5 35.9 0 44.2 35.8 80 80 80s80-35.8 80-80c0-14.7-4-28.4-11-40.2l-47.5-80.8 45.4-90.8h69.1l30.6 61.2c5.8 11.6 17.6 18.8 30.6 18.8h8c17.7 0 32-14.3 32-32 0-9.2-3.9-17.5-10.2-23.4zM160 496c-26.5 0-48-21.5-48-48s21.5-48 48-48 48 21.5 48 48-21.5 48-48 48zm320 0c-26.5 0-48-21.5-48-48s21.5-48 48-48 48 21.5 48 48-21.5 48-48 48z"/></svg>
+                    <span>DELIVERY ORDER</span>
+                </div>
                 <div class="order-target-id">{{ $sale->walkin_name ?? 'Customer' }}</div>
                 @if($sale->rider_name)
                     <div style="font-size: 11px; margin-top: 2px;">Rider: {{ $sale->rider_name }}</div>

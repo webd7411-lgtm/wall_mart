@@ -80,10 +80,62 @@ class User extends Authenticatable
         return $employee->status === 'active';
     }
 
-    //    public function roles()
-    //     {
-    //         return $this->belongsToMany(Role::class, 'model_has_roles', 'model_id', 'role_id')
-    //                     ->where('model_type', User::class);
-    //     }
+    /**
+     * Retrieve all roles assigned to this user across teams/branches
+     */
+    public function getAssignedRoles()
+    {
+        return \App\Models\Role::join('model_has_roles', 'roles.id', '=', 'model_has_roles.role_id')
+            ->where('model_has_roles.model_id', $this->id)
+            ->where('model_has_roles.model_type', get_class($this))
+            ->select('roles.*', 'model_has_roles.branch_id as pivot_branch_id')
+            ->get();
+    }
 
+    /**
+     * Get names of all assigned roles
+     */
+    public function getAssignedRoleNames(): array
+    {
+        return $this->getAssignedRoles()->pluck('name')->unique()->values()->toArray();
+    }
+
+    /**
+     * Get IDs of all assigned roles
+     */
+    public function getAssignedRoleIds(): array
+    {
+        return $this->getAssignedRoles()->pluck('id')->unique()->values()->toArray();
+    }
+
+    /**
+     * Safely sync roles under the user's branch context (accepts Role IDs or Role Names)
+     */
+    public function syncUserRoles(array $roleInputs, $targetBranchId = null)
+    {
+        \Illuminate\Support\Facades\DB::table('model_has_roles')
+            ->where('model_id', $this->id)
+            ->where('model_type', get_class($this))
+            ->delete();
+
+        if (empty($roleInputs)) {
+            app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+            return;
+        }
+
+        $roles = \App\Models\Role::where(function ($q) use ($roleInputs) {
+            $q->whereIn('id', $roleInputs)->orWhereIn('name', $roleInputs);
+        })->get();
+
+        foreach ($roles as $role) {
+            \Illuminate\Support\Facades\DB::table('model_has_roles')->insert([
+                'role_id' => $role->id,
+                'model_type' => get_class($this),
+                'model_id' => $this->id,
+                'branch_id' => $targetBranchId,
+            ]);
+        }
+
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+    }
 }
