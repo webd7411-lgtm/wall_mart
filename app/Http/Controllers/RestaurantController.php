@@ -663,6 +663,30 @@ class RestaurantController extends Controller
             ];
         });
 
+        $phone = $sale->rider_phone;
+        if (empty($phone) && $sale->customer_relation) {
+            $phone = $sale->customer_relation->phone_number ?: ($sale->customer_relation->mobile ?: ($sale->customer_relation->mobile_2 ?: ''));
+        }
+        if (empty($phone) && !empty($sale->ecommerce_order_id)) {
+            $eOrder = \Illuminate\Support\Facades\DB::table('ecommerce_orders')->where('id', $sale->ecommerce_order_id)->first();
+            if ($eOrder) {
+                $phone = $eOrder->shipping_phone ?? '';
+            }
+        }
+
+        $address = $sale->delivery_address;
+        if (empty($address) && $sale->customer_relation) {
+            $address = $sale->customer_relation->address ?? '';
+        }
+        if (empty($address) && !empty($sale->ecommerce_order_id)) {
+            $eOrder = isset($eOrder) ? $eOrder : \Illuminate\Support\Facades\DB::table('ecommerce_orders')->where('id', $sale->ecommerce_order_id)->first();
+            if ($eOrder) {
+                $address = $eOrder->shipping_address ?? '';
+            }
+        }
+
+        $customerDisplayName = optional($sale->customer_relation)->name ?: ($sale->walkin_name ?: 'Walk-in Customer');
+
         return response()->json([
             'success' => true,
             'sale' => [
@@ -672,10 +696,18 @@ class RestaurantController extends Controller
                 'table_no' => $sale->table_no,
                 'token_no' => $sale->token_no,
                 'customer_id' => $sale->customer_id,
-                'walkin_name' => $sale->walkin_name ?: 'Walk-in Customer',
+                'customer_name' => $customerDisplayName,
+                'walkin_name' => $sale->walkin_name ?: ($sale->customer_id ? optional($sale->customer_relation)->name : 'Walk-in Customer'),
                 'order_notes' => $sale->order_notes ?? '',
+                'rider_id' => $sale->rider_id,
                 'rider_name' => $sale->rider_name ?? '',
                 'rider_phone' => $sale->rider_phone ?? '',
+                'customer_phone' => $phone ?: '',
+                'delivery_address' => $address ?: '',
+                'delivery_charges' => (float) ($sale->delivery_charges ?? 0),
+                'delivery_status' => $sale->delivery_status ?? 'pending',
+                'total_extradiscount' => (float) ($sale->total_extradiscount ?? 0),
+                'total_discount' => (float) ($sale->total_extradiscount ?? 0),
                 'total_bill' => (float) $sale->total_bill_amount,
                 'items' => $items,
             ],

@@ -25,11 +25,22 @@ class SaleController extends Controller
         $isOwnOnly = $user && !$user->can('sales.view') && $user->can('sales.view_own');
 
         $query = Sale::with(['user', 'customer_relation', 'items.product', 'returns'])
-            ->whereIn('sale_status', ['draft', 'booked', 'posted', 'returned']);
+            ->whereNotIn('sale_status', ['cancelled']);
 
         // Apply Status Filter
-        if ($request->has('status') && $request->status != 'all') {
-            $query->where('sale_status', $request->status);
+        if ($request->has('status') && $request->status !== 'all') {
+            if ($request->status === 'cancelled') {
+                $query->where(function($q) {
+                    $q->where('sale_status', 'cancelled')
+                      ->orWhere('order_status', 'cancelled');
+                });
+            } else {
+                $query->where('sale_status', $request->status);
+            }
+        } else {
+            // Exclude cancelled sales from the main list unless explicitly requested
+            $query->where('sale_status', '!=', 'cancelled')
+                  ->where('order_status', '!=', 'cancelled');
         }
 
         // Apply User / Cashier Filter or Enforce Own-Only
@@ -102,6 +113,7 @@ class SaleController extends Controller
             'draft_count' => $sales->where('sale_status', 'draft')->count(),
             'booked_count' => $sales->where('sale_status', 'booked')->count(),
             'returned_count' => $sales->whereIn('sale_status', ['returned', 1])->count(),
+            'cancelled_count' => $sales->where('sale_status', 'cancelled')->count(),
         ];
 
         // If AJAX request, return only table rows partial & stats

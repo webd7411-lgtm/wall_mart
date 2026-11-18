@@ -4735,22 +4735,30 @@
                     $('#orderTargetInput').val(tok);
                     $('#cartTokenBadge').text(tok);
                 } else {
-                    let rdr = s.rider_name || 'Delivery Order';
+                    let rdr = s.rider_name ? ('Rider: ' + s.rider_name) : 'Delivery Order';
                     $('#orderTargetInput').val(rdr);
                     if (s.rider_id) {
                         $('#posRiderSelect').val(s.rider_id);
+                    } else {
+                        $('#posRiderSelect').val('');
                     }
-                    if (s.delivery_charges) {
-                        $('#posDeliveryCharges').val(s.delivery_charges);
+                    $('#posDeliveryCharges').val(s.delivery_charges !== undefined ? s.delivery_charges : 0);
+                    $('#posDeliveryAddress').val(s.delivery_address || '');
+                    let phone = s.customer_phone || s.rider_phone || '';
+                    $('#posCustomerPhone').val(phone);
+
+                    let dCustName = s.walkin_name || s.customer_name || '';
+                    if (dCustName === 'Walk-in Customer' && s.customer_name) {
+                        dCustName = s.customer_name;
                     }
-                    if (s.delivery_address) {
-                        $('#posDeliveryAddress').val(s.delivery_address);
-                    }
-                    if (s.customer_phone) {
-                        $('#posCustomerPhone').val(s.customer_phone);
-                    }
-                    $('#posDeliveryCustomerName').val(s.walkin_name || '');
+                    $('#posDeliveryCustomerName').val(dCustName);
+                    $('#customerWalkinName').val(dCustName || 'Walk-in Customer');
                     $('#posDeliveryRemarks').val(s.order_notes || '');
+                    if (s.customer_id) {
+                        $('#posDeliveryCustomerId').val(s.customer_id);
+                    } else {
+                        $('#posDeliveryCustomerId').val('');
+                    }
                 }
                 if (s.customer_id) {
                     setCustomerMode('registered');
@@ -4765,6 +4773,21 @@
                     $('#customerWalkinName').val(s.walkin_name || 'Walk-in Customer');
                     $('#selectedCustomerBadge').hide();
                 }
+
+                // Ensure delivery fields are never wiped out after customer mode initialization
+                if (s.order_type === 'delivery') {
+                    if (s.customer_phone || s.rider_phone) {
+                        $('#posCustomerPhone').val(s.customer_phone || s.rider_phone);
+                    }
+                    if (s.delivery_address) {
+                        $('#posDeliveryAddress').val(s.delivery_address);
+                    }
+                    let dFinalName = s.walkin_name || s.customer_name || '';
+                    if (dFinalName && dFinalName !== 'Walk-in Customer') {
+                        $('#posDeliveryCustomerName').val(dFinalName);
+                    }
+                }
+
                 $('#orderRemarksInput').val(s.order_notes || '');
 
                 let extDisc = parseFloat(s.total_extradiscount || s.total_discount || 0);

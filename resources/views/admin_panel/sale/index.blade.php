@@ -325,6 +325,10 @@
                         class="btn btn-sm {{ request('status') == 'booked' ? 'btn-info text-white' : 'btn-outline-info' }} rounded-3 shadow-sm px-3 fw-bold">
                         Booked <span class="badge bg-white text-info ms-1">{{ $stats['booked_count'] ?? 0 }}</span>
                     </a>
+                    <a href="{{ route('sale.index', ['status' => 'cancelled']) }}"
+                        class="btn btn-sm {{ request('status') == 'cancelled' ? 'btn-danger' : 'btn-outline-danger' }} rounded-3 shadow-sm px-3 fw-bold">
+                        Cancelled <span class="badge bg-white text-danger ms-1">{{ $stats['cancelled_count'] ?? 0 }}</span>
+                    </a>
                     <a href="{{ route('sale.index', ['status' => 'returned']) }}"
                         class="btn btn-sm {{ request('status') == 'returned' ? 'btn-danger' : 'btn-outline-danger' }} rounded-3 shadow-sm px-3 fw-bold">
                         Returned <span class="badge bg-white text-danger ms-1">{{ $stats['returned_count'] ?? 0 }}</span>

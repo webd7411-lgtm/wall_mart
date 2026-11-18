@@ -103,7 +103,7 @@ class BranchHelper
     {
         $module = strtolower(trim($module));
 
-        if (str_starts_with($module, 'restaurant.') || str_starts_with($module, 'restaurant')) {
+        if (str_starts_with($module, 'restaurant.') || str_starts_with($module, 'restaurant') || str_starts_with($module, 'website.') || str_starts_with($module, 'website')) {
             return 'restaurant';
         }
 

@@ -113,7 +113,11 @@ class ReportingController extends Controller
 
             if (count($parsedVariants) > 0) {
                 // Fetch all sales and returns for this product to distribute
-                $salesQuery = DB::table('sale_items')->where('product_id', $product->id);
+                $salesQuery = DB::table('sale_items')
+                    ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+                    ->where('sale_items.product_id', $product->id)
+                    ->where('sales.order_status', '!=', 'cancelled')
+                    ->where('sales.sale_status', '!=', 'cancelled');
                 if ($warehouseId && $warehouseId !== 'all') {
                     $salesQuery->where('warehouse_id', $warehouseId);
                 }
@@ -125,6 +129,7 @@ class ReportingController extends Controller
                 $webSalesQuery = DB::table('ecommerce_order_items as eoi')
                     ->join('ecommerce_orders as eo', 'eo.id', '=', 'eoi.ecommerce_order_id')
                     ->where('eoi.product_id', $product->id)
+                    ->where('eo.status', '!=', 'cancelled')
                     ->where('eo.is_stock_deducted', 1);
 
                 if ($warehouseId && $warehouseId !== 'all' && $warehouseId != 1) {
@@ -675,6 +680,7 @@ class ReportingController extends Controller
                 $webSalesQuery = DB::table('ecommerce_order_items as eoi')
                     ->join('ecommerce_orders as eo', 'eo.id', '=', 'eoi.ecommerce_order_id')
                     ->where('eoi.product_id', $product->id)
+                    ->where('eo.status', '!=', 'cancelled')
                     ->where('eo.is_stock_deducted', 1);
 
                 if ($start && $end) {
@@ -1239,7 +1245,9 @@ class ReportingController extends Controller
                 $query->where('order_type', $request->order_type);
             }
 
-            $sales = $query->orderBy('created_at', 'asc')->get();
+        $sales = $query->where('sales.order_status', '!=', 'cancelled')
+                       ->where('sales.sale_status', '!=', 'cancelled')
+                       ->orderBy('created_at', 'asc')->get();
 
             // Transform to match the structure expected by the frontend (CSV strings)
             $transformed = $sales->map(function ($sale) {
@@ -2685,7 +2693,8 @@ class ReportingController extends Controller
                 DB::raw("SUM(sale_items.total) as gross_amount"),
                 DB::raw("COUNT(DISTINCT sales.id) as invoice_count")
             )
-            ->whereIn('sales.sale_status', ['posted', 'completed', 'booked', 'draft']);
+            ->whereIn('sales.sale_status', ['posted', 'completed', 'booked', 'draft'])
+            ->where('sales.order_status', '!=', 'cancelled');
 
         if ($fromDate) {
             $salesQuery->whereDate('sales.created_at', '>=', $fromDate);

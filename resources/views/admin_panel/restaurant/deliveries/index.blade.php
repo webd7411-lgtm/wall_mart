@@ -250,6 +250,10 @@
                                             </a>
 
                                             @if($st !== 'delivered' && $st !== 'cancelled')
+                                                <a href="{{ route('restaurant.pos') }}?recall_id={{ $ord->id }}"
+                                                   class="btn btn-xs btn-outline-info py-1 px-2" title="Edit Order in POS" style="font-size: 0.72rem;">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
                                                 <button type="button" class="btn btn-xs btn-outline-danger py-1 px-2"
                                                         onclick="confirmCancelDelivery({{ $ord->id }}, '{{ $ord->invoice_no }}')"
                                                         title="Cancel Delivery" style="font-size: 0.72rem;">

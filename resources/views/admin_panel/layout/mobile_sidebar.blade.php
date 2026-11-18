@@ -430,16 +430,6 @@
                 </li>
             @endcanany
 
-            @canany(['settings.view', 'settings.read', 'settings.edit', 'settings.update'])
-                <li class="m-nav-item">
-                    <a href="{{ route('website_settings.index') }}" class="m-nav-link {{ request()->is('website-control*') ? 'active' : '' }}">
-                        <i class="fas fa-globe m-nav-icon text-info"></i>
-                        <span class="m-nav-text">Website Control</span>
-                    </a>
-                </li>
-            @endcanany
-
-
             @endif
 
         </ul>

@@ -2190,17 +2190,6 @@
                                 </div>
                             @endcanany
                         </li>
-
-
-                        <!-- Website Management -->
-                        @canany(['settings.view', 'settings.read', 'settings.edit', 'settings.update'])
-                            <li class="nav-item {{ request()->is('website-control*') ? 'active' : '' }}">
-                                <a href="{{ route('website_settings.index') }}" class="nav-link">
-                                    <i class="menu_icon fas fa-globe text-primary"></i>
-                                    <span class="menu-title">Website Control</span>
-                                </a>
-                            </li>
-                        @endcanany
                         @endif
 
                         <!-- Mobile User Profile & Direct Logout -->

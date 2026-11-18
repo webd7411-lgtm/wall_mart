@@ -14,6 +14,11 @@ class WebsiteSettingsController extends Controller
      */
     public function index()
     {
+        // Website Control is only accessible in Restaurant branch
+        if (!\App\Helpers\BranchHelper::isRestaurantBranch()) {
+            return redirect()->route('home')->with('error', 'Website Control sirf Restaurant branch ke liye dastyab hai.');
+        }
+
         $rawSettings = DB::table('settings')->where('group', 'website')->pluck('value', 'key')->toArray();
 
         // Comprehensive defaults reflecting the live website
@@ -112,6 +117,11 @@ class WebsiteSettingsController extends Controller
      */
     public function update(Request $request)
     {
+        // Website Control is only accessible in Restaurant branch
+        if (!\App\Helpers\BranchHelper::isRestaurantBranch()) {
+            return redirect()->route('home')->with('error', 'Website Control sirf Restaurant branch ke liye dastyab hai.');
+        }
+
         $allInputs = $request->except(['_token', 'site_logo_file', 'hero_image_file']);
 
         // Handle Site Logo file upload
