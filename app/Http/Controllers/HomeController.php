@@ -17,6 +17,9 @@ class HomeController extends Controller
         }
 
         $user = Auth::user();
+        if ($user && method_exists($user, 'hasRole') && $user->hasRole('Rider')) {
+            return redirect()->route('rider.portal');
+        }
         $usertype = $user->usertype;
         $userId = Auth::id();
 

@@ -658,7 +658,9 @@ class ReportingController extends Controller
                 // Fetch all sales and returns for this product to distribute
                 $saleQuery = DB::table('sale_items')
                     ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
-                    ->where('sale_items.product_id', $product->id);
+                    ->where('sale_items.product_id', $product->id)
+                    ->where('sales.order_status', '!=', 'cancelled')
+                    ->where('sales.sale_status', '!=', 'cancelled');
                 
                 if ($start && $end) {
                     $saleQuery->whereBetween('sales.created_at', [$start, $end]);
@@ -803,7 +805,9 @@ class ReportingController extends Controller
                 // Product has no variants: original logic
                 $saleQuery = DB::table('sale_items')
                     ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
-                    ->where('sale_items.product_id', $product->id);
+                    ->where('sale_items.product_id', $product->id)
+                    ->where('sales.order_status', '!=', 'cancelled')
+                    ->where('sales.sale_status', '!=', 'cancelled');
                 
                 if ($start && $end) {
                     $saleQuery->whereBetween('sales.created_at', [$start, $end]);
@@ -1242,12 +1246,30 @@ class ReportingController extends Controller
             }
 
             if ($request->filled('order_type')) {
-                $query->where('order_type', $request->order_type);
+                if ($request->order_type === 'cancelled') {
+                    $query->where(function($q) {
+                        $q->where('order_status', 'cancelled')
+                          ->orWhere('sale_status', 'cancelled');
+                    });
+                } else {
+                    $query->where('order_type', $request->order_type)
+                          ->where(function($q) {
+                              $q->whereNull('sales.order_status')->orWhere('sales.order_status', '!=', 'cancelled');
+                          })
+                          ->where(function($q) {
+                              $q->whereNull('sales.sale_status')->orWhere('sales.sale_status', '!=', 'cancelled');
+                          });
+                }
+            } else {
+                // Default ("All Types"): exclude all cancelled sales
+                $query->where(function($q) {
+                    $q->whereNull('sales.order_status')->orWhere('sales.order_status', '!=', 'cancelled');
+                })->where(function($q) {
+                    $q->whereNull('sales.sale_status')->orWhere('sales.sale_status', '!=', 'cancelled');
+                });
             }
 
-        $sales = $query->where('sales.order_status', '!=', 'cancelled')
-                       ->where('sales.sale_status', '!=', 'cancelled')
-                       ->orderBy('created_at', 'asc')->get();
+            $sales = $query->orderBy('created_at', 'asc')->get();
 
             // Transform to match the structure expected by the frontend (CSV strings)
             $transformed = $sales->map(function ($sale) {
@@ -1336,10 +1358,19 @@ class ReportingController extends Controller
                     }
                 }
 
+                $isCancelled = ($sale->order_status === 'cancelled' || $sale->sale_status === 'cancelled');
+                $paidAmount = (float)$sale->cash + (float)$sale->card - (float)$sale->change;
+                $creditAmount = $isCancelled ? 0 : max(0, (float)$sale->total_net - max(0, $paidAmount));
+
                 return [
                     'id' => $sale->id,
                     'invoice_no' => $sale->invoice_no ?? ('INVSLE-' . $sale->id),
                     'order_type' => $sale->order_type,
+                    'order_status' => $sale->order_status,
+                    'sale_status' => $sale->sale_status,
+                    'is_cancelled' => $isCancelled,
+                    'paid_amount' => max(0, $paidAmount),
+                    'credit_amount' => $creditAmount,
                     'table_no' => $sale->table_no,
                     'token_no' => $sale->token_no,
                     'reference' => $sale->reference ?? '-',
@@ -1440,11 +1471,21 @@ class ReportingController extends Controller
                 }
             }
 
+            $totalCreditSales = 0;
+            foreach ($sales as $sale) {
+                if ($sale->order_status !== 'cancelled' && $sale->sale_status !== 'cancelled') {
+                    $paid = (float)$sale->cash + (float)$sale->card - (float)$sale->change;
+                    $due = max(0, (float)$sale->total_net - max(0, $paid));
+                    $totalCreditSales += $due;
+                }
+            }
+
             return response()->json([
                 'sales' => $transformed,
                 'summary' => [
                     'expenses' => $totalExpenses,
                     'cogs'     => $totalCogs,
+                    'credit_sales' => $totalCreditSales,
                 ]
             ]);
         }
@@ -2694,7 +2735,8 @@ class ReportingController extends Controller
                 DB::raw("COUNT(DISTINCT sales.id) as invoice_count")
             )
             ->whereIn('sales.sale_status', ['posted', 'completed', 'booked', 'draft'])
-            ->where('sales.order_status', '!=', 'cancelled');
+            ->where('sales.order_status', '!=', 'cancelled')
+            ->where('sales.sale_status', '!=', 'cancelled');
 
         if ($fromDate) {
             $salesQuery->whereDate('sales.created_at', '>=', $fromDate);

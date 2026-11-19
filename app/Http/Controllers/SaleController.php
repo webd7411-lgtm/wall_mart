@@ -24,24 +24,7 @@ class SaleController extends Controller
         $user = auth()->user();
         $isOwnOnly = $user && !$user->can('sales.view') && $user->can('sales.view_own');
 
-        $query = Sale::with(['user', 'customer_relation', 'items.product', 'returns'])
-            ->whereNotIn('sale_status', ['cancelled']);
-
-        // Apply Status Filter
-        if ($request->has('status') && $request->status !== 'all') {
-            if ($request->status === 'cancelled') {
-                $query->where(function($q) {
-                    $q->where('sale_status', 'cancelled')
-                      ->orWhere('order_status', 'cancelled');
-                });
-            } else {
-                $query->where('sale_status', $request->status);
-            }
-        } else {
-            // Exclude cancelled sales from the main list unless explicitly requested
-            $query->where('sale_status', '!=', 'cancelled')
-                  ->where('order_status', '!=', 'cancelled');
-        }
+        $query = Sale::with(['user', 'customer_relation', 'items.product', 'returns']);
 
         // Apply User / Cashier Filter or Enforce Own-Only
         if ($isOwnOnly) {
@@ -95,6 +78,52 @@ class SaleController extends Controller
             $query->where('customer_id', $request->customer_id);
         }
 
+        // Cloned query for computing stats across all categories BEFORE status filtering
+        $statsBaseQuery = clone $query;
+        $allStatsSales = $statsBaseQuery->get(['id', 'sale_status', 'order_status', 'total_net', 'total_extradiscount']);
+
+        $activeSales = $allStatsSales->filter(function($s) {
+            return $s->sale_status !== 'cancelled' && $s->order_status !== 'cancelled';
+        });
+
+        $cancelledSalesCount = $allStatsSales->filter(function($s) {
+            return $s->sale_status === 'cancelled' || $s->order_status === 'cancelled';
+        })->count();
+
+        $stats = [
+            'total_count' => $activeSales->count(),
+            'total_net' => (float) $activeSales->sum('total_net'),
+            'total_discount' => (float) $activeSales->sum('total_extradiscount'),
+            'posted_count' => $activeSales->where('sale_status', 'posted')->count(),
+            'draft_count' => $activeSales->where('sale_status', 'draft')->count(),
+            'booked_count' => $activeSales->where('sale_status', 'booked')->count(),
+            'returned_count' => $activeSales->whereIn('sale_status', ['returned', 1])->count(),
+            'cancelled_count' => $cancelledSalesCount,
+        ];
+
+        // Apply Status Filter to the main listing query
+        $status = $request->input('status', 'all');
+        if ($status === 'cancelled') {
+            $query->where(function($q) {
+                $q->where('sale_status', 'cancelled')
+                  ->orWhere('order_status', 'cancelled');
+            });
+        } elseif ($status === 'returned') {
+            $query->whereIn('sale_status', ['returned', 1]);
+        } elseif (in_array($status, ['posted', 'draft', 'booked'])) {
+            $query->where('sale_status', $status)
+                  ->where('sale_status', '!=', 'cancelled')
+                  ->where(function($q) {
+                      $q->whereNull('order_status')->orWhere('order_status', '!=', 'cancelled');
+                  });
+        } else {
+            // Default: 'all' - show all active sales, exclude cancelled
+            $query->where('sale_status', '!=', 'cancelled')
+                  ->where(function($q) {
+                      $q->whereNull('order_status')->orWhere('order_status', '!=', 'cancelled');
+                  });
+        }
+
         // Order By
         $orderBy = $request->input('order_by', 'created_at');
         if ($orderBy === 'invoice_no') {
@@ -104,17 +133,6 @@ class SaleController extends Controller
         }
 
         $sales = $query->get();
-
-        $stats = [
-            'total_count' => $sales->count(),
-            'total_net' => (float) $sales->sum('total_net'),
-            'total_discount' => (float) $sales->sum('total_extradiscount'),
-            'posted_count' => $sales->where('sale_status', 'posted')->count(),
-            'draft_count' => $sales->where('sale_status', 'draft')->count(),
-            'booked_count' => $sales->where('sale_status', 'booked')->count(),
-            'returned_count' => $sales->whereIn('sale_status', ['returned', 1])->count(),
-            'cancelled_count' => $sales->where('sale_status', 'cancelled')->count(),
-        ];
 
         // If AJAX request, return only table rows partial & stats
         if ($request->ajax()) {

@@ -29,6 +29,11 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
+        if ($user && method_exists($user, 'hasRole') && $user->hasRole('Rider')) {
+            return redirect()->route('rider.portal');
+        }
+
         return redirect()->route('home');
     }
 

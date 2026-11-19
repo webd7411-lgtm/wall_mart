@@ -46,6 +46,9 @@
                 <p class="text-muted small mb-0">Manage delivery boys, vehicle details, duty status, and daily cash settlements.</p>
             </div>
             <div class="d-flex align-items-center gap-2 mt-2 mt-md-0 flex-wrap">
+                <a href="{{ route('rider.login') }}" target="_blank" class="btn btn-warning btn-sm font-weight-bold text-dark shadow-sm">
+                    <i class="fas fa-external-link-alt me-1"></i> Open Rider Screen
+                </a>
                 <a href="{{ route('restaurant.deliveries.index') }}" class="btn btn-outline-primary btn-sm font-weight-bold">
                     <i class="fas fa-shipping-fast me-1"></i> Delivery Dispatch Orders
                 </a>
@@ -323,6 +326,17 @@
                         </div>
                     </div>
 
+                    <div class="p-2 mb-3 rounded border bg-light">
+                        <label class="form-label font-weight-bold small text-dark d-flex justify-content-between align-items-center mb-1">
+                            <span><i class="fas fa-key text-warning me-1"></i> Portal Password / PIN</span>
+                            <span class="badge bg-secondary text-white fw-normal" style="font-size: 0.7rem;">Default: 123456</span>
+                        </label>
+                        <input type="text" name="portal_password" id="modal_rider_password" class="form-control form-control-sm" placeholder="Leave blank to keep current / default (123456)">
+                        <small class="text-muted d-block mt-1" style="font-size: 0.73rem;">
+                            Rider apne registered phone number aur is PIN/Password se <code>/rider/login</code> per login karega.
+                        </small>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label font-weight-bold small text-dark">Residential Address</label>
                         <input type="text" name="address" id="modal_rider_address" class="form-control form-control-sm" placeholder="Area, City">
@@ -355,6 +369,7 @@
         $('#rider_edit_id').val('');
         $('#riderModalLabel').html('<i class="fas fa-motorcycle text-warning me-1"></i> Add New Rider');
         $('#modal_rider_duty').val('available');
+        $('#modal_rider_password').val('');
         $('#modal_rider_active').prop('checked', true);
         $('#riderModal').modal('show');
     }
@@ -365,6 +380,7 @@
         $('#riderModalLabel').html('<i class="fas fa-edit text-warning me-1"></i> Edit Rider: ' + rider.name);
         $('#modal_rider_name').val(rider.name);
         $('#modal_rider_phone').val(rider.phone);
+        $('#modal_rider_password').val('');
         $('#modal_rider_cnic').val(rider.cnic || '');
         $('#modal_rider_vehicle').val(rider.vehicle_no || '');
         $('#modal_rider_duty').val(rider.duty_status || 'available');

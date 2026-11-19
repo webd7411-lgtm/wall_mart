@@ -292,7 +292,7 @@
                     </div>
                 @endif
 
-                <form action="{{ route('store_expense_vochers') }}" method="POST" id="expenseForm">
+                <form action="{{ !empty($isEdit) ? route('update_expense_voucher', $voucher->id) : route('store_expense_vochers') }}" method="POST" id="expenseForm">
                     @csrf
 
                     <div class="voucher-sheet-card">
@@ -300,14 +300,14 @@
                         {{-- Action Top Bar --}}
                         <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom flex-wrap gap-2">
                             <div class="sheet-header-title">
-                                <i class="bi bi-wallet2 text-primary"></i> Expense Voucher Entry
+                                <i class="bi bi-wallet2 text-primary"></i> {{ !empty($isEdit) ? 'Edit Expense Voucher #' . $voucher->evid : 'Expense Voucher Entry' }}
                             </div>
                             <div class="d-flex align-items-center">
                                 <a href="{{ route('all_expense_vochers') }}" class="btn btn-outline-secondary btn-sm fw-bold d-inline-flex align-items-center" style="height: 32px; font-size: 0.8rem; padding: 4px 12px; border-radius: 5px; margin-right: 12px;">
                                     <i class="bi bi-list-ul me-1" style="margin-right: 5px;"></i> All Expenses
                                 </a>
                                 <button type="submit" class="btn btn-primary btn-sm fw-bold shadow-sm d-inline-flex align-items-center" style="height: 32px; font-size: 0.8rem; padding: 4px 16px; border-radius: 5px;">
-                                    <i class="bi bi-check2 me-1" style="margin-right: 5px;"></i> Save Voucher
+                                    <i class="bi bi-check2 me-1" style="margin-right: 5px;"></i> {{ !empty($isEdit) ? 'Update Voucher' : 'Save Voucher' }}
                                 </button>
                             </div>
                         </div>
@@ -317,28 +317,28 @@
                         <div class="row g-2 mb-2">
                             <div class="col-6 col-md-2 col-lg-2">
                                 <label class="ex-label">Voucher #</label>
-                                <input type="text" class="ex-input fw-bold text-primary font-monospace" name="evid" value="{{ $nextRvid }}" readonly>
+                                <input type="text" class="ex-input fw-bold text-primary font-monospace" name="evid" value="{{ !empty($isEdit) ? $voucher->evid : ($nextRvid ?? '') }}" readonly>
                             </div>
                             <div class="col-6 col-md-2 col-lg-2">
                                 <label class="ex-label">Date</label>
-                                <input type="date" name="entry_date" class="ex-input" value="{{ now()->toDateString() }}" required>
+                                <input type="date" name="entry_date" class="ex-input" value="{{ !empty($isEdit) ? $voucher->entry_date : now()->toDateString() }}" required>
                             </div>
                             <div class="col-6 col-md-2 col-lg-2">
                                 <label class="ex-label">Ref / Cheque #</label>
-                                <input type="text" name="ref_no_header" class="ex-input" placeholder="e.g. Chq-1029">
+                                <input type="text" name="ref_no_header" class="ex-input" value="{{ !empty($isEdit) ? $voucher->reference_no : '' }}" placeholder="e.g. Chq-1029">
                             </div>
                             <div class="col-6 col-md-3 col-lg-3">
                                 <label class="ex-label">Payment Head (Source)</label>
                                 <select name="vendor_type" class="ex-input" id="partyType" required>
-                                    <option value="" disabled selected>Select Source Head</option>
+                                    <option value="" disabled {{ empty($isEdit) ? 'selected' : '' }}>Select Source Head</option>
                                     @foreach ($AccountHeads as $head)
-                                        <option value="{{ $head->id }}">{{ ucfirst(strtolower($head->name)) }}</option>
+                                        <option value="{{ $head->id }}" {{ (!empty($isEdit) && $voucher->type == $head->id) ? 'selected' : '' }}>{{ ucfirst(strtolower($head->name)) }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-12 col-md-3 col-lg-3">
                                 <label class="ex-label">Account / Paid From</label>
-                                <select name="vendor_id" class="ex-input" id="partyId" required>
+                                <select name="vendor_id" class="ex-input" id="partyId" data-selected-party="{{ !empty($isEdit) ? $voucher->party_id : '' }}" required>
                                     <option disabled selected>Select Account</option>
                                 </select>
                             </div>
@@ -347,7 +347,7 @@
                         <div class="row g-2 mb-3">
                             <div class="col-6 col-md-3 col-lg-2">
                                 <label class="ex-label">Account Code</label>
-                                <input type="text" name="tel" id="tel" class="ex-input font-monospace" readonly placeholder="Auto Code">
+                                <input type="text" name="tel" id="tel" class="ex-input font-monospace" readonly placeholder="Auto Code" value="{{ !empty($isEdit) ? $voucher->tel : '' }}">
                             </div>
                             <div class="col-6 col-md-3 col-lg-3">
                                 <label class="ex-label">Account Balance</label>
@@ -358,7 +358,7 @@
                             </div>
                             <div class="col-12 col-md-6 col-lg-7">
                                 <label class="ex-label">Global Remarks / Description</label>
-                                <input type="text" name="remarks" class="ex-input" id="remarks" placeholder="Description of expense payment...">
+                                <input type="text" name="remarks" class="ex-input" id="remarks" value="{{ !empty($isEdit) ? $voucher->remarks : '' }}" placeholder="Description of expense payment...">
                             </div>
                         </div>
 
@@ -381,34 +381,67 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td class="row-number">1</td>
-                                            <td>
-                                                <div class="d-flex align-items-center gap-1">
-                                                    <select name="row_account_id[]" class="cell-input rowAccountCategory" required>
-                                                        <option value="" disabled selected>-- Select Category --</option>
-                                                        @foreach ($expenseCategories as $cat)
-                                                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                    <a href="javascript:void(0)" data-toggle="modal" data-target="#newExpenseCategoryModal" class="btn-mini-add" title="Quick Add Category">
-                                                        <i class="bi bi-plus-lg"></i>
-                                                    </a>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <input type="text" name="narration_text[]" class="cell-input" placeholder="e.g. Utility bill, stationery, repair...">
-                                                <input type="hidden" name="narration_id[]" value="">
-                                            </td>
-                                            <td>
-                                                <input type="number" name="amount[]" step="0.01" class="cell-input text-end fw-bold amount font-monospace" placeholder="0.00" required>
-                                            </td>
-                                            <td class="text-center">
-                                                <button type="button" class="btn-mini-del removeRow" title="Delete Row">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
+                                        @if(!empty($isEdit) && !empty($rows))
+                                            @foreach($rows as $rIndex => $row)
+                                                <tr>
+                                                    <td class="row-number">{{ $rIndex + 1 }}</td>
+                                                    <td>
+                                                        <div class="d-flex align-items-center gap-1">
+                                                            <select name="row_account_id[]" class="cell-input rowAccountCategory" required>
+                                                                <option value="" disabled>-- Select Category --</option>
+                                                                @foreach ($expenseCategories as $cat)
+                                                                    <option value="{{ $cat->id }}" {{ $row['category_id'] == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                            <a href="javascript:void(0)" data-toggle="modal" data-target="#newExpenseCategoryModal" class="btn-mini-add" title="Quick Add Category">
+                                                                <i class="bi bi-plus-lg"></i>
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" name="narration_text[]" class="cell-input" value="{{ $row['narration_text'] }}" placeholder="e.g. Utility bill, stationery, repair...">
+                                                        <input type="hidden" name="narration_id[]" value="{{ $row['narration_id'] }}">
+                                                    </td>
+                                                    <td>
+                                                        <input type="number" name="amount[]" step="0.01" class="cell-input text-end fw-bold amount font-monospace" value="{{ $row['amount'] }}" placeholder="0.00" required>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <button type="button" class="btn-mini-del removeRow" title="Delete Row">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @else
+                                            <tr>
+                                                <td class="row-number">1</td>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <select name="row_account_id[]" class="cell-input rowAccountCategory" required>
+                                                            <option value="" disabled selected>-- Select Category --</option>
+                                                            @foreach ($expenseCategories as $cat)
+                                                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                        <a href="javascript:void(0)" data-toggle="modal" data-target="#newExpenseCategoryModal" class="btn-mini-add" title="Quick Add Category">
+                                                            <i class="bi bi-plus-lg"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <input type="text" name="narration_text[]" class="cell-input" placeholder="e.g. Utility bill, stationery, repair...">
+                                                    <input type="hidden" name="narration_id[]" value="">
+                                                </td>
+                                                <td>
+                                                    <input type="number" name="amount[]" step="0.01" class="cell-input text-end fw-bold amount font-monospace" placeholder="0.00" required>
+                                                </td>
+                                                <td class="text-center">
+                                                    <button type="button" class="btn-mini-del removeRow" title="Delete Row">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endif
                                     </tbody>
                                 </table>
                             </div>
@@ -417,7 +450,7 @@
                                 <button type="button" class="btn btn-outline-primary btn-sm fw-bold d-inline-flex align-items-center" id="addNewRow" style="height: 28px; font-size: 0.78rem; padding: 2px 10px; border-radius: 4px;">
                                     <i class="bi bi-plus-circle me-1"></i> Add Another Row (Enter)
                                 </button>
-                                <span class="text-muted small" style="font-size: 0.74rem;">Rows: <strong id="rowCountDisplay">1</strong></span>
+                                <span class="text-muted small" style="font-size: 0.74rem;">Rows: <strong id="rowCountDisplay">{{ !empty($rows) ? count($rows) : 1 }}</strong></span>
                             </div>
                         </div>
 
@@ -431,11 +464,11 @@
                                     <span style="font-size: 0.82rem; font-weight: 700; text-transform: uppercase;">Total Expense</span>
                                     <div class="d-flex align-items-center" style="margin-left: 12px;">
                                         <span style="color: #94a3b8; font-size: 0.9rem; margin-right: 6px;">Rs.</span>
-                                        <input type="text" name="total_amount" class="total-summary-value" id="totalAmount" readonly value="0.00">
+                                        <input type="text" name="total_amount" class="total-summary-value" id="totalAmount" readonly value="{{ !empty($isEdit) ? number_format((float) $voucher->total_amount, 2, '.', '') : '0.00' }}">
                                     </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary fw-bold shadow-sm d-inline-flex align-items-center" style="height: 44px; padding: 0 24px; border-radius: 6px; font-size: 0.9rem;">
-                                    <i class="bi bi-check-circle-fill me-2" style="margin-right: 8px;"></i> Save Expense
+                                    <i class="bi bi-check-circle-fill me-2" style="margin-right: 8px;"></i> {{ !empty($isEdit) ? 'Update Expense' : 'Save Expense' }}
                                 </button>
                             </div>
                         </div>
@@ -499,21 +532,27 @@
                 loadPartyList(type);
             });
 
-            function loadPartyList(type) {
+            function loadPartyList(type, selectedPartyId = null) {
                 let $select = $('#partyId');
                 $select.html('<option disabled selected>Loading accounts...</option>');
-                $('#tel').val('');
-                updateBalance(0);
+                if (!selectedPartyId) {
+                    $('#tel').val('');
+                    updateBalance(0);
+                }
 
                 if (type === 'vendor' || type === 'customer') {
                     $.get('{{ route("party.list") }}?type=' + type, function(data) {
-                        $select.empty().append('<option disabled selected>Select Party</option>');
+                        $select.empty().append('<option disabled ' + (!selectedPartyId ? 'selected' : '') + '>Select Party</option>');
                         if (data && data.length > 0) {
                             data.forEach(function(item) {
+                                let isSel = (selectedPartyId && String(selectedPartyId) === String(item.id)) ? 'selected' : '';
                                 $select.append(
-                                    `<option value="${item.id}" data-phone="${item.mobile || ''}" data-bal="${item.closing_balance}">${item.text}</option>`
+                                    `<option value="${item.id}" data-phone="${item.mobile || ''}" data-bal="${item.closing_balance}" ${isSel}>${item.text}</option>`
                                 );
                             });
+                            if (selectedPartyId) {
+                                $select.trigger('change');
+                            }
                         } else {
                             $select.append('<option disabled>No parties found</option>');
                         }
@@ -523,13 +562,17 @@
                 } else if (type) {
                     let fetchUrl = '{{ route("get.accounts.by.head", ":id") }}'.replace(':id', type);
                     $.get(fetchUrl, function(data) {
-                        $select.empty().append('<option disabled selected>Select Account</option>');
+                        $select.empty().append('<option disabled ' + (!selectedPartyId ? 'selected' : '') + '>Select Account</option>');
                         if (data && data.length > 0) {
                             data.forEach(function(acc) {
+                                let isSel = (selectedPartyId && String(selectedPartyId) === String(acc.id)) ? 'selected' : '';
                                 $select.append(
-                                    `<option value="${acc.id}" data-code="${acc.account_code || ''}" data-bal="${acc.current_balance || acc.opening_balance || 0}">${acc.title}</option>`
+                                    `<option value="${acc.id}" data-code="${acc.account_code || ''}" data-bal="${acc.current_balance || acc.opening_balance || 0}" ${isSel}>${acc.title}</option>`
                                 );
                             });
+                            if (selectedPartyId) {
+                                $select.trigger('change');
+                            }
                         } else {
                             $select.append('<option disabled>No accounts found</option>');
                         }
@@ -537,6 +580,13 @@
                         $select.empty().append('<option disabled selected>Error loading accounts</option>');
                     });
                 }
+            }
+
+            // If in Edit mode, trigger loading initial party list
+            let initialPartyType = $('#partyType').val();
+            let preSelectedParty = $('#partyId').data('selected-party');
+            if (initialPartyType) {
+                loadPartyList(initialPartyType, preSelectedParty);
             }
 
             $('#partyId').on('change', function() {

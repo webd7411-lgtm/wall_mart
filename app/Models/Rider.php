@@ -14,6 +14,7 @@ class Rider extends Model
 
     protected $fillable = [
         'branch_id',
+        'user_id',
         'name',
         'phone',
         'cnic',
@@ -34,6 +35,14 @@ class Rider extends Model
     public function branch()
     {
         return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
+    /**
+     * Relationship to linked User.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**

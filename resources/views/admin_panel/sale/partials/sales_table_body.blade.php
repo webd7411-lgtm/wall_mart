@@ -12,7 +12,9 @@
         $statusBadge = '<span class="badge badge-warning text-dark border border-warning">Draft</span>';
         $isExchange = \Illuminate\Support\Str::startsWith($sale->reference, 'Exchange for');
         
-        if ($sale->sale_status === 'posted') {
+        if ($sale->sale_status === 'cancelled' || $sale->order_status === 'cancelled') {
+            $statusBadge = '<span class="badge bg-danger text-white border border-danger"><i class="fas fa-ban me-1"></i>Cancelled</span>';
+        } elseif ($sale->sale_status === 'posted') {
             if ($sale->is_booking) {
                 $statusBadge = '<span class="badge badge-success border border-success"><i class="fas fa-check-circle me-1"></i>Confirmed Booking</span>';
             } elseif ($isExchange) {
@@ -197,7 +199,7 @@
                         </li>
                     @endcanany
 
-                    @if ($sale->sale_status !== 'returned')
+                    @if ($sale->sale_status !== 'returned' && $sale->sale_status !== 'cancelled' && $sale->order_status !== 'cancelled')
                         @can('sales.create')
                             <li><hr class="dropdown-divider"></li>
                             <li>
@@ -218,6 +220,7 @@
         if ($sale->sale_status === 'draft') $cardBorderColor = '#f59e0b';
         elseif ($sale->sale_status === 'booked') $cardBorderColor = '#06b6d4';
         elseif ($sale->sale_status === 'returned' || $sale->sale_status == 1) $cardBorderColor = '#ef4444';
+        elseif ($sale->sale_status === 'cancelled' || $sale->order_status === 'cancelled') $cardBorderColor = '#ef4444';
     @endphp
     <tr class="d-table-row d-md-none border-0">
         <td colspan="12" class="p-0 border-0 bg-transparent">
@@ -265,7 +268,7 @@
                         </a>
                     @endcan
 
-                    @if ($sale->sale_status === 'draft' || $sale->sale_status === 'booked')
+                    @if (($sale->sale_status === 'draft' || $sale->sale_status === 'booked') && $sale->sale_status !== 'cancelled' && $sale->order_status !== 'cancelled')
                         @can('sales.create')
                             <form action="{{ route('sales.confirm', $sale->id) }}" method="POST" class="confirm-booking-form m-0">
                                 @csrf
@@ -288,7 +291,7 @@
                         </a>
                     @endcanany
 
-                    @if ($sale->sale_status !== 'returned')
+                    @if ($sale->sale_status !== 'returned' && $sale->sale_status !== 'cancelled' && $sale->order_status !== 'cancelled')
                         @can('sales.create')
                             <a href="{{ route('sale.return.show', $sale->id) }}" class="btn btn-sm btn-outline-danger fw-bold" style="border-radius: 8px;">
                                 <i class="fas fa-undo me-1"></i> Return

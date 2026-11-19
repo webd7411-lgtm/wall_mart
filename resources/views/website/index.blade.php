@@ -631,6 +631,34 @@
             color: #ffffff;
         }
 
+        /* Variant Selection Option Cards */
+        .variant-option-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .variant-option-card:hover {
+            background: rgba(245, 158, 11, 0.09);
+            border-color: rgba(245, 158, 11, 0.45);
+        }
+        .variant-option-card.active {
+            background: rgba(245, 158, 11, 0.16);
+            border-color: #f59e0b;
+            box-shadow: 0 0 14px rgba(245, 158, 11, 0.3);
+        }
+        .variant-radio {
+            accent-color: #f59e0b;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
         /* Value Deals Section */
         .deals-section {
             padding: 80px 0;
@@ -1058,11 +1086,17 @@
                             <div class="product-footer">
                                 <div class="product-price">
                                     <span class="price-label">Price</span>
-                                    <span class="price-val">{{ $deal['formatted_price'] }}</span>
+                                    <span class="price-val">{{ !empty($deal['has_variants']) ? ($deal['price_range'] ?? $deal['formatted_price']) : $deal['formatted_price'] }}</span>
                                 </div>
+                                @if(!empty($deal['has_variants']))
+                                <button class="btn-add-cart" onclick='openVariantModal(@json($deal))' style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                                    <i class="bi bi-sliders"></i> Choose Option
+                                </button>
+                                @else
                                 <button class="btn-add-cart" onclick="addToCart({{ $deal['id'] }}, '{{ addslashes($deal['name']) }}', {{ $deal['price'] }}, '{{ $deal['image'] }}')">
                                     <i class="bi bi-plus-lg"></i> Add
                                 </button>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -1103,7 +1137,7 @@
             <!-- Products Grid -->
             <div class="row g-4" id="productsGrid">
                 @forelse($products as $product)
-                <div class="col-md-6 col-lg-4 product-item-col" data-category="{{ $product['category_id'] }}" data-name="{{ strtolower($product['name']) }}" data-desc="{{ strtolower($product['description']) }}">
+                <div class="col-md-6 col-lg-4 product-item-col" data-category="{{ $product['category_id'] }}" data-name="{{ strtolower($product['name']) }}" data-desc="{{ strtolower($product['description']) }}" data-variants="{{ !empty($product['variants']) ? strtolower(implode(' ', array_column($product['variants'], 'name'))) : '' }}">
                     <div class="product-card">
                         <div class="product-img-wrap">
                             <img src="{{ $product['image'] }}" alt="{{ $product['name'] }}" class="product-img" loading="lazy">
@@ -1118,11 +1152,17 @@
                             <div class="product-footer">
                                 <div class="product-price">
                                     <span class="price-label">Price</span>
-                                    <span class="price-val">{{ $product['formatted_price'] }}</span>
+                                    <span class="price-val">{{ !empty($product['has_variants']) ? ($product['price_range'] ?? $product['formatted_price']) : $product['formatted_price'] }}</span>
                                 </div>
+                                @if(!empty($product['has_variants']))
+                                <button class="btn-add-cart" onclick='openVariantModal(@json($product))' style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                                    <i class="bi bi-sliders"></i> Choose Option
+                                </button>
+                                @else
                                 <button class="btn-add-cart" onclick="addToCart({{ $product['id'] }}, '{{ addslashes($product['name']) }}', {{ $product['price'] }}, '{{ $product['image'] }}')">
                                     <i class="bi bi-plus-lg"></i> Add to Cart
                                 </button>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -1315,7 +1355,47 @@
         </div>
     </div>
 
-    <!-- Floating WhatsApp Button -->
+    <!-- Variant Selection Modal -->
+    <div class="modal fade" id="variantModal" tabindex="-1" aria-labelledby="variantModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: #151922; border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.7); color: #fff;">
+                <div class="modal-header border-secondary border-opacity-25 pb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <img id="vModalImg" src="" alt="Product" style="width: 55px; height: 55px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                        <div>
+                            <h5 class="modal-title fw-bold text-white mb-0" id="vModalTitle">Select Option</h5>
+                            <small class="text-warning fw-semibold" id="vModalCategory"></small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <label class="form-label fw-bold text-white mb-2 fs-6">
+                        <i class="bi bi-ui-radios me-1 text-warning"></i> Choose Size / Variant:
+                    </label>
+                    <div id="vModalVariantsList" class="d-flex flex-column gap-2 mb-4">
+                        <!-- Variant radio cards rendered via JS -->
+                    </div>
+
+                    <!-- Quantity Selector -->
+                    <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background: rgba(255,255,255,0.04); border: 1px solid var(--brand-border);">
+                        <span class="fw-bold text-white"><i class="bi bi-plus-slash-minus text-warning me-2"></i>Quantity:</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="cart-qty-btn" onclick="changeModalQty(-1)" style="width: 36px; height: 36px; font-size: 1.1rem;">-</button>
+                            <span id="vModalQty" class="px-3 fw-bold fs-6 text-white">1</span>
+                            <button type="button" class="cart-qty-btn" onclick="changeModalQty(1)" style="width: 36px; height: 36px; font-size: 1.1rem;">+</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary border-opacity-25 pt-3">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-munch-primary px-4 py-2 fw-bold d-flex align-items-center gap-2" id="vModalAddBtn" onclick="addSelectedVariantToBasket()">
+                        <i class="bi bi-bag-plus-fill"></i> <span id="vModalAddBtnText">Add to Basket</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     <a href="https://wa.me/{{ $whatsappNumber }}?text={{ urlencode('Hello Munch Fried Chicken! I would like to place an order.') }}" target="_blank" class="floating-wa-btn" title="Chat on WhatsApp">
         <i class="bi bi-whatsapp"></i>
     </a>
@@ -1397,6 +1477,10 @@
             const saved = localStorage.getItem(CART_STORAGE_KEY);
             if (saved) {
                 cart = JSON.parse(saved);
+                // Ensure cart_key is present on all items
+                cart.forEach(item => {
+                    if (!item.cart_key) item.cart_key = `${item.id}_${item.name}`;
+                });
             }
         } catch (e) {
             cart = [];
@@ -1407,17 +1491,27 @@
             renderCartUI();
         }
 
-        function addToCart(id, name, price, image) {
-            const existing = cart.find(item => item.id === id);
+        function addToCart(id, name, price, image, quantity = 1, size = null, color = null, variant_data = null) {
+            const qty = parseInt(quantity) || 1;
+            const cartKey = `${id}_${name}`;
+            const existing = cart.find(item => item.cart_key === cartKey || (!item.cart_key && item.id === id && item.name === name));
             if (existing) {
-                existing.quantity += 1;
+                existing.cart_key = cartKey;
+                existing.quantity += qty;
+                if (size) existing.size = size;
+                if (color) existing.color = color;
+                if (variant_data) existing.variant_data = variant_data;
             } else {
                 cart.push({
+                    cart_key: cartKey,
                     id: id,
                     name: name,
                     price: parseFloat(price) || 0,
                     image: image,
-                    quantity: 1
+                    quantity: qty,
+                    size: size,
+                    color: color,
+                    variant_data: variant_data
                 });
             }
             saveCart();
@@ -1438,19 +1532,19 @@
             });
         }
 
-        function updateCartQty(id, delta) {
-            const item = cart.find(i => i.id === id);
+        function updateCartQty(cartKey, delta) {
+            const item = cart.find(i => (i.cart_key && i.cart_key === cartKey) || (!i.cart_key && i.id == cartKey));
             if (item) {
                 item.quantity += delta;
                 if (item.quantity <= 0) {
-                    cart = cart.filter(i => i.id !== id);
+                    cart = cart.filter(i => (i.cart_key ? i.cart_key !== cartKey : i.id != cartKey));
                 }
                 saveCart();
             }
         }
 
-        function removeCartItem(id) {
-            cart = cart.filter(i => i.id !== id);
+        function removeCartItem(cartKey) {
+            cart = cart.filter(i => (i.cart_key ? i.cart_key !== cartKey : i.id != cartKey));
             saveCart();
         }
 
@@ -1500,27 +1594,127 @@
                 document.getElementById('btnPlaceOrder').disabled = true;
             } else {
                 document.getElementById('btnPlaceOrder').disabled = false;
-                listContainer.innerHTML = cart.map(item => `
+                listContainer.innerHTML = cart.map(item => {
+                    const itemKey = item.cart_key || `${item.id}_${item.name}`;
+                    const safeKey = itemKey.replace(/'/g, "\\'");
+                    return `
                     <div class="cart-item-row">
                         <img src="${item.image}" alt="${item.name}" class="cart-item-thumb">
                         <div class="flex-grow-1">
                             <div class="fw-bold text-white small mb-1">${item.name}</div>
+                            ${item.size ? `<span class="badge bg-secondary text-light px-2 py-0 me-1" style="font-size:0.7rem;">${item.size}</span>` : ''}
                             <div class="text-warning small fw-bold">Rs. ${item.price.toLocaleString()}</div>
                         </div>
                         <div class="d-flex align-items-center gap-1">
-                            <button class="cart-qty-btn" onclick="updateCartQty(${item.id}, -1)">-</button>
+                            <button class="cart-qty-btn" onclick="updateCartQty('${safeKey}', -1)">-</button>
                             <span class="px-2 small fw-bold text-white">${item.quantity}</span>
-                            <button class="cart-qty-btn" onclick="updateCartQty(${item.id}, 1)">+</button>
-                            <button class="btn btn-link text-danger p-0 ms-2" onclick="removeCartItem(${item.id})" title="Remove">
+                            <button class="cart-qty-btn" onclick="updateCartQty('${safeKey}', 1)">+</button>
+                            <button class="btn btn-link text-danger p-0 ms-2" onclick="removeCartItem('${safeKey}')" title="Remove">
                                 <i class="bi bi-trash3-fill"></i>
                             </button>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
             }
         }
 
+        // --- Variant Modal Logic ---
+        let currentModalProduct = null;
+        let selectedVariantIndex = 0;
+        let modalQty = 1;
 
+        function openVariantModal(product) {
+            currentModalProduct = product;
+            selectedVariantIndex = 0;
+            modalQty = 1;
+
+            document.getElementById('vModalImg').src = product.image;
+            document.getElementById('vModalTitle').innerText = product.name;
+            document.getElementById('vModalCategory').innerText = product.category_name || '';
+            document.getElementById('vModalQty').innerText = '1';
+
+            const list = document.getElementById('vModalVariantsList');
+            list.innerHTML = '';
+
+            if (product.variants && product.variants.length > 0) {
+                product.variants.forEach((v, idx) => {
+                    const isSelected = idx === 0;
+                    const displayLabel = v.size ? `${v.size.toUpperCase()} (${v.name})` : v.name;
+                    const card = document.createElement('div');
+                    card.className = `variant-option-card ${isSelected ? 'active' : ''}`;
+                    card.id = `variantOptionCard_${idx}`;
+                    card.onclick = () => selectVariantOption(idx);
+                    card.innerHTML = `
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="radio" name="productVariantRadio" class="variant-radio" id="vRadio_${idx}" value="${idx}" ${isSelected ? 'checked' : ''} onchange="selectVariantOption(${idx})">
+                            <div>
+                                <div class="fw-bold text-white" style="text-transform: capitalize;">${displayLabel}</div>
+                                ${v.size ? `<span class="badge bg-secondary text-light small px-2 py-0" style="font-size:0.72rem;">${v.size}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="text-warning fw-bold fs-6">
+                            ${v.formatted_price}
+                        </div>
+                    `;
+                    list.appendChild(card);
+                });
+            }
+
+            updateModalBtnPrice();
+
+            const bsModal = new bootstrap.Modal(document.getElementById('variantModal'));
+            bsModal.show();
+        }
+
+        function selectVariantOption(idx) {
+            selectedVariantIndex = idx;
+            const cards = document.querySelectorAll('.variant-option-card');
+            cards.forEach((c, i) => {
+                if (i === idx) {
+                    c.classList.add('active');
+                    const radio = document.getElementById(`vRadio_${i}`);
+                    if (radio) radio.checked = true;
+                } else {
+                    c.classList.remove('active');
+                }
+            });
+            updateModalBtnPrice();
+        }
+
+        function changeModalQty(delta) {
+            modalQty += delta;
+            if (modalQty < 1) modalQty = 1;
+            document.getElementById('vModalQty').innerText = modalQty;
+            updateModalBtnPrice();
+        }
+
+        function updateModalBtnPrice() {
+            if (!currentModalProduct || !currentModalProduct.variants || !currentModalProduct.variants[selectedVariantIndex]) return;
+            const variant = currentModalProduct.variants[selectedVariantIndex];
+            const unitPrice = parseFloat(variant.price) || 0;
+            const total = unitPrice * modalQty;
+            document.getElementById('vModalAddBtnText').innerText = `Add to Basket — Rs. ${total.toLocaleString()}`;
+        }
+
+        function addSelectedVariantToBasket() {
+            if (!currentModalProduct || !currentModalProduct.variants || !currentModalProduct.variants[selectedVariantIndex]) return;
+            const variant = currentModalProduct.variants[selectedVariantIndex];
+
+            addToCart(
+                currentModalProduct.id,
+                variant.name,
+                variant.price,
+                currentModalProduct.image,
+                modalQty,
+                variant.size || null,
+                variant.color || null,
+                variant.variant_data || null
+            );
+
+            const el = document.getElementById('variantModal');
+            const bsModal = bootstrap.Modal.getInstance(el);
+            if (bsModal) bsModal.hide();
+        }
 
         // --- Filter Menu By Category ---
         function filterCategory(catId, btn) {
@@ -1535,9 +1729,10 @@
                 const itemCat = col.getAttribute('data-category');
                 const itemName = col.getAttribute('data-name');
                 const itemDesc = col.getAttribute('data-desc');
+                const itemVariants = col.getAttribute('data-variants') || '';
 
                 const matchesCat = (catId === 'all' || itemCat == catId);
-                const matchesSearch = (searchVal === '' || itemName.includes(searchVal) || itemDesc.includes(searchVal));
+                const matchesSearch = (searchVal === '' || itemName.includes(searchVal) || itemDesc.includes(searchVal) || itemVariants.includes(searchVal));
 
                 if (matchesCat && matchesSearch) {
                     col.classList.remove('d-none');
@@ -1560,11 +1755,9 @@
             const activeCatBtn = document.querySelector('.cat-pill.active');
             let catId = 'all';
             if (activeCatBtn) {
-                // Find if this is not the first
                 const pills = Array.from(document.querySelectorAll('.cat-pill'));
                 const idx = pills.indexOf(activeCatBtn);
                 if (idx > 0) {
-                    // Extract category id from onclick
                     const match = activeCatBtn.getAttribute('onclick').match(/filterCategory\(([^,]+)/);
                     if (match) catId = match[1].replace(/['"]/g, '');
                 }
@@ -1578,9 +1771,10 @@
                 const itemCat = col.getAttribute('data-category');
                 const itemName = col.getAttribute('data-name');
                 const itemDesc = col.getAttribute('data-desc');
+                const itemVariants = col.getAttribute('data-variants') || '';
 
                 const matchesCat = (catId === 'all' || itemCat == catId);
-                const matchesSearch = (searchVal === '' || itemName.includes(searchVal) || itemDesc.includes(searchVal));
+                const matchesSearch = (searchVal === '' || itemName.includes(searchVal) || itemDesc.includes(searchVal) || itemVariants.includes(searchVal));
 
                 if (matchesCat && matchesSearch) {
                     col.classList.remove('d-none');
@@ -1647,7 +1841,15 @@
                         order_type: orderType,
                         delivery_address: address,
                         order_notes: notes,
-                        items: cart.map(i => ({ id: i.id, quantity: i.quantity }))
+                        items: cart.map(i => ({
+                            id: i.id,
+                            name: i.name,
+                            price: i.price,
+                            quantity: i.quantity,
+                            size: i.size || null,
+                            color: i.color || null,
+                            variant_data: i.variant_data || null
+                        }))
                     })
                 });
 

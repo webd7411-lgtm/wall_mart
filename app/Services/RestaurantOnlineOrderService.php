@@ -33,7 +33,7 @@ class RestaurantOnlineOrderService
                     $orderStatus = 'completed';
                     $deliveryStatus = 'delivered';
                 } elseif ($isCancelled) {
-                    $saleStatus = 'booked';
+                    $saleStatus = 'cancelled';
                     $orderStatus = 'cancelled';
                     $deliveryStatus = 'cancelled';
                 } elseif ($isDispatched) {
@@ -123,6 +123,7 @@ class RestaurantOnlineOrderService
                         'discount_percent' => 0,
                         'discount_amount' => 0,
                         'total' => (float)$it->total,
+                        'color' => $it->color,
                         'warehouse_id' => 1,
                     ]);
                 }

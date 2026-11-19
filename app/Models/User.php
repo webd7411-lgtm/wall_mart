@@ -63,6 +63,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the rider profile associated with this user, if any
+     */
+    public function rider()
+    {
+        return $this->hasOne(\App\Models\Rider::class, 'user_id');
+    }
+
+    /**
      * Check if user's employee profile is active (can login)
      * Returns true if user has no employee profile (admin/non-employee users)
      * Returns false if employee status is non-active or terminated

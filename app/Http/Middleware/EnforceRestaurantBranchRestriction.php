@@ -29,6 +29,10 @@ class EnforceRestaurantBranchRestriction
         'purchase-pos.*',
         'restaurant.*',
 
+        // Rider Portal
+        'rider',
+        'rider.*',
+
         // Products / Catalog / Menu
         'product',
         'product.*',
@@ -88,6 +92,8 @@ class EnforceRestaurantBranchRestriction
         'all_expense_vochers',
         'expense_vochers',
         'store_expense_vochers',
+        'edit_expense_voucher',
+        'update_expense_voucher',
         'expenseprint',
         'expense_categories.*',
 
@@ -134,6 +140,7 @@ class EnforceRestaurantBranchRestriction
         'dashboard',
         'pos',
         'restaurant',
+        'rider',
         'product',
         'products',
         'product-catalog',
@@ -169,6 +176,8 @@ class EnforceRestaurantBranchRestriction
         'all_expense_vochers',
         'expense_vochers',
         'store_expense_vochers',
+        'edit_expense_voucher',
+        'update_expense_voucher',
         'expenseprint',
         'expense-categories',
         'view_all',

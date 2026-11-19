@@ -23,6 +23,9 @@ class SaleReturnController extends Controller
         if (!$sale) {
             abort(404, 'Sale not found');
         }
+        if ($sale->sale_status === 'cancelled' || $sale->order_status === 'cancelled') {
+            return redirect()->route('sale.index')->with('error', 'Cancelled orders cannot be returned.');
+        }
         $id = $sale->id;
         $accounts = Account::whereHas('head', function($q) {
             $q->whereIn('name', ['Cash', 'Bank']);

@@ -64,9 +64,13 @@
                                             <td>{{ number_format($amount, 2) }}</td>
                                             <td>{{ number_format((float) $item->total_amount, 2) }}</td>
                                             <td>{{ $item->created_at }}</td>
-                                            <td>
+                                            <td class="text-nowrap">
+                                                <a href="{{ route('edit_expense_voucher', $item->id) }}"
+                                                    class="btn btn-sm btn-primary" title="Edit Expense Voucher" style="padding: 4px 8px;">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
                                                 <a href="{{ route('expenseprint', $item->id) }}" target="_blank"
-                                                    class="btn btn-sm btn-danger">
+                                                    class="btn btn-sm btn-danger" title="Print Expense Voucher" style="padding: 4px 8px;">
                                                     <i class="bi bi-printer"></i>
                                                 </a>
                                             </td>

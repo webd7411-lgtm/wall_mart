@@ -27,7 +27,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -41,7 +41,41 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $loginInput = trim($this->input('email'));
+        $password = $this->input('password');
+        $credentialEmail = $loginInput;
+
+        // If input is not a direct valid email format, look up rider phone or username
+        if (!filter_var($loginInput, FILTER_VALIDATE_EMAIL)) {
+            $cleanDigits = preg_replace('/[^0-9]/', '', $loginInput);
+
+            // 1. Look up Rider by phone number or stripped digits
+            if (!empty($cleanDigits)) {
+                $rider = \App\Models\Rider::where('phone', $loginInput)
+                    ->orWhereRaw("REPLACE(REPLACE(phone, '-', ''), ' ', '') = ?", [$cleanDigits])
+                    ->first();
+
+                if ($rider && $rider->user) {
+                    $credentialEmail = $rider->user->email;
+                } else {
+                    // Try rider email convention rider_{digits}@munch.com
+                    $possibleUser = \App\Models\User::where('email', "rider_{$cleanDigits}@munch.com")->first();
+                    if ($possibleUser) {
+                        $credentialEmail = $possibleUser->email;
+                    }
+                }
+            }
+
+            // 2. Look up by user name if still unresolved
+            if ($credentialEmail === $loginInput) {
+                $userByName = \App\Models\User::where('name', $loginInput)->first();
+                if ($userByName) {
+                    $credentialEmail = $userByName->email;
+                }
+            }
+        }
+
+        if (! Auth::attempt(['email' => $credentialEmail, 'password' => $password], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

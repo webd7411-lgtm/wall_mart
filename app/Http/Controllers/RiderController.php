@@ -7,6 +7,7 @@ use App\Models\Branch;
 use App\Models\Rider;
 use App\Models\Sale;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class RiderController extends Controller
@@ -133,6 +134,45 @@ class RiderController extends Controller
         }
 
         $rider->save();
+
+        // Auto-Create or Update linked User account for Rider Portal login
+        try {
+            $cleanPhone = preg_replace('/[^0-9]/', '', $rider->phone);
+            $portalEmail = "rider_{$cleanPhone}@munch.com";
+
+            $user = null;
+            if (!empty($rider->user_id)) {
+                $user = \App\Models\User::find($rider->user_id);
+            }
+            if (!$user) {
+                $user = \App\Models\User::where('email', $portalEmail)->first();
+            }
+            if (!$user) {
+                $user = new \App\Models\User();
+                $user->email = $portalEmail;
+            }
+
+            $user->name = $rider->name;
+            $user->branch_id = $rider->branch_id;
+            if ($request->filled('portal_password')) {
+                $user->password = \Illuminate\Support\Facades\Hash::make($request->portal_password);
+            } elseif (!$user->exists) {
+                // Default initial password is 123456
+                $user->password = \Illuminate\Support\Facades\Hash::make('123456');
+            }
+            $user->save();
+
+            if (method_exists($user, 'syncRoles')) {
+                $user->syncRoles(['Rider']);
+            }
+
+            if ($rider->user_id !== $user->id) {
+                $rider->user_id = $user->id;
+                $rider->save();
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Rider user sync warning: ' . $e->getMessage());
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([

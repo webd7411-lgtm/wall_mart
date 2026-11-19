@@ -387,6 +387,21 @@ Route::middleware('auth')->group(function () {
     Route::post('/restaurant/deliveries/{id}/cancel', [\App\Http\Controllers\DeliveryOrderController::class, 'cancelDelivery'])->middleware('permission:restaurant.deliveries.delete|sales.delete')->name('restaurant.deliveries.cancel');
     Route::get('/restaurant/deliveries/{id}/slip', [\App\Http\Controllers\DeliveryOrderController::class, 'deliverySlip'])->middleware('permission:restaurant.deliveries.view|sales.view')->name('restaurant.deliveries.slip');
 
+    // Rider Dedicated Mobile Portal Routes
+    Route::prefix('rider')->name('rider.')->group(function () {
+        Route::get('/login', [\App\Http\Controllers\RiderPortalController::class, 'showLogin'])->name('login');
+        Route::post('/login', [\App\Http\Controllers\RiderPortalController::class, 'login'])->name('login.submit');
+        Route::post('/logout', [\App\Http\Controllers\RiderPortalController::class, 'logout'])->name('logout');
+
+        Route::middleware(['auth'])->group(function () {
+            Route::get('/portal', [\App\Http\Controllers\RiderPortalController::class, 'dashboard'])->name('portal');
+            Route::get('/api/live-orders', [\App\Http\Controllers\RiderPortalController::class, 'liveOrdersApi'])->name('api.live_orders');
+            Route::post('/duty-status', [\App\Http\Controllers\RiderPortalController::class, 'updateDutyStatus'])->name('duty_status');
+            Route::post('/order/{id}/out-for-delivery', [\App\Http\Controllers\RiderPortalController::class, 'markOutForDelivery'])->name('order.out_for_delivery');
+            Route::post('/order/{id}/mark-delivered', [\App\Http\Controllers\RiderPortalController::class, 'markDelivered'])->name('order.mark_delivered');
+        });
+    });
+
     // booking system
 
     Route::get('bookings', [ProductBookingController::class, 'index'])->middleware('permission:bookings.view')->name('bookings.index');
@@ -456,6 +471,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/all_expense_vochers', [VoucherController::class, 'all_expense_vochers'])->name('all_expense_vochers');
     Route::get('/expense_vochers', [VoucherController::class, 'expense_vochers'])->name('expense_vochers');
     Route::post('/store_expense_vochers', [VoucherController::class, 'store_expense_vochers'])->name('store_expense_vochers');
+    Route::get('/edit_expense_voucher/{id}', [VoucherController::class, 'edit_expense_voucher'])->name('edit_expense_voucher');
+    Route::post('/update_expense_voucher/{id}', [VoucherController::class, 'update_expense_voucher'])->name('update_expense_voucher');
     Route::get('/expenseprint/{id}', [VoucherController::class, 'expenseprint'])->name('expenseprint');
 
     // AJAX helpers for vouchers

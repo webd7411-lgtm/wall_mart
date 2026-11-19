@@ -173,11 +173,12 @@
                 {{-- Order Type Filter --}}
                 <div class="sale-filter-group" style="margin-right: 18px;">
                     <label for="order_type_desk" class="sale-filter-label">Type:</label>
-                    <select name="order_type" id="order_type_desk" class="form-select form-select-sm fw-bold orderTypeInput" style="height: 36px; width: 130px; font-size: .78rem; border-radius: 6px;">
+                    <select name="order_type" id="order_type_desk" class="form-select form-select-sm fw-bold orderTypeInput" style="height: 36px; width: 140px; font-size: .78rem; border-radius: 6px;">
                         <option value="">All Types</option>
                         <option value="dine_in">🍽️ Dine-In</option>
                         <option value="takeaway">🥡 Takeaway</option>
                         <option value="delivery">🛵 Delivery</option>
+                        <option value="cancelled">🚫 Cancelled</option>
                     </select>
                 </div>
 
@@ -238,6 +239,7 @@
                             <option value="dine_in">🍽️ Dine-In</option>
                             <option value="takeaway">🥡 Takeaway</option>
                             <option value="delivery">🛵 Delivery</option>
+                            <option value="cancelled">🚫 Cancelled</option>
                         </select>
                     </div>
                     <div class="col-12 mb-2">
@@ -289,6 +291,11 @@
                     <div class="stat-val text-success" id="pillNetSale">Rs 0</div>
                 </div>
 
+                <div class="stat-pill" style="background: #fff7ed; border-color: #fdba74;">
+                    <div class="stat-label" style="color: #c2410c;">Credit Sale</div>
+                    <div class="stat-val" style="color: #ea580c;" id="pillCreditSale">Rs 0</div>
+                </div>
+
                 <div class="stat-pill" style="background: #eff6ff; border-color: #93c5fd;">
                     <div class="stat-label text-primary">Total Profit</div>
                     <div class="stat-val text-primary" id="pillGrossProfit">Rs 0</div>
@@ -338,6 +345,12 @@
             <div class="mob-metric-card">
                 <span class="mob-metric-label"><i class="fas fa-check-circle text-success me-1"></i>Net Sale</span>
                 <div class="mob-metric-val text-success mt-1" id="mobPillNetSale">Rs 0</div>
+            </div>
+        </div>
+        <div class="col-6 mb-1">
+            <div class="mob-metric-card" style="border-left: 3px solid #ea580c;">
+                <span class="mob-metric-label"><i class="fas fa-hand-holding-usd me-1" style="color: #ea580c;"></i>Credit Sale</span>
+                <div class="mob-metric-val mt-1" style="color: #ea580c;" id="mobPillCreditSale">Rs 0</div>
             </div>
         </div>
         <div class="col-6 mb-1">
@@ -451,9 +464,12 @@
                     let grandQty = 0,
                         grandTotal = 0,
                         grandNet = 0,
-                        grandReturn = 0;
+                        grandReturn = 0,
+                        grandCredit = 0;
 
                     salesData.forEach((s, i) => {
+                        let isCancelled = s.is_cancelled || s.order_status === 'cancelled' || s.sale_status === 'cancelled';
+                        let creditAmt = parseFloat(s.credit_amount) || 0;
                         let products = s.product.split(',').join('<br>');
                         let qtyArr = s.qty.split(',');
                         let qtyPiecesArr = s.total_pieces ? s.total_pieces.split(',') : (s.qty_decimal ? s.qty_decimal.split(',') : qtyArr);
@@ -461,11 +477,14 @@
                         let total = s.per_total.split(',').join('<br>');
 
                         let rowQty = qtyPiecesArr.reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
-                        grandQty += rowQty;
-
                         let rowTotal = s.per_total.split(',').reduce((a, b) => parseFloat(a) + parseFloat(b), 0);
-                        grandTotal += parseFloat(rowTotal);
-                        grandNet += parseFloat(s.total_net);
+
+                        if (!isCancelled) {
+                            grandQty += rowQty;
+                            grandTotal += parseFloat(rowTotal);
+                            grandNet += parseFloat(s.total_net);
+                            grandCredit += creditAmt;
+                        }
 
                         let returnHtml = "";
                         let returnTotal = 0;
@@ -475,10 +494,14 @@
                                 returnTotal += parseFloat(r.per_total);
                             });
                         }
-                        grandReturn += returnTotal;
+                        if (!isCancelled) {
+                            grandReturn += returnTotal;
+                        }
 
                         let typeBadge = '';
-                        if (s.order_type === 'dine_in') {
+                        if (isCancelled) {
+                            typeBadge = `<span class="badge bg-danger text-white" style="font-size: 10px;"><i class="fas fa-ban me-1"></i>Cancelled</span>`;
+                        } else if (s.order_type === 'dine_in') {
                             typeBadge = `<span class="badge bg-primary text-white" style="font-size: 10px;">🍽️ Dine-In ${s.table_no ? '(' + s.table_no + ')' : ''}</span>`;
                         } else if (s.order_type === 'takeaway') {
                             typeBadge = `<span class="badge bg-warning text-dark" style="font-size: 10px;">🥡 Takeaway ${s.token_no ? '#' + s.token_no : ''}</span>`;
@@ -486,6 +509,13 @@
                             typeBadge = `<span class="badge bg-info text-white" style="font-size: 10px;">🛵 Delivery</span>`;
                         } else {
                             typeBadge = `<span class="badge bg-light text-secondary border" style="font-size: 10px;">Standard</span>`;
+                        }
+
+                        let creditBadge = '';
+                        let mobCreditBadge = '';
+                        if (creditAmt > 0 && !isCancelled) {
+                            creditBadge = `<br><span class="badge bg-warning-subtle text-dark border border-warning" style="font-size: 9.5px; padding: 2px 4px;"><i class="fas fa-clock me-1"></i>Credit: Rs ${creditAmt.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>`;
+                            mobCreditBadge = `<span class="badge bg-warning-subtle text-dark border border-warning" style="font-size: 10px;"><i class="fas fa-clock me-1"></i>Credit: Rs ${creditAmt.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>`;
                         }
 
                         let invCode = s.invoice_no || ('INVSLE-' + s.id);
@@ -503,7 +533,7 @@
                             <td class="fw-semibold">${qtyArr.join('<br>')}</td>
                             <td>${price}</td>
                             <td>${total}</td>
-                            <td class="fw-bold text-dark">${parseFloat(s.total_net).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                            <td class="fw-bold text-dark">${parseFloat(s.total_net).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}${creditBadge}</td>
                             <td>${returnHtml || '-'}</td>
                         </tr>`;
 
@@ -515,6 +545,7 @@
                                     <span class="badge bg-light text-muted border" style="font-size: 10px;">#${i+1}</span>
                                     <span class="badge bg-light text-primary border font-monospace fw-bold" style="font-size: 11px;">${invCode}</span>
                                     ${typeBadge}
+                                    ${mobCreditBadge}
                                 </div>
                                 <small class="text-muted" style="font-size: 10.5px;">${s.created_at}</small>
                             </div>
@@ -554,31 +585,32 @@
                         <td id="grandQty">${grandQty.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                         <td>-</td>
                         <td id="grandTotal">${grandTotal.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                        <td id="grandNet">${grandNet.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                        <td id="grandNet">${grandNet.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}<br><small class="text-warning fw-normal" style="color: #ea580c !important;">Credit: Rs ${grandCredit.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</small></td>
                         <td id="grandReturn">${grandReturn.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                     </tr>`;
 
                     $('#saleBody').html(html);
                     $('#saleMobileContainer').html(mobHtml || '<div class="card border-0 shadow-sm rounded-3 text-center py-4 bg-white"><div class="card-body py-4 text-muted"><i class="fas fa-folder-open fa-2x mb-2 text-secondary"></i><p class="small fw-bold mb-0">No Sales Data Found</p></div></div>');
 
-                    updateSingleLineSummary(salesData.length, grandQty, grandTotal, grandReturn, grandNet);
+                    updateSingleLineSummary(salesData.length, grandQty, grandTotal, grandReturn, grandNet, grandCredit);
                 }
             });
         });
 
         // Function to update Summary Metrics (Desktop & Mobile)
-        function updateSingleLineSummary(count, qty, gross, returns, net) {
+        function updateSingleLineSummary(count, qty, gross, returns, net, credit) {
             let grossProfit   = net - currentCogs;
             let currentProfit = grossProfit - currentExpenses;
 
-            let formattedCount = count.toLocaleString();
-            let formattedQty   = qty.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + ' Pcs';
-            let formattedGross = 'Rs ' + gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-            let formattedRet   = 'Rs ' + returns.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-            let formattedNet   = 'Rs ' + net.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-            let formattedGP    = 'Rs ' + grossProfit.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-            let formattedExp   = 'Rs ' + currentExpenses.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-            let formattedNP    = 'Rs ' + currentProfit.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+            let formattedCount  = count.toLocaleString();
+            let formattedQty    = qty.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + ' Pcs';
+            let formattedGross  = 'Rs ' + gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+            let formattedRet    = 'Rs ' + returns.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+            let formattedNet    = 'Rs ' + net.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+            let formattedCredit = 'Rs ' + (credit || 0).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+            let formattedGP     = 'Rs ' + grossProfit.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+            let formattedExp    = 'Rs ' + currentExpenses.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+            let formattedNP     = 'Rs ' + currentProfit.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
 
             // Desktop Pills
             $('#pillTotalInvoices').text(formattedCount);
@@ -586,6 +618,7 @@
             $('#pillGrossSale').text(formattedGross);
             $('#pillTotalReturns').text(formattedRet);
             $('#pillNetSale').text(formattedNet);
+            $('#pillCreditSale').text(formattedCredit);
             $('#pillGrossProfit').text(formattedGP);
             $('#pillExpenses').text(formattedExp);
             $('#pillCurrentProfit').text(formattedNP);
@@ -596,6 +629,7 @@
             $('#mobPillGrossSale').text(formattedGross);
             $('#mobPillTotalReturns').text(formattedRet);
             $('#mobPillNetSale').text(formattedNet);
+            $('#mobPillCreditSale').text(formattedCredit);
             $('#mobPillGrossProfit').text(formattedGP);
             $('#mobPillExpenses').text(formattedExp);
             $('#mobPillCurrentProfit').text(formattedNP);
@@ -640,6 +674,9 @@
             link.click();
             document.body.removeChild(link);
         });
+
+        // Initial Load
+        $('.btnSearchTrigger').first().click();
 
     });
 </script>

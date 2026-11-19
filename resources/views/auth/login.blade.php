@@ -651,18 +651,18 @@
 
                 <!-- Email / Username Input -->
                 <div class="form-group">
-                    <label for="email" class="form-label">Email or Username</label>
+                    <label for="email" class="form-label">Email, Phone or Username</label>
                     <div class="input-box">
                         <input id="email" 
-                               type="email" 
+                               type="text" 
                                name="email" 
                                class="form-control-custom" 
                                value="{{ old('email') }}" 
                                required 
                                autofocus 
                                autocomplete="username" 
-                               placeholder="admin@example.com">
-                        <i class="fas fa-envelope input-icon"></i>
+                               placeholder="Email, Rider Phone (e.g. 0300-1234567)">
+                        <i class="fas fa-user input-icon"></i>
                     </div>
                     @error('email')
                         <div class="input-error-msg">

@@ -202,17 +202,68 @@ class RestaurantWebsiteController extends Controller
 
             $catName = $p->category_relation ? $p->category_relation->name : 'Restaurant Menu';
 
+            // Parse Variants from color column
+            $variants = [];
+            if ($p->color) {
+                try {
+                    $parsed = is_string($p->color) ? json_decode($p->color, true) : $p->color;
+                    if (is_string($parsed)) {
+                        $parsed = json_decode($parsed, true);
+                    }
+                    if (is_array($parsed) && count($parsed) > 0 && (isset($parsed[0]['name']) || isset($parsed[0]['size']))) {
+                        $variants = $parsed;
+                    }
+                } catch (\Exception $e) {}
+            }
+
+            $variantItems = [];
+            $minPrice = $price;
+            $maxPrice = $price;
+            if (!empty($variants)) {
+                $pricesList = [];
+                foreach ($variants as $idx => $v) {
+                    $sizeStr = (isset($v['size']) && $v['size'] !== '-') ? " {$v['size']}" : '';
+                    $colorStr = (isset($v['color']) && $v['color'] !== '-') ? " ({$v['color']})" : '';
+                    $vName = $v['name'] ?? ($p->item_name . $sizeStr . $colorStr);
+                    $vPrice = (float) (!empty($v['sale_price']) ? $v['sale_price'] : $price);
+                    $pricesList[] = $vPrice;
+
+                    $variantItems[] = [
+                        'id' => $p->id,
+                        'variant_index' => $idx,
+                        'name' => $vName,
+                        'size' => $v['size'] ?? '-',
+                        'color' => $v['color'] ?? '-',
+                        'price' => $vPrice,
+                        'formatted_price' => 'Rs. ' . number_format($vPrice, 0),
+                        'variant_data' => base64_encode(json_encode($v)),
+                    ];
+                }
+                if (!empty($pricesList)) {
+                    $minPrice = min($pricesList);
+                    $maxPrice = max($pricesList);
+                }
+            }
+
+            $hasVariants = count($variantItems) > 0;
+            $displayPrice = $hasVariants 
+                ? ($minPrice === $maxPrice ? 'Rs. ' . number_format($minPrice, 0) : 'Rs. ' . number_format($minPrice, 0) . ' - ' . number_format($maxPrice, 0))
+                : ('Rs. ' . number_format($price, 0));
+
             return [
                 'id' => $p->id,
                 'name' => $p->item_name,
                 'item_code' => $p->item_code,
                 'category_id' => $p->category_id,
                 'category_name' => $catName,
-                'price' => $price,
-                'formatted_price' => 'Rs. ' . number_format($price, 0),
+                'price' => $minPrice,
+                'max_price' => $maxPrice,
+                'formatted_price' => $displayPrice,
                 'promo_tag' => $p->promo_tag ?: ($p->show_on_homepage ? 'Popular' : ''),
                 'description' => $p->meta_description ?: 'Freshly prepared crispy delight marinated with secret spices and served golden & crunchy.',
                 'image' => $imageUrl,
+                'has_variants' => $hasVariants,
+                'variants' => $variantItems,
             ];
         });
 
@@ -287,16 +338,67 @@ class RestaurantWebsiteController extends Controller
                 $imageUrl = 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&w=800&q=80';
             }
 
+            // Parse Variants from color column
+            $variants = [];
+            if ($p->color) {
+                try {
+                    $parsed = is_string($p->color) ? json_decode($p->color, true) : $p->color;
+                    if (is_string($parsed)) {
+                        $parsed = json_decode($parsed, true);
+                    }
+                    if (is_array($parsed) && count($parsed) > 0 && (isset($parsed[0]['name']) || isset($parsed[0]['size']))) {
+                        $variants = $parsed;
+                    }
+                } catch (\Exception $e) {}
+            }
+
+            $variantItems = [];
+            $minPrice = $price;
+            $maxPrice = $price;
+            if (!empty($variants)) {
+                $pricesList = [];
+                foreach ($variants as $idx => $v) {
+                    $sizeStr = (isset($v['size']) && $v['size'] !== '-') ? " {$v['size']}" : '';
+                    $colorStr = (isset($v['color']) && $v['color'] !== '-') ? " ({$v['color']})" : '';
+                    $vName = $v['name'] ?? ($p->item_name . $sizeStr . $colorStr);
+                    $vPrice = (float) (!empty($v['sale_price']) ? $v['sale_price'] : $price);
+                    $pricesList[] = $vPrice;
+
+                    $variantItems[] = [
+                        'id' => $p->id,
+                        'variant_index' => $idx,
+                        'name' => $vName,
+                        'size' => $v['size'] ?? '-',
+                        'color' => $v['color'] ?? '-',
+                        'price' => $vPrice,
+                        'formatted_price' => 'Rs. ' . number_format($vPrice, 0),
+                        'variant_data' => base64_encode(json_encode($v)),
+                    ];
+                }
+                if (!empty($pricesList)) {
+                    $minPrice = min($pricesList);
+                    $maxPrice = max($pricesList);
+                }
+            }
+
+            $hasVariants = count($variantItems) > 0;
+            $displayPrice = $hasVariants 
+                ? ($minPrice === $maxPrice ? 'Rs. ' . number_format($minPrice, 0) : 'Rs. ' . number_format($minPrice, 0) . ' - ' . number_format($maxPrice, 0))
+                : ('Rs. ' . number_format($price, 0));
+
             return [
                 'id' => $p->id,
                 'name' => $p->item_name,
                 'category_id' => $p->category_id,
                 'category_name' => $p->category_relation ? $p->category_relation->name : 'Menu',
-                'price' => $price,
-                'formatted_price' => 'Rs. ' . number_format($price, 0),
+                'price' => $minPrice,
+                'max_price' => $maxPrice,
+                'formatted_price' => $displayPrice,
                 'promo_tag' => $p->promo_tag,
                 'description' => $p->meta_description ?: 'Fresh & crispy fried chicken delicacy.',
                 'image' => $imageUrl,
+                'has_variants' => $hasVariants,
+                'variants' => $variantItems,
             ];
         });
 
@@ -342,16 +444,30 @@ class RestaurantWebsiteController extends Controller
                     $unitPrice = (float)($p->web_sale_price > 0 
                         ? $p->web_sale_price 
                         : ($p->sale_price_per_piece > 0 ? $p->sale_price_per_piece : ($p->sale_price_per_box > 0 ? $p->sale_price_per_box : 0)));
-                    
+
+                    $itemName = $p->item_name;
+                    $size = $item['size'] ?? null;
+                    $color = $item['variant_data'] ?? ($item['color'] ?? null);
+
+                    // If variant details are provided in request
+                    if (!empty($item['name']) && $item['name'] !== $p->item_name) {
+                        $itemName = trim($item['name']);
+                    }
+                    if (isset($item['price']) && (float)$item['price'] > 0) {
+                        $unitPrice = (float)$item['price'];
+                    }
+
                     $qty = (int)$item['quantity'];
                     $lineTotal = $unitPrice * $qty;
                     $subtotal += $lineTotal;
 
                     $itemsData[] = [
                         'product_id' => $p->id,
-                        'product_name' => $p->item_name,
+                        'product_name' => $itemName,
                         'price' => $unitPrice,
                         'quantity' => $qty,
+                        'size' => $size,
+                        'color' => $color,
                         'total' => $lineTotal,
                     ];
                 }
@@ -382,7 +498,7 @@ class RestaurantWebsiteController extends Controller
                 'shipping_city' => 'Local Delivery Area',
             ]);
 
-            // 2. Insert items
+            // 2. Insert items with variant support
             foreach ($itemsData as $it) {
                 EcommerceOrderItem::create([
                     'ecommerce_order_id' => $order->id,
@@ -390,6 +506,8 @@ class RestaurantWebsiteController extends Controller
                     'product_name' => $it['product_name'],
                     'price' => $it['price'],
                     'quantity' => $it['quantity'],
+                    'size' => $it['size'],
+                    'color' => $it['color'],
                     'total' => $it['total'],
                 ]);
             }
