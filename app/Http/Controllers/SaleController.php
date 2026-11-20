@@ -1341,6 +1341,10 @@ class SaleController extends Controller
         ];
 
         if ($isWalkin) {
+            if ($request->input('order_type') === 'delivery' && empty($request->input('walkin_name'))) {
+                $phone = $request->input('rider_phone');
+                $request->merge(['walkin_name' => $phone ? "Delivery ({$phone})" : 'Delivery Customer']);
+            }
             $rules['walkin_name'] = 'required|string|max:255';
             $request->merge(['customer' => null]);
         } else {

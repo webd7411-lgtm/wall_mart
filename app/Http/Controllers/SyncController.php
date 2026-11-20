@@ -30,9 +30,10 @@ class SyncController extends Controller
         $sales = Sale::where('is_synced', 0)->get()->map(function($s) {
             $sData = $s->toArray();
             
-            // Map customer local ID to UUID
+            // Map customer local ID to UUID and customer code
             $cust = Customer::find($s->customer_id);
             $sData['customer_uuid'] = $cust ? $cust->uuid : null;
+            $sData['customer_code'] = $cust ? $cust->customer_id : null;
 
             // Load items and map product local ID to SKU
             $sData['items'] = SaleItem::where('sale_id', $s->id)->get()->map(function($item) {
@@ -115,17 +116,35 @@ class SyncController extends Controller
         try {
             // Process customers
             foreach ($customers as $cData) {
-                $uuid = $cData['uuid'];
+                $uuid = $cData['uuid'] ?? null;
+                $customerId = $cData['customer_id'] ?? null;
                 unset($cData['id']);
                 
-                $customer = Customer::where('uuid', $uuid)->first();
+                // 1. Try finding by UUID
+                $customer = null;
+                if (!empty($uuid)) {
+                    $customer = Customer::where('uuid', $uuid)->first();
+                }
+
+                // 2. Fallback: match by unique customer_id (e.g. CUST-0001)
+                if (!$customer && !empty($customerId)) {
+                    $customer = Customer::where('customer_id', $customerId)->first();
+                }
+
                 if (!$customer) {
                     $customer = new Customer($cData);
-                    $customer->uuid = $uuid;
+                    if (!empty($uuid)) {
+                        $customer->uuid = $uuid;
+                    }
                     $customer->is_synced = 1;
                     $customer->save();
                 } else {
-                    $customer->update($cData);
+                    $customer->fill($cData);
+                    if (!empty($uuid)) {
+                        $customer->uuid = $uuid;
+                    }
+                    $customer->is_synced = 1;
+                    $customer->save();
                 }
             }
 
@@ -135,25 +154,41 @@ class SyncController extends Controller
             $transactionService = app(\App\Services\TransactionService::class);
 
             foreach ($sales as $sData) {
-                $uuid = $sData['uuid'];
+                $uuid = $sData['uuid'] ?? null;
+                $invoiceNo = $sData['invoice_no'] ?? null;
                 $items = $sData['items'] ?? [];
                 
                 unset($sData['id']);
                 unset($sData['items']);
 
                 $customerUuid = $sData['customer_uuid'] ?? null;
-                if ($customerUuid) {
+                $customerCode = $sData['customer_code'] ?? null;
+                $cloudCustomer = null;
+                if (!empty($customerUuid)) {
                     $cloudCustomer = Customer::where('uuid', $customerUuid)->first();
-                    if ($cloudCustomer) {
-                        $sData['customer_id'] = $cloudCustomer->id;
-                    }
+                }
+                if (!$cloudCustomer && !empty($customerCode)) {
+                    $cloudCustomer = Customer::where('customer_id', $customerCode)->first();
+                }
+                if ($cloudCustomer) {
+                    $sData['customer_id'] = $cloudCustomer->id;
                 }
                 unset($sData['customer_uuid']);
+                unset($sData['customer_code']);
 
-                $sale = Sale::where('uuid', $uuid)->first();
+                $sale = null;
+                if (!empty($uuid)) {
+                    $sale = Sale::where('uuid', $uuid)->first();
+                }
+                if (!$sale && !empty($invoiceNo)) {
+                    $sale = Sale::where('invoice_no', $invoiceNo)->first();
+                }
+
                 if (!$sale) {
                     $sale = new Sale($sData);
-                    $sale->uuid = $uuid;
+                    if (!empty($uuid)) {
+                        $sale->uuid = $uuid;
+                    }
                     $sale->is_synced = 1;
                     $sale->save();
 
@@ -199,6 +234,13 @@ class SyncController extends Controller
                         // 4. Auto Receipt (cash payment posting)
                         $transactionService->createReceiptFromSale($sale);
                     }
+                } else {
+                    $sale->fill($sData);
+                    if (!empty($uuid)) {
+                        $sale->uuid = $uuid;
+                    }
+                    $sale->is_synced = 1;
+                    $sale->save();
                 }
             }
 

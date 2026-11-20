@@ -411,9 +411,10 @@ class RestaurantWebsiteController extends Controller
     public function placeOrder(Request $request)
     {
         $request->validate([
-            'customer_name' => 'required|string|max:100',
+            'customer_name' => 'nullable|string|max:100',
             'customer_phone' => 'required|string|max:25',
             'order_type' => 'required|in:delivery,takeaway,dine_in',
+            'delivery_address' => 'nullable|string|max:255',
             'items' => 'required|array|min:1',
             'items.*.id' => 'required',
             'items.*.quantity' => 'required|integer|min:1',
@@ -426,9 +427,11 @@ class RestaurantWebsiteController extends Controller
 
             $orderNumber = 'MFC-' . strtoupper(substr(uniqid(), -6));
             $orderType = $request->input('order_type', 'delivery');
-            $customerName = trim($request->input('customer_name'));
             $customerPhone = trim($request->input('customer_phone'));
-            $address = $orderType === 'delivery' ? trim($request->input('delivery_address', '')) : ucfirst($orderType);
+            $rawName = trim($request->input('customer_name', ''));
+            $customerName = $rawName ?: ($customerPhone ? 'Customer (' . $customerPhone . ')' : 'Customer');
+            $rawAddress = trim($request->input('delivery_address', ''));
+            $address = $orderType === 'delivery' ? ($rawAddress ?: 'Address not specified') : ucfirst($orderType);
             $notes = trim($request->input('order_notes', ''));
             $paymentMethod = $request->input('payment_method', 'cod');
 
@@ -447,7 +450,41 @@ class RestaurantWebsiteController extends Controller
 
                     $itemName = $p->item_name;
                     $size = $item['size'] ?? null;
-                    $color = $item['variant_data'] ?? ($item['color'] ?? null);
+                    $rawColor = $item['color'] ?? null;
+                    $rawVariant = $item['variant_data'] ?? null;
+
+                    // Extract size and clean color from variant_data if present
+                    if (!empty($rawVariant)) {
+                        $decoded = base64_decode($rawVariant, true);
+                        $parsed = $decoded ? json_decode($decoded, true) : json_decode($rawVariant, true);
+                        if (is_array($parsed)) {
+                            if (empty($size) && !empty($parsed['size'])) {
+                                $size = trim($parsed['size']);
+                            }
+                            if (empty($rawColor) && !empty($parsed['color']) && $parsed['color'] !== '-') {
+                                $rawColor = trim($parsed['color']);
+                            }
+                        }
+                    }
+
+                    // Build a compact, clean representation that fits safely in database column
+                    $compactColor = null;
+                    if (!empty($size) || (!empty($rawColor) && $rawColor !== '-')) {
+                        $compactArray = array_filter([
+                            'size' => $size,
+                            'color' => (!empty($rawColor) && $rawColor !== '-') ? $rawColor : null,
+                        ]);
+                        if (!empty($compactArray)) {
+                            $compactColor = json_encode($compactArray);
+                        }
+                    }
+                    if (!$compactColor && !empty($rawColor) && $rawColor !== '-') {
+                        $compactColor = $rawColor;
+                    }
+
+                    // Guard against any length limits
+                    $color = $compactColor ? \Illuminate\Support\Str::limit($compactColor, 250, '') : null;
+                    $size = $size ? \Illuminate\Support\Str::limit($size, 100, '') : null;
 
                     // If variant details are provided in request
                     if (!empty($item['name']) && $item['name'] !== $p->item_name) {

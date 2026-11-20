@@ -46,8 +46,8 @@
                 <p class="text-muted small mb-0">Manage delivery boys, vehicle details, duty status, and daily cash settlements.</p>
             </div>
             <div class="d-flex align-items-center gap-2 mt-2 mt-md-0 flex-wrap">
-                <a href="{{ route('rider.login') }}" target="_blank" class="btn btn-warning btn-sm font-weight-bold text-dark shadow-sm">
-                    <i class="fas fa-external-link-alt me-1"></i> Open Rider Screen
+                <a href="{{ route('rider.portal') }}" target="_blank" class="btn btn-warning btn-sm font-weight-bold text-dark shadow-sm">
+                    <i class="fas fa-mobile-alt me-1"></i> Open Rider Screen
                 </a>
                 <a href="{{ route('restaurant.deliveries.index') }}" class="btn btn-outline-primary btn-sm font-weight-bold">
                     <i class="fas fa-shipping-fast me-1"></i> Delivery Dispatch Orders
@@ -222,6 +222,11 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex align-items-center justify-content-center gap-1">
+                                            <a href="{{ route('rider.portal') }}?rider_id={{ $r->id }}" target="_blank"
+                                               class="btn btn-xs btn-outline-warning"
+                                               title="Open {{ $r->name }}'s Live Mobile Screen (Super Admin)" style="padding: 3px 8px;">
+                                                <i class="fas fa-mobile-alt"></i>
+                                            </a>
                                             <button type="button" class="btn btn-xs btn-outline-primary"
                                                     onclick="openEditRiderModal({{ json_encode($r) }})"
                                                     title="Edit Rider" style="padding: 3px 8px;">

@@ -277,18 +277,28 @@
                 </div>
 
                 <div class="stat-pill" style="background: #f8fafc; border-color: #cbd5e1;">
-                    <div class="stat-label text-secondary">Gross Sale</div>
+                    <div class="stat-label text-secondary">Items Subtotal</div>
                     <div class="stat-val text-secondary" id="pillGrossSale">Rs 0</div>
                 </div>
 
-                <div class="stat-pill" style="background: #fef2f2; border-color: #fca5a5;">
-                    <div class="stat-label text-danger">Returns</div>
-                    <div class="stat-val text-danger" id="pillTotalReturns">Rs 0</div>
+                <div class="stat-pill" style="background: #f0fdfa; border-color: #99f6e4;">
+                    <div class="stat-label" style="color: #0d9488;">Delivery</div>
+                    <div class="stat-val" style="color: #0f766e;" id="pillDelivery">+Rs 0</div>
+                </div>
+
+                <div class="stat-pill" style="background: #fff1f2; border-color: #fecdd3;">
+                    <div class="stat-label" style="color: #e11d48;">Discount</div>
+                    <div class="stat-val" style="color: #be123c;" id="pillDiscount">-Rs 0</div>
                 </div>
 
                 <div class="stat-pill" style="background: #f0fdf4; border-color: #86efac;">
                     <div class="stat-label text-success">Net Sale</div>
                     <div class="stat-val text-success" id="pillNetSale">Rs 0</div>
+                </div>
+
+                <div class="stat-pill" style="background: #fef2f2; border-color: #fca5a5;">
+                    <div class="stat-label text-danger">Returns</div>
+                    <div class="stat-val text-danger" id="pillTotalReturns">Rs 0</div>
                 </div>
 
                 <div class="stat-pill" style="background: #fff7ed; border-color: #fdba74;">
@@ -331,20 +341,32 @@
         </div>
         <div class="col-6 mb-1">
             <div class="mob-metric-card">
-                <span class="mob-metric-label"><i class="fas fa-wallet text-secondary me-1"></i>Gross Sale</span>
+                <span class="mob-metric-label"><i class="fas fa-boxes text-secondary me-1"></i>Items Subtotal</span>
                 <div class="mob-metric-val text-secondary mt-1" id="mobPillGrossSale">Rs 0</div>
             </div>
         </div>
         <div class="col-6 mb-1">
-            <div class="mob-metric-card">
-                <span class="mob-metric-label"><i class="fas fa-undo text-danger me-1"></i>Returns</span>
-                <div class="mob-metric-val text-danger mt-1" id="mobPillTotalReturns">Rs 0</div>
+            <div class="mob-metric-card" style="border-left: 3px solid #0d9488;">
+                <span class="mob-metric-label"><i class="fas fa-motorcycle text-info me-1"></i>Delivery</span>
+                <div class="mob-metric-val mt-1" style="color: #0f766e;" id="mobPillDelivery">+Rs 0</div>
+            </div>
+        </div>
+        <div class="col-6 mb-1">
+            <div class="mob-metric-card" style="border-left: 3px solid #e11d48;">
+                <span class="mob-metric-label"><i class="fas fa-tag text-danger me-1"></i>Discount</span>
+                <div class="mob-metric-val text-danger mt-1" id="mobPillDiscount">-Rs 0</div>
             </div>
         </div>
         <div class="col-6 mb-1">
             <div class="mob-metric-card">
                 <span class="mob-metric-label"><i class="fas fa-check-circle text-success me-1"></i>Net Sale</span>
                 <div class="mob-metric-val text-success mt-1" id="mobPillNetSale">Rs 0</div>
+            </div>
+        </div>
+        <div class="col-6 mb-1">
+            <div class="mob-metric-card">
+                <span class="mob-metric-label"><i class="fas fa-undo text-danger me-1"></i>Returns</span>
+                <div class="mob-metric-val text-danger mt-1" id="mobPillTotalReturns">Rs 0</div>
             </div>
         </div>
         <div class="col-6 mb-1">
@@ -395,8 +417,8 @@
                             <th>Products</th>
                             <th style="width:75px;">Qty</th>
                             <th style="width:90px;">Price</th>
-                            <th style="width:95px;">Total</th>
-                            <th style="width:95px;">Net</th>
+                            <th style="width:95px;">Items Total</th>
+                            <th style="width:115px;">Net Bill</th>
                             <th style="width:135px;">Returns</th>
                         </tr>
                     </thead>
@@ -465,11 +487,15 @@
                         grandTotal = 0,
                         grandNet = 0,
                         grandReturn = 0,
-                        grandCredit = 0;
+                        grandCredit = 0,
+                        grandDelivery = 0,
+                        grandDiscount = 0;
 
                     salesData.forEach((s, i) => {
                         let isCancelled = s.is_cancelled || s.order_status === 'cancelled' || s.sale_status === 'cancelled';
                         let creditAmt = parseFloat(s.credit_amount) || 0;
+                        let delAmt = parseFloat(s.delivery_charges) || 0;
+                        let discAmt = parseFloat(s.discount) || 0;
                         let products = s.product.split(',').join('<br>');
                         let qtyArr = s.qty.split(',');
                         let qtyPiecesArr = s.total_pieces ? s.total_pieces.split(',') : (s.qty_decimal ? s.qty_decimal.split(',') : qtyArr);
@@ -484,6 +510,8 @@
                             grandTotal += parseFloat(rowTotal);
                             grandNet += parseFloat(s.total_net);
                             grandCredit += creditAmt;
+                            grandDelivery += delAmt;
+                            grandDiscount += discAmt;
                         }
 
                         let returnHtml = "";
@@ -511,6 +539,17 @@
                             typeBadge = `<span class="badge bg-light text-secondary border" style="font-size: 10px;">Standard</span>`;
                         }
 
+                        let extraBadges = '';
+                        let mobExtraBadges = '';
+                        if (delAmt > 0 && !isCancelled) {
+                            extraBadges += `<br><span class="badge bg-info-subtle text-info border border-info" style="font-size: 9px; padding: 2px 4px;"><i class="fas fa-motorcycle me-1"></i>Del: +Rs ${delAmt.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>`;
+                            mobExtraBadges += `<span class="badge bg-info-subtle text-info border border-info" style="font-size: 9.5px;"><i class="fas fa-motorcycle me-1"></i>Del: +Rs ${delAmt.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>`;
+                        }
+                        if (discAmt > 0 && !isCancelled) {
+                            extraBadges += `<br><span class="badge bg-danger-subtle text-danger border border-danger" style="font-size: 9px; padding: 2px 4px;"><i class="fas fa-tag me-1"></i>Disc: -Rs ${discAmt.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>`;
+                            mobExtraBadges += `<span class="badge bg-danger-subtle text-danger border border-danger" style="font-size: 9.5px;"><i class="fas fa-tag me-1"></i>Disc: -Rs ${discAmt.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>`;
+                        }
+
                         let creditBadge = '';
                         let mobCreditBadge = '';
                         if (creditAmt > 0 && !isCancelled) {
@@ -533,7 +572,7 @@
                             <td class="fw-semibold">${qtyArr.join('<br>')}</td>
                             <td>${price}</td>
                             <td>${total}</td>
-                            <td class="fw-bold text-dark">${parseFloat(s.total_net).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}${creditBadge}</td>
+                            <td class="fw-bold text-dark">${parseFloat(s.total_net).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}${extraBadges}${creditBadge}</td>
                             <td>${returnHtml || '-'}</td>
                         </tr>`;
 
@@ -567,12 +606,13 @@
                                         <strong class="text-dark">${rowQty}</strong>
                                     </div>
                                     <div class="col-4 border-end">
-                                        <span class="text-muted d-block" style="font-size: 10px;">Gross</span>
+                                        <span class="text-muted d-block" style="font-size: 10px;">Items Total</span>
                                         <strong class="text-dark">Rs ${parseFloat(rowTotal).toLocaleString(undefined, {minimumFractionDigits:2})}</strong>
                                     </div>
                                     <div class="col-4">
-                                        <span class="text-muted d-block" style="font-size: 10px;">Net Sale</span>
+                                        <span class="text-muted d-block" style="font-size: 10px;">Net Bill</span>
                                         <strong class="text-success">Rs ${parseFloat(s.total_net).toLocaleString(undefined, {minimumFractionDigits:2})}</strong>
+                                        ${mobExtraBadges ? `<div class="mt-1 d-flex flex-wrap gap-1 justify-content-center">${mobExtraBadges}</div>` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -584,27 +624,38 @@
                         <td colspan="8" class="text-end">Grand Total:</td>
                         <td id="grandQty">${grandQty.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                         <td>-</td>
-                        <td id="grandTotal">${grandTotal.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                        <td id="grandNet">${grandNet.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}<br><small class="text-warning fw-normal" style="color: #ea580c !important;">Credit: Rs ${grandCredit.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</small></td>
+                        <td id="grandTotal">Rs ${grandTotal.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                        <td id="grandNet">
+                            <span class="text-success">Rs ${grandNet.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
+                            ${(grandDelivery > 0 || grandDiscount > 0) ? `
+                                <div class="mt-1" style="font-size: 9.5px; font-weight: normal; line-height: 1.2;">
+                                    ${grandDelivery > 0 ? `<span class="text-info fw-semibold">+Del: Rs ${grandDelivery.toLocaleString(undefined, {minimumFractionDigits:2})}</span> ` : ''}
+                                    ${grandDiscount > 0 ? `<span class="text-danger fw-semibold">-Disc: Rs ${grandDiscount.toLocaleString(undefined, {minimumFractionDigits:2})}</span>` : ''}
+                                </div>
+                            ` : ''}
+                            ${grandCredit > 0 ? `<div class="mt-1"><small class="text-warning fw-normal" style="color: #ea580c !important;">Credit: Rs ${grandCredit.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</small></div>` : ''}
+                        </td>
                         <td id="grandReturn">${grandReturn.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                     </tr>`;
 
                     $('#saleBody').html(html);
                     $('#saleMobileContainer').html(mobHtml || '<div class="card border-0 shadow-sm rounded-3 text-center py-4 bg-white"><div class="card-body py-4 text-muted"><i class="fas fa-folder-open fa-2x mb-2 text-secondary"></i><p class="small fw-bold mb-0">No Sales Data Found</p></div></div>');
 
-                    updateSingleLineSummary(salesData.length, grandQty, grandTotal, grandReturn, grandNet, grandCredit);
+                    updateSingleLineSummary(salesData.length, grandQty, grandTotal, grandReturn, grandNet, grandCredit, grandDelivery, grandDiscount);
                 }
             });
         });
 
         // Function to update Summary Metrics (Desktop & Mobile)
-        function updateSingleLineSummary(count, qty, gross, returns, net, credit) {
+        function updateSingleLineSummary(count, qty, gross, returns, net, credit, delivery, discount) {
             let grossProfit   = net - currentCogs;
             let currentProfit = grossProfit - currentExpenses;
 
             let formattedCount  = count.toLocaleString();
             let formattedQty    = qty.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + ' Pcs';
             let formattedGross  = 'Rs ' + gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+            let formattedDel    = '+Rs ' + (delivery || 0).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+            let formattedDisc   = '-Rs ' + (discount || 0).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
             let formattedRet    = 'Rs ' + returns.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
             let formattedNet    = 'Rs ' + net.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
             let formattedCredit = 'Rs ' + (credit || 0).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
@@ -616,6 +667,8 @@
             $('#pillTotalInvoices').text(formattedCount);
             $('#pillTotalQty').text(formattedQty);
             $('#pillGrossSale').text(formattedGross);
+            $('#pillDelivery').text(formattedDel);
+            $('#pillDiscount').text(formattedDisc);
             $('#pillTotalReturns').text(formattedRet);
             $('#pillNetSale').text(formattedNet);
             $('#pillCreditSale').text(formattedCredit);
@@ -627,6 +680,8 @@
             $('#mobPillTotalInvoices').text(formattedCount);
             $('#mobPillTotalQty').text(formattedQty);
             $('#mobPillGrossSale').text(formattedGross);
+            $('#mobPillDelivery').text(formattedDel);
+            $('#mobPillDiscount').text(formattedDisc);
             $('#mobPillTotalReturns').text(formattedRet);
             $('#mobPillNetSale').text(formattedNet);
             $('#mobPillCreditSale').text(formattedCredit);
@@ -656,7 +711,7 @@
         // Export CSV Handler
         $(document).on('click', '.btnExportCsvTrigger', function() {
             let csv = [];
-            csv.push(['#', 'Date & Time', 'Invoice', 'Type', 'Customer', 'Cashier', 'Reference', 'Products', 'Qty', 'Price', 'Total', 'Net Amount', 'Returns'].join(','));
+            csv.push(['#', 'Date & Time', 'Invoice', 'Type', 'Customer', 'Cashier', 'Reference', 'Products', 'Qty', 'Price', 'Items Total', 'Net Bill', 'Returns'].join(','));
             $('#saleBody tr').each(function() {
                 if ($(this).attr('id') === 'grandTotalRow') return;
                 let row = [];

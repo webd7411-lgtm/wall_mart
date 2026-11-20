@@ -1703,11 +1703,11 @@
                         <input type="hidden" id="posDeliveryCustomerId" value="">
                         <div class="row g-1 mb-1">
                             <div class="col-6">
-                                <input type="text" class="form-control form-control-sm" id="posDeliveryCustomerName" placeholder="Customer Name *" style="font-size: 0.75rem; height: 27px; padding: 2px 6px;" oninput="$('#customerWalkinName').val(this.value)">
+                                <input type="text" class="form-control form-control-sm" id="posDeliveryCustomerName" placeholder="Customer Name (optional)" style="font-size: 0.75rem; height: 27px; padding: 2px 6px;" oninput="$('#customerWalkinName').val(this.value)">
                             </div>
                             <div class="col-6">
                                 <div class="position-relative">
-                                    <input type="text" class="form-control form-control-sm" id="posCustomerPhone" placeholder="Phone (03xx...)" style="font-size: 0.75rem; height: 27px; padding: 2px 20px 2px 6px;" autocomplete="off">
+                                    <input type="text" class="form-control form-control-sm" id="posCustomerPhone" placeholder="Phone (03xx...) *" style="font-size: 0.75rem; height: 27px; padding: 2px 20px 2px 6px;" autocomplete="off">
                                     <span id="posPhoneLookupSpinner" class="position-absolute end-0 top-50 translate-middle-y me-1 d-none" style="font-size: 0.68rem; color: #2563eb;" title="Searching customer...">
                                         <i class="fas fa-spinner fa-spin"></i>
                                     </span>
@@ -1723,7 +1723,7 @@
 
                         <!-- Row 3: Delivery Address -->
                         <div class="mb-1">
-                            <input type="text" class="form-control form-control-sm" id="posDeliveryAddress" placeholder="Delivery Address / House / Street..." style="font-size: 0.75rem; height: 27px; padding: 2px 6px;">
+                            <input type="text" class="form-control form-control-sm" id="posDeliveryAddress" placeholder="Delivery Address (optional)..." style="font-size: 0.75rem; height: 27px; padding: 2px 6px;">
                         </div>
 
                         <!-- Row 4: Optional Delivery Note -->
@@ -3869,23 +3869,9 @@
             return;
         }
 
-        // Validation for Delivery Mode
+        // Validation for Delivery Mode: ONLY Phone number is mandatory; Name and Address are optional
         if (currentOrderMode === 'delivery' || actionType === 'delivery_dispatch') {
-            let dName = ($('#posDeliveryCustomerName').val() || '').trim();
             let dPhone = ($('#posCustomerPhone').val() || '').trim();
-            let dAddress = ($('#posDeliveryAddress').val() || '').trim();
-
-            if (!dName || dName.toLowerCase() === 'walk-in customer' || dName.toLowerCase() === 'delivery customer') {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Customer Name Lazmi He!',
-                    text: 'Delivery order ke lie Customer ka Name likhna lazmi he.',
-                    confirmButtonText: 'Theek He',
-                    confirmButtonColor: '#2563eb'
-                });
-                $('#posDeliveryCustomerName').focus();
-                return;
-            }
 
             if (!dPhone) {
                 Swal.fire({
@@ -3896,18 +3882,6 @@
                     confirmButtonColor: '#2563eb'
                 });
                 $('#posCustomerPhone').focus();
-                return;
-            }
-
-            if (!dAddress) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Delivery Address Lazmi He!',
-                    text: 'Delivery order ke lie Customer ka Address likhna lazmi he taake rider deliver kar sake.',
-                    confirmButtonText: 'Theek He',
-                    confirmButtonColor: '#2563eb'
-                });
-                $('#posDeliveryAddress').focus();
                 return;
             }
 

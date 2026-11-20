@@ -1319,7 +1319,7 @@
 
                 <div class="row g-2 mb-2">
                     <div class="col-6">
-                        <input type="text" id="custName" class="form-control-munch w-100" placeholder="Your Full Name *" required>
+                        <input type="text" id="custName" class="form-control-munch w-100" placeholder="Your Name (optional)">
                     </div>
                     <div class="col-6">
                         <input type="tel" id="custPhone" class="form-control-munch w-100" placeholder="Phone (03xx-xxxxxxx) *" required>
@@ -1327,7 +1327,7 @@
                 </div>
 
                 <div id="deliveryAddressWrap" class="mb-2">
-                    <input type="text" id="custAddress" class="form-control-munch w-100 mb-2" placeholder="Full Delivery Address / Street / House #">
+                    <input type="text" id="custAddress" class="form-control-munch w-100 mb-2" placeholder="Delivery Address (optional)">
                 </div>
 
                 <input type="text" id="custNotes" class="form-control-munch w-100 mb-3" placeholder="Special cooking/delivery instructions (optional)">
@@ -1810,18 +1810,13 @@
             const address = document.getElementById('custAddress').value.trim();
             const notes = document.getElementById('custNotes').value.trim();
 
-            if (!custName) {
-                Swal.fire({ icon: 'error', title: 'Name required', text: 'Please enter your full name!' });
-                return;
-            }
             if (!custPhone) {
                 Swal.fire({ icon: 'error', title: 'Phone required', text: 'Please enter your contact phone number!' });
                 return;
             }
-            if (orderType === 'delivery' && !address) {
-                Swal.fire({ icon: 'error', title: 'Address required', text: 'Please enter delivery address for hot food dispatch!' });
-                return;
-            }
+
+            const effectiveName = custName || (custPhone ? 'Customer (' + custPhone + ')' : 'Customer');
+            const effectiveAddress = address || 'Address not specified / Call on delivery';
 
             const btn = document.getElementById('btnPlaceOrder');
             btn.disabled = true;
@@ -1836,10 +1831,10 @@
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
-                        customer_name: custName,
+                        customer_name: effectiveName,
                         customer_phone: custPhone,
                         order_type: orderType,
-                        delivery_address: address,
+                        delivery_address: effectiveAddress,
                         order_notes: notes,
                         items: cart.map(i => ({
                             id: i.id,

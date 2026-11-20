@@ -1361,6 +1361,8 @@ class ReportingController extends Controller
                 $isCancelled = ($sale->order_status === 'cancelled' || $sale->sale_status === 'cancelled');
                 $paidAmount = (float)$sale->cash + (float)$sale->card - (float)$sale->change;
                 $creditAmount = $isCancelled ? 0 : max(0, (float)$sale->total_net - max(0, $paidAmount));
+                $discountAmount = (float)($sale->total_extradiscount ?? 0);
+                $deliveryChargesAmount = (float)($sale->delivery_charges ?? 0);
 
                 return [
                     'id' => $sale->id,
@@ -1371,6 +1373,8 @@ class ReportingController extends Controller
                     'is_cancelled' => $isCancelled,
                     'paid_amount' => max(0, $paidAmount),
                     'credit_amount' => $creditAmount,
+                    'discount' => $discountAmount,
+                    'delivery_charges' => $deliveryChargesAmount,
                     'table_no' => $sale->table_no,
                     'token_no' => $sale->token_no,
                     'reference' => $sale->reference ?? '-',
@@ -1472,11 +1476,15 @@ class ReportingController extends Controller
             }
 
             $totalCreditSales = 0;
+            $totalDiscounts = 0;
+            $totalDeliveryCharges = 0;
             foreach ($sales as $sale) {
                 if ($sale->order_status !== 'cancelled' && $sale->sale_status !== 'cancelled') {
                     $paid = (float)$sale->cash + (float)$sale->card - (float)$sale->change;
                     $due = max(0, (float)$sale->total_net - max(0, $paid));
                     $totalCreditSales += $due;
+                    $totalDiscounts += (float)($sale->total_extradiscount ?? 0);
+                    $totalDeliveryCharges += (float)($sale->delivery_charges ?? 0);
                 }
             }
 
@@ -1486,6 +1494,8 @@ class ReportingController extends Controller
                     'expenses' => $totalExpenses,
                     'cogs'     => $totalCogs,
                     'credit_sales' => $totalCreditSales,
+                    'discounts' => $totalDiscounts,
+                    'delivery_charges' => $totalDeliveryCharges,
                 ]
             ]);
         }

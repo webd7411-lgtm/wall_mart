@@ -309,7 +309,7 @@ class RestaurantOnlineOrderController extends Controller
     public function updateOrder(Request $request, $id)
     {
         $request->validate([
-            'shipping_name' => 'required|string|max:191',
+            'shipping_name' => 'nullable|string|max:191',
             'shipping_phone' => 'required|string|max:50',
             'shipping_address' => 'nullable|string|max:500',
             'order_notes' => 'nullable|string|max:1000',

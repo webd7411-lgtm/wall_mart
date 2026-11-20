@@ -14,13 +14,64 @@ use Illuminate\Support\Facades\Validator;
 class RiderPortalController extends Controller
 {
     /**
+     * Check if current user is Super Admin or authorized restaurant management staff
+     */
+    protected function isSuperAdminOrStaff($user = null)
+    {
+        $user = $user ?: Auth::user();
+        if (!$user) return false;
+
+        if ($user->email === 'admin@admin.com') return true;
+
+        if (method_exists($user, 'hasRole')) {
+            if ($user->hasRole('Super Admin') || $user->hasRole('Admin') || $user->hasRole('Manager')) {
+                return true;
+            }
+        }
+
+        if (method_exists($user, 'getAssignedRoleNames')) {
+            $roles = $user->getAssignedRoleNames();
+            if (in_array('Super Admin', $roles) || in_array('Admin', $roles) || in_array('Manager', $roles)) {
+                return true;
+            }
+        }
+
+        if (method_exists($user, 'can')) {
+            if ($user->can('restaurant.riders.view') || $user->can('restaurant.deliveries.view') || $user->can('sales.create')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Show Rider Dedicated Login Screen
+     * If Super Admin is already logged in, redirect directly to portal without logging out!
      */
     public function showLogin()
     {
         if (Auth::check()) {
             $user = Auth::user();
-            $rider = Rider::where('user_id', $user->id)->first() ?? Rider::where('phone', $user->email)->first();
+
+            // Super Admin or admin staff goes straight to portal
+            if ($this->isSuperAdminOrStaff($user)) {
+                return redirect()->route('rider.portal');
+            }
+
+            $rider = Rider::withoutGlobalScope(\App\Scopes\BranchScope::class)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (!$rider) {
+                $cleanDigits = preg_replace('/[^0-9]/', '', $user->email ?: '');
+                if (strlen($cleanDigits) >= 7) {
+                    $rider = Rider::withoutGlobalScope(\App\Scopes\BranchScope::class)
+                        ->where('phone', 'like', "%{$cleanDigits}%")
+                        ->first();
+                }
+            }
+
             if ($rider) {
                 return redirect()->route('rider.portal');
             }
@@ -46,7 +97,8 @@ class RiderPortalController extends Controller
         $cleanDigits = preg_replace('/[^0-9]/', '', $rawLogin);
 
         // Find matching rider first
-        $rider = Rider::where('is_active', true)
+        $rider = Rider::withoutGlobalScope(\App\Scopes\BranchScope::class)
+            ->where('is_active', true)
             ->where(function ($q) use ($rawLogin, $cleanDigits) {
                 $q->where('phone', $rawLogin);
                 if (strlen($cleanDigits) >= 7) {
@@ -97,11 +149,16 @@ class RiderPortalController extends Controller
         $user = Auth::user();
         if (!$user) return null;
 
-        $rider = Rider::where('user_id', $user->id)->first();
+        $rider = Rider::withoutGlobalScope(\App\Scopes\BranchScope::class)
+            ->where('user_id', $user->id)
+            ->first();
+
         if (!$rider) {
             $cleanDigits = preg_replace('/[^0-9]/', '', $user->email ?: '');
             if (strlen($cleanDigits) >= 7) {
-                $rider = Rider::where('phone', 'like', "%{$cleanDigits}%")->first();
+                $rider = Rider::withoutGlobalScope(\App\Scopes\BranchScope::class)
+                    ->where('phone', 'like', "%{$cleanDigits}%")
+                    ->first();
                 if ($rider) {
                     $rider->user_id = $user->id;
                     $rider->save();
@@ -114,51 +171,131 @@ class RiderPortalController extends Controller
 
     /**
      * Display Rider Mobile Portal Dashboard
+     * Supports Super Admin view with multi-rider dropdown without requiring rider login!
      */
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        $rider = $this->getAuthenticatedRider();
+        $user = Auth::user();
+        $isAdminView = $this->isSuperAdminOrStaff($user);
+        $allRiders = collect();
+        $rider = null;
+
+        if ($isAdminView) {
+            $activeBranchId = \App\Helpers\BranchHelper::getActiveBranchId() ?? session('branch_id');
+
+            // Fetch all active riders for the dropdown
+            $allRiders = Rider::withoutGlobalScope(\App\Scopes\BranchScope::class)
+                ->where('is_active', true)
+                ->when($activeBranchId, function($q) use ($activeBranchId) {
+                    $q->where(function($sub) use ($activeBranchId) {
+                        $sub->where('branch_id', $activeBranchId)
+                            ->orWhereNull('branch_id');
+                    });
+                })
+                ->orderBy('name')
+                ->get();
+
+            if ($allRiders->isEmpty()) {
+                $allRiders = Rider::withoutGlobalScope(\App\Scopes\BranchScope::class)
+                    ->where('is_active', true)
+                    ->orderBy('name')
+                    ->get();
+            }
+
+            // Check if specific rider requested in URL query or session
+            $requestedRiderId = $request->query('rider_id') ?? session('rider_portal_selected_rider_id');
+            if ($requestedRiderId) {
+                $rider = Rider::withoutGlobalScope(\App\Scopes\BranchScope::class)->find($requestedRiderId);
+            }
+
+            // Default to first rider if requested not found
+            if (!$rider && $allRiders->isNotEmpty()) {
+                $rider = $allRiders->first();
+            }
+
+            if ($rider) {
+                session(['rider_portal_selected_rider_id' => $rider->id]);
+            }
+        } else {
+            $rider = $this->getAuthenticatedRider();
+        }
 
         if (!$rider) {
+            if ($isAdminView) {
+                return redirect()->route('restaurant.riders.index')
+                    ->with('error', 'Koi active rider moujood nahi hai. Barah-e-karam pehle ek rider add karein.');
+            }
             return redirect()->route('home')->with('error', 'Aapka account Rider profile se linked nahi hai.');
         }
 
         // Active Deliveries (Pending assignment or out on road)
-        $activeOrders = Sale::with(['items.product', 'customer_relation'])
+        $activeOrders = Sale::withoutGlobalScope(\App\Scopes\BranchScope::class)
+            ->with(['items.product', 'customer_relation'])
             ->where('rider_id', $rider->id)
+            ->whereNotIn('sale_status', ['cancelled'])
             ->whereIn('delivery_status', ['pending', 'dispatched'])
             ->orderBy('id', 'desc')
             ->get();
 
         // Completed deliveries today
-        $completedToday = Sale::with(['items.product', 'customer_relation'])
+        $completedToday = Sale::withoutGlobalScope(\App\Scopes\BranchScope::class)
+            ->with(['items.product', 'customer_relation'])
             ->where('rider_id', $rider->id)
+            ->whereNotIn('sale_status', ['cancelled'])
             ->where('delivery_status', 'delivered')
             ->whereDate('updated_at', today())
             ->orderBy('updated_at', 'desc')
             ->get();
 
         // Cash in hand (Delivered orders whose COD cash is not yet settled with cashier)
-        $cashInHand = (float) Sale::where('rider_id', $rider->id)
+        $cashInHand = (float) Sale::withoutGlobalScope(\App\Scopes\BranchScope::class)
+            ->where('rider_id', $rider->id)
+            ->whereNotIn('sale_status', ['cancelled'])
             ->where('delivery_status', 'delivered')
-            ->where('rider_cash_settled', false)
+            ->where(function($q) {
+                $q->whereNull('rider_cash_settled')->orWhere('rider_cash_settled', false);
+            })
             ->sum(DB::raw('COALESCE(total_net, total_bill_amount)'));
 
-        return view('rider_portal.dashboard', compact('rider', 'activeOrders', 'completedToday', 'cashInHand'));
+        return view('rider_portal.dashboard', compact(
+            'rider',
+            'activeOrders',
+            'completedToday',
+            'cashInHand',
+            'isAdminView',
+            'allRiders'
+        ));
     }
 
     /**
      * Live Polling API for Real-Time Order Updates on Rider Screen
      */
-    public function liveOrdersApi()
+    public function liveOrdersApi(Request $request)
     {
-        $rider = $this->getAuthenticatedRider();
+        $user = Auth::user();
+        $isAdminView = $this->isSuperAdminOrStaff($user);
+
+        $rider = null;
+        if ($isAdminView) {
+            $requestedRiderId = $request->query('rider_id') ?? $request->input('rider_id') ?? session('rider_portal_selected_rider_id');
+            if ($requestedRiderId) {
+                $rider = Rider::withoutGlobalScope(\App\Scopes\BranchScope::class)->find($requestedRiderId);
+            }
+            if (!$rider) {
+                $rider = Rider::withoutGlobalScope(\App\Scopes\BranchScope::class)->where('is_active', true)->first();
+            }
+        } else {
+            $rider = $this->getAuthenticatedRider();
+        }
+
         if (!$rider) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
         }
 
-        $activeOrders = Sale::with(['items.product', 'customer_relation'])
+        $activeOrders = Sale::withoutGlobalScope(\App\Scopes\BranchScope::class)
+            ->with(['items.product', 'customer_relation'])
             ->where('rider_id', $rider->id)
+            ->whereNotIn('sale_status', ['cancelled'])
             ->whereIn('delivery_status', ['pending', 'dispatched'])
             ->orderBy('id', 'desc')
             ->get();
@@ -199,12 +336,18 @@ class RiderPortalController extends Controller
             ];
         });
 
-        $cashInHand = (float) Sale::where('rider_id', $rider->id)
+        $cashInHand = (float) Sale::withoutGlobalScope(\App\Scopes\BranchScope::class)
+            ->where('rider_id', $rider->id)
+            ->whereNotIn('sale_status', ['cancelled'])
             ->where('delivery_status', 'delivered')
-            ->where('rider_cash_settled', false)
+            ->where(function($q) {
+                $q->whereNull('rider_cash_settled')->orWhere('rider_cash_settled', false);
+            })
             ->sum(DB::raw('COALESCE(total_net, total_bill_amount)'));
 
-        $completedCount = Sale::where('rider_id', $rider->id)
+        $completedCount = Sale::withoutGlobalScope(\App\Scopes\BranchScope::class)
+            ->where('rider_id', $rider->id)
+            ->whereNotIn('sale_status', ['cancelled'])
             ->where('delivery_status', 'delivered')
             ->whereDate('updated_at', today())
             ->count();
@@ -222,15 +365,25 @@ class RiderPortalController extends Controller
     /**
      * Rider updates order status to 'dispatched' (Picked Up / Out on Road)
      */
-    public function markOutForDelivery($id)
+    public function markOutForDelivery($id, Request $request)
     {
-        $rider = $this->getAuthenticatedRider();
-        if (!$rider) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        $user = Auth::user();
+        $isAdminView = $this->isSuperAdminOrStaff($user);
+
+        if ($isAdminView) {
+            $sale = Sale::withoutGlobalScope(\App\Scopes\BranchScope::class)->where('id', $id)->first();
+            if ($sale && $sale->rider_id) {
+                $rider = Rider::withoutGlobalScope(\App\Scopes\BranchScope::class)->find($sale->rider_id);
+            } else {
+                $riderId = $request->input('rider_id') ?? session('rider_portal_selected_rider_id');
+                $rider = Rider::withoutGlobalScope(\App\Scopes\BranchScope::class)->find($riderId);
+            }
+        } else {
+            $rider = $this->getAuthenticatedRider();
+            $sale = $rider ? Sale::withoutGlobalScope(\App\Scopes\BranchScope::class)->where('id', $id)->where('rider_id', $rider->id)->first() : null;
         }
 
-        $sale = Sale::where('id', $id)->where('rider_id', $rider->id)->first();
-        if (!$sale) {
+        if (!$rider || !$sale) {
             return response()->json(['success' => false, 'message' => 'Order not found.'], 404);
         }
 
@@ -252,13 +405,23 @@ class RiderPortalController extends Controller
      */
     public function markDelivered($id, Request $request)
     {
-        $rider = $this->getAuthenticatedRider();
-        if (!$rider) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        $user = Auth::user();
+        $isAdminView = $this->isSuperAdminOrStaff($user);
+
+        if ($isAdminView) {
+            $sale = Sale::withoutGlobalScope(\App\Scopes\BranchScope::class)->where('id', $id)->first();
+            if ($sale && $sale->rider_id) {
+                $rider = Rider::withoutGlobalScope(\App\Scopes\BranchScope::class)->find($sale->rider_id);
+            } else {
+                $riderId = $request->input('rider_id') ?? session('rider_portal_selected_rider_id');
+                $rider = Rider::withoutGlobalScope(\App\Scopes\BranchScope::class)->find($riderId);
+            }
+        } else {
+            $rider = $this->getAuthenticatedRider();
+            $sale = $rider ? Sale::withoutGlobalScope(\App\Scopes\BranchScope::class)->where('id', $id)->where('rider_id', $rider->id)->first() : null;
         }
 
-        $sale = Sale::where('id', $id)->where('rider_id', $rider->id)->first();
-        if (!$sale) {
+        if (!$rider || !$sale) {
             return response()->json(['success' => false, 'message' => 'Order not found.'], 404);
         }
 
@@ -285,7 +448,9 @@ class RiderPortalController extends Controller
         }
 
         // Check if rider has any more active deliveries
-        $remainingActive = Sale::where('rider_id', $rider->id)
+        $remainingActive = Sale::withoutGlobalScope(\App\Scopes\BranchScope::class)
+            ->where('rider_id', $rider->id)
+            ->whereNotIn('sale_status', ['cancelled'])
             ->whereIn('delivery_status', ['pending', 'dispatched'])
             ->count();
 
@@ -294,20 +459,27 @@ class RiderPortalController extends Controller
             $rider->save();
         }
 
-        $totalCollected = (float) ($sale->total_net ?: $sale->total_bill_amount);
-
         return response()->json([
             'success' => true,
-            'message' => "Shabash! Order #{$sale->invoice_no} kamyabi se deliver ho gaya aur Rs. " . number_format($totalCollected) . " hisaab me add ho gaye.",
+            'message' => "Order #{$sale->invoice_no} marked as Delivered successfully and Rs. " . number_format($totalCollected) . " recorded.",
         ]);
     }
 
     /**
-     * Rider toggles Online / Offline Duty Status
+     * Rider / Admin toggles Online / Offline Duty Status
      */
     public function updateDutyStatus(Request $request)
     {
-        $rider = $this->getAuthenticatedRider();
+        $user = Auth::user();
+        $isAdminView = $this->isSuperAdminOrStaff($user);
+
+        if ($isAdminView) {
+            $riderId = $request->input('rider_id') ?? session('rider_portal_selected_rider_id');
+            $rider = Rider::withoutGlobalScope(\App\Scopes\BranchScope::class)->find($riderId);
+        } else {
+            $rider = $this->getAuthenticatedRider();
+        }
+
         if (!$rider) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
         }
@@ -318,14 +490,16 @@ class RiderPortalController extends Controller
         }
 
         // If rider has active deliveries, they cannot go off duty
-        $hasActive = Sale::where('rider_id', $rider->id)
+        $hasActive = Sale::withoutGlobalScope(\App\Scopes\BranchScope::class)
+            ->where('rider_id', $rider->id)
+            ->whereNotIn('sale_status', ['cancelled'])
             ->whereIn('delivery_status', ['pending', 'dispatched'])
             ->exists();
 
         if ($hasActive && $status === 'off_duty') {
             return response()->json([
                 'success' => false,
-                'message' => 'Aapke pass orders delivery ke liye pending hain. Pehle unhe deliver karein.',
+                'message' => 'Is rider ke pass active delivery orders pending hain. Pehle unhe deliver karein.',
             ], 400);
         }
 
@@ -335,15 +509,21 @@ class RiderPortalController extends Controller
         return response()->json([
             'success'     => true,
             'duty_status' => $rider->duty_status,
-            'message'     => $status === 'available' ? 'Aap ab Online (Available) hain.' : 'Aap ab Offline (Off Duty) hain.',
+            'message'     => $status === 'available' ? 'Rider Online (Available) ho gaya hai.' : 'Rider Offline (Off Duty) ho gaya hai.',
         ]);
     }
 
     /**
      * Logout Rider
+     * For Super Admin, does not destroy main session, redirects safely back to admin!
      */
     public function logout(Request $request)
     {
+        $user = Auth::user();
+        if ($this->isSuperAdminOrStaff($user)) {
+            return redirect()->route('restaurant.riders.index')->with('info', 'Rider Screen se exit kar lia gaya hai.');
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

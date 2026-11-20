@@ -259,20 +259,59 @@
 </head>
 <body>
 
+    @if(!empty($isAdminView))
+    {{-- Super Admin Top Quick Navigation Bar --}}
+    <div style="background: linear-gradient(135deg, #1e293b, #0f172a); border-bottom: 2px solid #f59e0b; padding: 7px 14px; color: #fff;">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-warning text-dark font-weight-bold" style="font-size: 11px; padding: 4px 8px;">
+                    <i class="fas fa-user-shield me-1"></i> SUPER ADMIN
+                </span>
+                <span class="small text-light fw-bold d-none d-sm-inline">Rider Live Screen Monitor</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{{ route('restaurant.riders.index') }}" class="btn btn-outline-warning btn-sm py-0 px-2 fw-bold" style="font-size: 11.5px;">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Riders List
+                </a>
+                <a href="{{ route('home') }}" class="btn btn-outline-light btn-sm py-0 px-2 fw-bold" style="font-size: 11.5px;">
+                    <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Top Sticky Navbar --}}
     <nav class="rider-navbar">
-        <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
                 <div class="rider-avatar">
                     <i class="fas fa-motorcycle"></i>
                 </div>
                 <div>
-                    <div class="fw-bold fs-6 lh-1 mb-1">{{ $rider->name }}</div>
-                    <div class="d-flex align-items-center gap-1" style="font-size: 11px; opacity: 0.8;">
+                    @if(!empty($isAdminView) && isset($allRiders) && $allRiders->count() > 0)
+                        <div class="d-flex align-items-center gap-1 mb-1">
+                            <select class="form-select form-select-sm bg-dark text-white border-warning fw-bold py-1 px-2" 
+                                    id="adminRiderDropdown" onchange="onSwitchRider(this.value)" 
+                                    style="font-size: 13px; min-width: 170px; max-width: 220px; cursor: pointer; box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);">
+                                @foreach($allRiders as $rItem)
+                                    <option value="{{ $rItem->id }}" {{ $rItem->id == $rider->id ? 'selected' : '' }}>
+                                        🛵 {{ $rItem->name }} ({{ $rItem->vehicle_no ?: 'No Bike' }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @else
+                        <div class="fw-bold fs-6 lh-1 mb-1">{{ $rider->name }}</div>
+                    @endif
+                    <div class="d-flex align-items-center gap-1" style="font-size: 11px; opacity: 0.85;">
                         <span class="live-pulse"></span>
-                        <span>{{ $rider->vehicle_no ?: 'Rider Fleet' }}</span>
+                        <span id="headerVehicleNo">{{ $rider->vehicle_no ?: 'Rider Fleet' }}</span>
                         <span>•</span>
                         <span>{{ optional($rider->branch)->name ?: 'Munch FC' }}</span>
+                        @if(!empty($isAdminView))
+                            <span class="badge bg-warning text-dark py-0 px-1" style="font-size: 9.5px; font-weight: 800;">Admin View</span>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -285,13 +324,20 @@
                     <span id="dutyText">{{ $rider->duty_status === 'available' ? 'On Duty' : 'Off Duty' }}</span>
                 </button>
 
-                {{-- Logout Button --}}
-                <form action="{{ route('rider.logout') }}" method="POST" class="m-0 p-0">
-                    @csrf
-                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2 text-white border-0" title="Logout" style="font-size: 14px;">
-                        <i class="fas fa-power-off"></i>
-                    </button>
-                </form>
+                @if(!empty($isAdminView))
+                    {{-- Exit to Admin Panel --}}
+                    <a href="{{ route('restaurant.riders.index') }}" class="btn btn-sm btn-outline-danger py-1 px-2 text-white border-0" title="Exit to Admin Panel" style="font-size: 14px;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                @else
+                    {{-- Logout Button for normal rider --}}
+                    <form action="{{ route('rider.logout') }}" method="POST" class="m-0 p-0">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2 text-white border-0" title="Logout" style="font-size: 14px;">
+                            <i class="fas fa-power-off"></i>
+                        </button>
+                    </form>
+                @endif
             </div>
         </div>
     </nav>
@@ -522,8 +568,16 @@
 
     <script>
         const CSRF_TOKEN = $('meta[name="csrf-token"]').attr('content');
+        const currentRiderId = {{ $rider->id }};
+        const isAdminView = {{ !empty($isAdminView) ? 'true' : 'false' }};
         let currentTab = 'active';
         let previousActiveOrderCount = {{ count($activeOrders) }};
+
+        // Switch rider from header dropdown in Admin View
+        function onSwitchRider(riderId) {
+            if (!riderId) return;
+            window.location.href = "{{ route('rider.portal') }}?rider_id=" + riderId;
+        }
 
         // Play gentle chime sound when a new order lands
         function playChimeSound() {
@@ -568,7 +622,8 @@
                 type: "POST",
                 data: {
                     _token: CSRF_TOKEN,
-                    duty_status: newStatus
+                    duty_status: newStatus,
+                    rider_id: currentRiderId
                 },
                 success: function(res) {
                     if (res.success) {
@@ -595,7 +650,10 @@
             $.ajax({
                 url: `{{ url('rider/order') }}/${orderId}/out-for-delivery`,
                 type: "POST",
-                data: { _token: CSRF_TOKEN },
+                data: { 
+                    _token: CSRF_TOKEN,
+                    rider_id: currentRiderId
+                },
                 success: function(res) {
                     pollLiveOrders(true);
                 },
@@ -623,7 +681,10 @@
             $.ajax({
                 url: `{{ url('rider/order') }}/${orderId}/mark-delivered`,
                 type: "POST",
-                data: { _token: CSRF_TOKEN },
+                data: { 
+                    _token: CSRF_TOKEN,
+                    rider_id: currentRiderId
+                },
                 success: function(res) {
                     $('#confirmDeliverModal').modal('hide');
                     btn.prop('disabled', false).html('<i class="fas fa-check-circle me-1"></i> Yes, Cash Collected & Delivered');
@@ -643,7 +704,7 @@
 
         // Auto-Polling: checks every 10 seconds for assigned orders
         function pollLiveOrders(manual = false) {
-            $.get("{{ route('rider.api.live_orders') }}", function(data) {
+            $.get("{{ route('rider.api.live_orders') }}?rider_id=" + currentRiderId, function(data) {
                 if (!data || !data.success) return;
 
                 $('#statActiveCount').text(data.active_count);
